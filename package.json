@@ -1,0 +1,20 @@
+{
+  "name": "cgview-parsers",
+  "version": "1.0.0",
+  "description": "Parsers to and from CGView JSON",
+  "main": "index.js",
+  "author": "Jason Grant",
+  "license": "MIT",
+  "scripts": {
+    "dev": "echo \"Error: no dev specified\" && exit 1",
+    "build": "rollup --config --watch"
+  },
+  "devDependencies": {
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4"
+  },
+  "dependencies": {
+    "@teselagen/bio-parsers": "^0.4.10"
+  }
+}

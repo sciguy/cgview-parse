@@ -1,0 +1,32 @@
+inputs = {
+  mito: {
+    name: 'Mitochondia [69,034 bp]',
+    type: 'genbank',
+    url: '../inputs/default/NC_001823.gbk',
+  },
+  plasmid: {
+    name: 'E. coli B171 plasmid [90,229 bp]',
+    type: 'genbank',
+    url: '../inputs/default/CP021212.gbk',
+  },
+  contigs: {
+    name: 'Contigs: MNHM01000001 [133,342 bp]',
+    type: 'genbank',
+    url: '../inputs/default/chloroflexi_contigs.gbk',
+  },
+  bad_contigs: {
+    name: 'BAD Contigs: MNHM01000001 [133,342 bp]',
+    type: 'genbank',
+    url: '../inputs/default/bad_contigs.gbk',
+  },
+  influ: {
+    name: 'H. influenzae [1,846,259 bp]',
+    type: 'genbank',
+    url: '../inputs/default/NZ_CP007470.gbk',
+  },
+  pa2: {
+    name: 'E. coli PA2 [5,246,924 bp]',
+    type: 'genbank',
+    url: '../inputs/default/GCF_000335355.gbk',
+  },
+}

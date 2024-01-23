@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Icon -->
+    <link rel="shortcut icon" type="../image/png" href="images/logo-tab.png">
+
+    <!-- Bootstrap CSS -->
+    <link href="../styles/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/prism.css" />
+    <!-- <link rel="stylesheet" href="styles/tables.css" /> -->
+    <link rel="stylesheet" href="../styles/general.css" />
+    <script src='../scripts/general.js'></script>
+
+    <!-- D3 -->
+    <script src="../scripts/d3.min.js"></script>
+    <!-- CGView -->
+    <script src='../scripts/cgview.js'></script>
+    <script src='../dist/cgview-parsers.js'></script>
+
+    <link rel="stylesheet" href="../styles/cgview.css" />
+    <link rel="stylesheet" href="../styles/controls.css" />
+    <!-- CGView Daya -->
+
+    <!-- Dev Page -->
+    <link rel="stylesheet" href="test.css" />
+    <!-- Test Map Data -->
+    <!-- <script src='maps.js'></script> -->
+    <script src='inputs.js'></script>
+
+    <!-- Plausible Analytics -->
+    <script defer data-domain="js.cgview.ca" src="https://stats.stothardresearch.ca/js/plausible.outbound-links.js"></script>
+
+    <title>CGVParse</title>
+  </head>
+  <body>
+    <!-- Nav Bar -->
+    <nav class="navbar navbar-expand-sm navbar-dark bg-dark fixed-top">
+      <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <a class="navbar-brand" href="../../docs/index.html">CGView Parse</a>
+        <div class='dev-title'>TEST PAGE</div>
+        </div>
+      </div>
+    </nav>
+
+    <main>
+
+      <!-- INPUT -->
+      <div class='test-input'>
+        <div class='test-heading'>Input</div>
+        <div class="input-header">
+          <div class='map-select-section'>
+            <select id='map-select' class='form-select form-select-sm'></select>
+          </div>
+          <div id="file-section">
+            <input type='file' id='file-input' />
+          </div>
+          <hr />
+        </div>
+        <div id='input-text'></div>
+      </div>
+
+      <!-- TESELAGEN INTERMEDIATE OUTPUT -->
+      <div class='test-intermediate'>
+        <div class='test-heading'>Teselagen</div>
+        <pre><code id='output-intermediate' class='language-json'></code></pre>
+      </div>
+
+      <!-- OUTPUT -->
+      <div class='test-output'>
+        <div class='test-heading'>CGView</div>
+        <pre><code id='output-json' class='language-json'></code></pre>
+      </div>
+
+      <!-- MAP -->
+      <div class='test-map'>
+        <div class='test-heading'>Map: <em><span id='map-name'>Empty</span></em></div>
+				<div id='my-viewer'></div>
+				<div class='cgv-controls'>
+					<div class='cgv-btn' id='btn-reset' title='Reset Map'></div>
+					<div class='cgv-btn' id='btn-zoom-in' title='Zoom In'></div>
+					<div class='cgv-btn' id='btn-zoom-out' title='Zoom Out'></div>
+					<div class='cgv-btn' id='btn-move-left' title='Move Left/Counterclockwise'></div>
+					<div class='cgv-btn' id='btn-move-right' title='Move Right/Clockwise'></div>
+					<div class='cgv-btn' id='btn-toggle-format' title='Toggle Linear/Circular Format'></div>
+					<div class='cgv-btn' id='btn-invert-colors' title='Invert Map Colors'></div>
+					<div class='cgv-btn' id='btn-download' title='Download Map PNG'></div>
+					<div class='cgv-btn' id='btn-toggle-labels' title='Toggle Labels'></div>
+				</div>
+        <button id='open-in-proksee-btn'>Open in Proksee</button>
+        <hr />
+        <div class='test-options'>
+          <div><input id='option-prism' type='checkbox' checked /> Pretty Print</div>
+          <button id='reload-btn'>Reload</button>
+        </div>
+        <hr />
+        <div class='test-log'>
+          <div class='test-heading'>Log</div>
+          <div id="log-text">No messages yet...</div>
+        </div>
+        <hr />
+			</div>
+
+
+
+    </main>
+
+    <!-- Bootstrap JavaScript -->
+    <script src="../scripts/bootstrap.min.js"></script>
+
+    <script src="../scripts/prism.js"></script>
+    <script src='test.js'></script>
+    <script src='../scripts/controls.js'></script>
+
+  </body>
+</html>
