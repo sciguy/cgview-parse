@@ -7,12 +7,19 @@
   "license": "MIT",
   "scripts": {
     "dev": "echo \"Error: no dev specified\" && exit 1",
-    "build": "rollup --config --watch"
+    "build": "rollup --config --watch",
+    "test": "jest --watch"
+  },
+  "jest": {
+    "testMatch": ["<rootDir>/test/*.test.js"],
+    "preset": "es-jest"
   },
   "devDependencies": {
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-terser": "^0.4.4"
+    "@rollup/plugin-terser": "^0.4.4",
+    "es-jest": "^2.1.0",
+    "jest": "^29.7.0"
   },
   "dependencies": {
     "@teselagen/bio-parsers": "^0.4.10"
