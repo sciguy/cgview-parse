@@ -10,6 +10,9 @@ The testing html page can open predefeind sequence files as well as use a file c
 - a log of output messages
 - an Open in Proksee button
 
+# TODO
+- qualifiers without values still have a "\" at the beginning of their name
+
 
 # Teselagen
 [Teselagene](https://github.com/TeselaGen/tg-oss/tree/master)

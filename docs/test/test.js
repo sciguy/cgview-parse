@@ -8,6 +8,14 @@
 // const defaultMap = 'mito';
 const defaultMap = 'contigs';
 
+// Deafult Options
+const prettyPrint = true;
+const showInput = true;
+const showSeqJson = true;
+const showCgvJson = false;
+const showMap = false;
+const filterSequence = true;
+
 ///////////////////////////////////////////////////////////////////////////////
 // Initialize
 ///////////////////////////////////////////////////////////////////////////////
@@ -18,7 +26,6 @@ cgv = new CGV.Viewer('#my-viewer', {
   height: defaultSize,
   width: defaultSize,
 });
-loadInputFromID(defaultMap);
 
 // Initialize File Section
 // Is the file section visible or not?
@@ -28,6 +35,31 @@ if (defaultMap === 'file') {
   document.getElementById('file-section').style.display = 'none';
 }
 clearFileInput();
+
+// Initialize Options
+// Prism/Pretty Print
+// document.getElementById('option-prism').checked = prettyPrint;
+const prettyPrintCheckbox = document.querySelector('#option-prism');
+prettyPrintCheckbox.checked = prettyPrint;
+// Filter Sequence
+const filterSeqCheckbox = document.querySelector('#option-filter-seq');
+filterSeqCheckbox.checked = filterSequence;
+// Show/Hide Input
+const showInputCheckbox = document.querySelector('#option-show-input');
+showInputCheckbox.checked = showInput;
+// Show/Hide Seq JSON
+const showSeqJsonCheckbox = document.querySelector('#option-show-seq-json');
+showSeqJsonCheckbox.checked = showSeqJson;
+// Show/Hide CGV JSON
+const showCgvJsonCheckbox = document.querySelector('#option-show-cgv-json');
+showCgvJsonCheckbox.checked = showCgvJson;
+// Show/Hide Map
+const showMapCheckbox = document.querySelector('#option-show-map');
+showMapCheckbox.checked = showMap;
+updatePageLayout();
+
+// Load default map
+loadInputFromID(defaultMap);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Config JSON passed to parser
@@ -153,17 +185,26 @@ function testParse() {
   const intermediateTextDiv = document.getElementById('output-intermediate');
   const outputTextDiv = document.getElementById('output-json');
   // Using prism can be slow for large files
-  const prismMode = document.getElementById('option-prism').checked;
+  // const prismMode = document.getElementById('option-prism').checked;
+  const prismMode = prettyPrintCheckbox.checked;
+  const filterSeqMode = filterSeqCheckbox.checked;
 
   // Get input text
   const inputText = inputTextDiv.innerHTML;
 
   // Parse to seqJson
   const seqJSON = CGVParse.seqToJSON(inputText, {config: jsonConfig});
-  const seqString = JSON.stringify(seqJSON, null, 2);
-  const viewedSeqString = seqString.replace(/"sequence": ".*"/g, '"sequence": "..."');
-  // const viewedSeqString = seqString;
-  intermediateTextDiv.innerHTML = prismMode ? Prism.highlight(viewedSeqString, Prism.languages.json, 'json') : viewedSeqString;
+  let seqString = JSON.stringify(seqJSON, null, 2);
+  if (filterSeqMode) {
+    seqString = seqString.replace(/"sequence": ".*"/g, '"sequence": "..."');
+  }
+  // Compact the locations array to a single line for easier viewing
+  // seqString = seqString.replace(/"locations":([^}"]*)/smg, (match, p1) => {
+  seqString = seqString.replace(/"locations":(.*?)(\s+)([}"])/smg, (match, p1, p2, p3) => {
+    return `"locations": ${p1.replace(/\s+/g, '')}${p2}${p3}`;
+  });
+  intermediateTextDiv.innerHTML = prismMode ? Prism.highlight(seqString, Prism.languages.json, 'json') : seqString;
+  window.temp = {seqJSON}; // For debugging
   return;
 
 
@@ -171,10 +212,11 @@ function testParse() {
   const tesJSON = CGVParse.genbankToTeselagen(inputText, {inclusive1BasedStart: true, inclusive1BasedEnd: true});
   // console.log(tesJSON);
   // Convert to string (and pretty print with 2 spaces)
-  const tesString = JSON.stringify(tesJSON, null, 2);
-  // Replace Sequence (faster view when sequence is replaced)
-  const viewedTesString = tesString.replace(/"sequence": ".*"/g, '"sequence": "..."');
-  intermediateTextDiv.innerHTML = prismMode ? Prism.highlight(viewedTesString, Prism.languages.json, 'json') : viewedTesString;
+  let tesString = JSON.stringify(tesJSON, null, 2);
+  if (filterSeqMode) {
+    tesString = tesString.replace(/"sequence": ".*"/g, '"sequence": "..."');
+  }
+  intermediateTextDiv.innerHTML = prismMode ? Prism.highlight(tesString, Prism.languages.json, 'json') : tesString;
 
   // Parse to CGView JSON
   const cgvParsed = CGVParse.teselagenToCGJson(tesJSON, {config: jsonConfig});
@@ -208,12 +250,40 @@ function testParse() {
 // Options
 ///////////////////////////////////////////////////////////////////////////////
 
-// Reload
-const reloadBtn = document.getElementById('reload-btn');
-reloadBtn.addEventListener('click', (e) => {
-  console.log("reload")
+// Reparse
+const reparseBtn = document.getElementById('reparse-btn');
+reparseBtn.addEventListener('click', (e) => {
+  console.log("Reparse...")
   testParse();
 });
+
+showInputCheckbox.addEventListener('click', (e) => {
+  updatePageLayout();
+});
+showSeqJsonCheckbox.addEventListener('click', (e) => {
+  updatePageLayout();
+});
+showCgvJsonCheckbox.addEventListener('click', (e) => {
+  updatePageLayout();
+});
+showMapCheckbox.addEventListener('click', (e) => {
+  updatePageLayout();
+});
+
+function updatePageLayout() {
+  // Input
+  const inputDiv = document.querySelector('.test-input');
+  inputDiv.style.display = showInputCheckbox.checked ? 'flex' : 'none';
+  // Sequence JSON
+  const seqJsonDiv = document.querySelector('.test-intermediate');
+  seqJsonDiv.style.display = showSeqJsonCheckbox.checked ? 'flex' : 'none';
+  // CGView JSON
+  const cgvJsonDiv = document.querySelector('.test-output');
+  cgvJsonDiv.style.display = showCgvJsonCheckbox.checked ? 'flex' : 'none';
+  // Mpa
+  const cgvMapDiv = document.querySelector('.test-map');
+  cgvMapDiv.style.display = showMapCheckbox.checked ? 'block' : 'none';
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Full Size Map

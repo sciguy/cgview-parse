@@ -12,6 +12,10 @@ main {
   position: relative;
 }
 
+.muted {
+  color: var(--theme-text-color-muted)
+}
+
 .dev-title {
   color: white;
   font-weight: bold;
@@ -27,6 +31,7 @@ main {
   border: solid #DDD 1px;
   width: 25%;
   height: calc(100vh - 60px);
+  flex-grow: 2;
 }
 
 #file-section {
@@ -52,6 +57,7 @@ main {
   border: solid #DDD 1px;
   width: 25%;
   height: calc(100vh - 60px);
+  flex-grow: 5;
 }
 
 .test-output {
@@ -62,6 +68,7 @@ main {
   border: solid #DDD 1px;
   width: 25%;
   height: calc(100vh - 60px);
+  flex-grow: 5;
 }
 
 /* #output-intermeidate,
@@ -88,7 +95,7 @@ pre[class*="language-"] {
 } */
 
 
-.test-map {
+.test-map-and-options {
   border: solid #DDD 1px;
   flex-basis: 25%;
 }
@@ -131,9 +138,14 @@ hr {
   color:gray
 }
 
+.test-options-section {
+  padding: 0 5px;
+  position: relative;
+}
 .test-options {
-  padding: 10px;
   font-size: 12px;
+  display: flex;
+  justify-content: space-between;
 }
 
 #log-text {
@@ -144,9 +156,21 @@ hr {
   white-space: pre;
 }
 
-#reload-btn {
-  margin: 5px auto 0 auto;
+#reparse-btn {
+  position: absolute;
+  top: 0px;
+  right: 5px;
   display: block;
+  background-color: white;
+  border: 1px solid #DDD;
+  border-radius: 3px;
+  padding: 2px 5px;
+  font-size: 10px;
+  font-weight: bold;
+  cursor: pointer;
+}
+#reparse-btn:hover {
+  background-color: #DDD;
 }
 
 .more-options {
@@ -154,6 +178,8 @@ hr {
 }
 
 #open-in-proksee-btn {
+  font-size: 12px;
+  font-weight: bold;
   margin: 0 auto;
   display: block;
 }
