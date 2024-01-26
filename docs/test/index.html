@@ -52,8 +52,8 @@
     <main>
 
       <!-- INPUT -->
-      <div class='test-input'>
-        <div class='test-heading'>Input</div>
+      <div class='section-column section-input'>
+        <div class='section-heading'>Input</div>
         <div class="input-header">
           <div class='map-select-section'>
             <select id='map-select' class='form-select form-select-sm'></select>
@@ -66,22 +66,31 @@
         <div id='input-text'></div>
       </div>
 
-      <!-- JSON INTERMEDIATE OUTPUT -->
-      <div class='test-intermediate'>
-        <div class='test-heading'>Sequence JSON</div>
-        <pre><code id='output-intermediate' class='language-json'></code></pre>
+      <!-- OUTPUT SEQUENCE JSON -->
+      <div class='section-column section-seq-json'>
+        <div id='time-seq-json' class='section-time' title="Runtime of actual conversion">n/a</div>
+        <div class='section-heading'>Sequence JSON</div>
+        <pre><code id='output-seq-json' class='language-json'></code></pre>
       </div>
 
-      <!-- OUTPUT -->
-      <div class='test-output'>
-        <div class='test-heading'>CGView JSON</div>
-        <pre><code id='output-json' class='language-json'></code></pre>
+      <!-- OUTPUT TESELAGEN JSON -->
+      <div class='section-column section-tes-json'>
+        <div id='time-tes-json' class='section-time' title="Runtime of actual conversion">n/a</div>
+        <div class='section-heading'>Teselagen JSON</div>
+        <pre><code id='output-tes-json' class='language-json'></code></pre>
       </div>
 
-      <!-- MAP -->
-      <div class='test-map-and-options'>
-        <div class='test-map'>
-          <div class='test-heading'>Map: <em><span id='map-name'>Empty</span></em></div>
+      <!-- OUTPUT CGVIEW JSON -->
+      <div class='section-column section-cgv-json'>
+        <div id='time-cgv-json' class='section-time' title="Runtime of actual conversion">n/a</div>
+        <div class='section-heading'>CGView JSON</div>
+        <pre><code id='output-cgv-json' class='language-json'></code></pre>
+      </div>
+
+      <!-- SIDEBAR: MAP, OPTIONS, LOG -->
+      <div class='section-column section-sidebar'>
+        <div class='sidebar-map'>
+          <div class='section-heading'>Map: <em><span id='map-name'>Empty</span></em></div>
           <div id='my-viewer'></div>
           <div class='cgv-controls'>
             <div class='cgv-btn' id='btn-reset' title='Reset Map'></div>
@@ -97,10 +106,10 @@
           <button id='open-in-proksee-btn'>Open in Proksee</button>
           <hr />
         </div>
-        <div class='test-options-section'>
+        <div class='sidebar-options'>
           <button id='reparse-btn'>Reparse <span class='muted'>(r)</span></button>
-          <div class='test-heading'>Options</div>
-          <div class='test-options'>
+          <div class='section-heading'>Options</div>
+          <div class='options-container'>
             <div>
               <div><input id='option-prism' type='checkbox' checked /> Pretty Print <span class='muted'>(r)</span></div>
               <div><input id='option-show-map' type='checkbox' checked /> Show Map</div>
@@ -108,24 +117,28 @@
             </div>
             <div>
               <div><input id='option-show-seq-json' type='checkbox' checked /> Show Sequence JSON</div>
+              <div><input id='option-show-tes-json' type='checkbox' checked /> Show Teselagen JSON</div>
               <div><input id='option-show-cgv-json' type='checkbox' checked /> Show CGView JSON</div>
               <div><input id='option-filter-seq' type='checkbox' checked /> Filter Sequence <span class='muted'>(r)</span></div>
             </div>
           </div>
         </div>
         <hr />
-        <div class='test-log'>
-          <div class='test-heading'>Log</div>
+        <div class='sidebar-log'>
+          <div class='section-heading'>Log</div>
           <div id="log-text">No messages yet...</div>
         </div>
         <hr />
+        <div class='sidebar-notes'>
+          <div class='section-heading muted'>Notes</div>
+          <div id="log-text">- The long load times for bigger sequences are due to inserting into the dom.</div>
+          <div id="log-text">- The times in orange are the actual processing time.</div>
+        </div>
 			</div>
-
-
 
     </main>
 
-    <!-- Bootstrap JavaScript -->
+    <!-- JavaScript -->
     <script src="../scripts/bootstrap.min.js"></script>
 
     <script src="../scripts/prism.js"></script>

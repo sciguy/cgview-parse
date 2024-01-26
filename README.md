@@ -12,6 +12,9 @@ The testing html page can open predefeind sequence files as well as use a file c
 
 # TODO
 - qualifiers without values still have a "\" at the beginning of their name
+- contig names need be unique
+- contig names need to have certain characters removed
+- any changes to contig names should print a warning to the log
 
 
 # Teselagen
