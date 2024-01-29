@@ -1,8 +1,23 @@
 inputs = {
-  mito: {
-    name: 'Mitochondia [69,034 bp]',
+  mito_gb: {
+    name: 'Mitochondia (GenBank) [69,034 bp]',
     type: 'genbank',
     url: '../inputs/default/NC_001823.gbk',
+  },
+  mito_embl: {
+    name: 'Mitochondia (EMBL) [69,034 bp]',
+    type: 'embl',
+    url: '../inputs/default/NC_001823.embl',
+  },
+  mito_raw: {
+    name: 'Mitochondia (RAW) [69,034 bp]',
+    type: 'raw',
+    url: '../inputs/default/NC_001823.raw',
+  },
+  mito_fa: {
+    name: 'Mitochondia (Fasta) [69,034 bp]',
+    type: 'fasta',
+    url: '../inputs/default/NC_001823.fa',
   },
   plasmid: {
     name: 'E. coli B171 plasmid [90,229 bp]',

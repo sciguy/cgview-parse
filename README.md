@@ -18,8 +18,8 @@ The testing html page can open predefeind sequence files as well as use a file c
 
 
 # Teselagen
-[Teselagene](https://github.com/TeselaGen/tg-oss/tree/master)
-[bio-parsers](https://github.com/TeselaGen/tg-oss/tree/master/packages/bio-parsers)
+- [Teselagene](https://github.com/TeselaGen/tg-oss/tree/master)
+- [bio-parsers](https://github.com/TeselaGen/tg-oss/tree/master/packages/bio-parsers)
 
 
 # Bulding

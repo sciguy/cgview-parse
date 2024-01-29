@@ -5,16 +5,17 @@
 // Initial input file to load: '', 'file', or input from input.js (e.g. 'mito')
 // const defaultMap = '';     // Empty
 // const defaultMap = 'file'; // File Choose
-// const defaultMap = 'mito';
-const defaultMap = 'contigs';
+// const defaultMap = 'mito_fa';
+const defaultMap = 'mito_gb';
+// const defaultMap = 'contigs';
 
 // Deafult Options
 const prettyPrint = true;
 const showInput = true;
 const showSeqJson = true;
 const showTesJson = false;
-const showCgvJson = false;
-const showMap = false;
+const showCgvJson = true;
+const showMap = true;
 const filterSequence = true;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -173,6 +174,7 @@ function loadInputFromID(id) {
   request.open('GET', url, true);
   request.onload = function() {
     const inputText = request.responseText;
+    console.log("Loaded Map", inputText)
     inputTextDiv.innerHTML = inputText;
     runParse();
   };
@@ -186,7 +188,9 @@ function loadInputFromID(id) {
 // - Fastest is going right to map (no innerHTML)
 // - When using innerHTML, it is faster when the sequence is replaced
 // - Prism.highlight is slowest step
-function runParse() {
+// Notes:
+// - async is only for anyToTeselagen
+async function runParse() {
   window.json = {}; // For debugging
   const inputTextDiv = document.getElementById('input-text');
   const outputSeqJsonDiv = document.getElementById('output-seq-json');
@@ -197,11 +201,12 @@ function runParse() {
   const filterSeqMode = filterSeqCheckbox.checked;
 
   // Get input text
-  const inputText = inputTextDiv.innerHTML;
+  const inputText = inputTextDiv.textContent;
+  console.log("Input Text", inputText)
 
   // Parse to seqJson
   const seqJsonStartTime = new Date().getTime();
-  const seqJSON = CGVParse.seqToJSON(inputText, {config: jsonConfig});
+  const seqJSON = CGVParse.seqToSeqJSON(inputText, {config: jsonConfig});
   const seqJsonRunTime = elapsedTime(seqJsonStartTime);
   updateTime('time-seq-json', seqJsonRunTime);
   let seqString = JSON.stringify(seqJSON, null, 2);
@@ -219,7 +224,7 @@ function runParse() {
   // Parse to teselagen JSON
   if (showTesJsonCheckbox.checked) {
     const tesJsonStartTime = new Date().getTime();
-    const tesJSON = CGVParse.genbankToTeselagen(inputText, {inclusive1BasedStart: true, inclusive1BasedEnd: true});
+    const tesJSON = await CGVParse.anyToTeselagen(inputText, {inclusive1BasedStart: true, inclusive1BasedEnd: true});
     const tesJsonRunTime = elapsedTime(tesJsonStartTime);
     updateTime('time-tes-json', tesJsonRunTime);
     // Convert to string (and pretty print with 2 spaces)
@@ -232,19 +237,19 @@ function runParse() {
   }
 
   // Parse to CGView JSON
+  let cgvJSON;
   if (showCgvJsonCheckbox.checked) {
-    // const cgvJsonStartTime = new Date().getTime();
-    // const cgvParsed = CGVParse.teselagenToCGJson(tesJSON, {config: jsonConfig});
-    // const cgvJsonRunTime = elapsedTime(cgvJsonStartTime);
-    // updateTime('time-cgv-json', cgvJsonRunTime);
-    // const cgvJSON = cgvParsed.json;
-    // // Convert to string (and pretty print with 2 spaces)
-    // let cgvString = JSON.stringify(cgvJSON, null, 2);
-    // if (filterSeqMode) {
-    //   cgvString = cgvString.replace(/"seq": ".*"/g, '"sequence": "..."');
-    // }
-    // outputCgvJsonDiv.innerHTML = prismMode ? Prism.highlight(cgvString, Prism.languages.json, 'json') : cgvString;
-    // window.json.cgv = cgvJSON; // For debugging
+    const cgvJsonStartTime = new Date().getTime();
+    cgvJSON = CGVParse.seqJSONToCgvJSON(seqJSON, {config: jsonConfig});
+    const cgvJsonRunTime = elapsedTime(cgvJsonStartTime);
+    updateTime('time-cgv-json', cgvJsonRunTime);
+    // Convert to string (and pretty print with 2 spaces)
+    let cgvString = JSON.stringify(cgvJSON, null, 2);
+    if (filterSeqMode) {
+      cgvString = cgvString.replace(/"seq": ".*"/g, '"sequence": "..."');
+    }
+    outputCgvJsonDiv.innerHTML = prismMode ? Prism.highlight(cgvString, Prism.languages.json, 'json') : cgvString;
+    window.json.cgv = cgvJSON; // For debugging
   }
 
   // MESSAGES
@@ -257,11 +262,13 @@ function runParse() {
   // logDiv.innerHTML = messages;
 
   // Load Map with JSON
-  cgv.io.loadJSON(cgvJSON);
-  const mapName = document.getElementById('map-name');
-  mapName.innerHTML = cgv.name;
-  cgv.draw();
-  myResize();
+  if (cgvJSON) {
+    cgv.io.loadJSON(cgvJSON);
+    const mapName = document.getElementById('map-name');
+    mapName.innerHTML = cgv.name;
+    cgv.draw();
+    myResize();
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
