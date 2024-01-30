@@ -1,34 +1,30 @@
-// NOTES:
-// - This code is heavily based on Paul's seq_to_json.py script with some exceptions:
-//   - Feature sequence is not extracted (add_feature_sequences)
-// TODO:
-// - Add Paul's sanity checks
-// - Separate parsers to separate files
-// - Need log and overal success status
-// - Test start_codon
-// - Genetic codes
-// OPTIONS:
-// - config: jsonConfig
-// - includeQualifiers: boolean (not implemented yet)
-//   - If true, include ALL qualifiers in the JSON
-//   - If array of strings, include only those qualifiers
-// . - ADD TEST FOR THIS
+import Logger from './Logger.js';
 class CGVParse {
+
+  // constructor(input) {
+  //   this.input = input;
+  //   // this.logger = new Logger();
+  // }
 
   // seq: string
   // options:
   // - config: jsonConfig
   static seqToJSON(seq, options={}) {
-    const seqRecords = this.parseSeqRecords(seq, options);
-    return seqRecords;
+    // TODO: add logger options to logger
+    options.logger = new Logger();
+    const seqJSON = this.seqToSeqJSON(seq, options);
+    const cgvJSON = CGVParse.seqJSONToCgvJSON(seqJSON, options);
+    return cgvJSON;
   }
 
   static seqToSeqJSON(seq, options={}) {
+    options.logger = options.logger || new Logger();
     const seqRecords = this.parseSeqRecords(seq, options);
     return seqRecords;
   }
 
   static seqJSONToCgvJSON(seqJson, options={}) {
+    options.logger = options.logger || new Logger();
     // Here json refers to the CGView JSON
     let json = this.addConfigToJSON({}, options.config); 
     // Version: we should keep the version the same as the latest for CGView.js
@@ -134,11 +130,14 @@ class CGVParse {
       for (const [key, value] of Object.entries(skippedFeatures)) {
         console.log(`${key}: ${value}`);
       }
-      console.log("Skipped features:", skippedFeatures);
     }
     return features;
   }
 
+  ///////////////////
+  ///////////////////
+  ///////////////////
+  ///////////////////
   ///////////////////
   // seqToSeqJSON
   ///////////////////
@@ -161,6 +160,7 @@ class CGVParse {
 
   static parseGenbankOrEmbl(seqText, options={}) {
     const records = [];
+    // this.log("Parsing GenBank or EMBL...", options)
     seqText.split(/^\/\//m).filter(this.isSeqRecord).forEach((seqRecord) => {
       const record = {inputType: 'UNKNOWN'};
       if (/^\s*LOCUS|^\s*FEATURES/m.test(seqRecord)) {

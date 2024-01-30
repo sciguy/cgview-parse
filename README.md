@@ -49,3 +49,20 @@ yarn build
 
 # Notes
 rollup version being used for cgview: rollup v2.51.1
+
+
+# Code Layout 
+
+CGParse.
+cgp = new CGParse(inputText)
+cgp.toJSON aliad to toCGVJSON
+cgp.log or cgp.toLog return log object
+cgp.toSeqJSON
+cgp.toTesJSON
+
+CGParse.seqToJSON(inputText)
+-> {json: {cgview: {}}, log: logObject, status/success: bool}
+
+Testing
+cgp = new CGParse()
+cgp.getSeqName(input)

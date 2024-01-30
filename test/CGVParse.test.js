@@ -4,21 +4,28 @@ import CGVParse from "../src/seqToJSON.js";
 // Sequence Records
 ///////////////////////////
 
-// getSeqName
-test('CGVParse.getSeqName return GenBank name', () => {
-  const input = "LOCUS       AF177870     3123 bp    DNA             INV       31-OCT-1999\n\n\n";
-  const name = CGVParse.getSeqName(input);
-  expect(name).toBe("AF177870");
-});
-test('CGVParse.getSeqName return EMBL name', () => {
-  const input = "ID   AF177870; SV 1; linear; genomic DNA; STD; INV; 3123 BP.\n\n\n";
-  const name = CGVParse.getSeqName(input);
-  expect(name).toBe("AF177870");
-});
-test('CGVParse.getSeqName return "" if it can not be parsed', () => {
-  const input = "some unknown string";
-  const name = CGVParse.getSeqName(input);
-  expect(name).toBe("");
+describe('CGVParse.getSeqName', () => {
+  // let cgparse = new CGVParse();
+
+  // test('- TEST BOB', () => {
+  //   const name = cgparse.testBob();
+  //   expect(name).toBe("bob");
+  // });
+  test('- return GenBank name', () => {
+    const input = "LOCUS       AF177870     3123 bp    DNA             INV       31-OCT-1999\n\n\n";
+    const name = CGVParse.getSeqName(input);
+    expect(name).toBe("AF177870");
+  });
+  test('- return EMBL name', () => {
+    const input = "ID   AF177870; SV 1; linear; genomic DNA; STD; INV; 3123 BP.\n\n\n";
+    const name = CGVParse.getSeqName(input);
+    expect(name).toBe("AF177870");
+  });
+  test('- return "" if it can not be parsed', () => {
+    const input = "some unknown string";
+    const name = CGVParse.getSeqName(input);
+    expect(name).toBe("");
+  });
 });
 
 // getSeqLength

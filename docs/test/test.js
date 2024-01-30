@@ -206,7 +206,10 @@ async function runParse() {
 
   // Parse to seqJson
   const seqJsonStartTime = new Date().getTime();
-  const seqJSON = CGVParse.seqToSeqJSON(inputText, {config: jsonConfig});
+  // const seqJSON = CGVParse.seqToSeqJSON(inputText, {config: jsonConfig});
+  const seqFile = new CGVParse.SequenceFile(inputText);
+  const seqJSON = seqFile.records;
+  console.log(seqJSON)
   const seqJsonRunTime = elapsedTime(seqJsonStartTime);
   updateTime('time-seq-json', seqJsonRunTime);
   let seqString = JSON.stringify(seqJSON, null, 2);
@@ -240,7 +243,8 @@ async function runParse() {
   let cgvJSON;
   if (showCgvJsonCheckbox.checked) {
     const cgvJsonStartTime = new Date().getTime();
-    cgvJSON = CGVParse.seqJSONToCgvJSON(seqJSON, {config: jsonConfig});
+    // cgvJSON = CGVParse.seqJSONToCgvJSON(seqJSON, {config: jsonConfig});
+    cgvJSON = seqFile.toCGVJSON({config: jsonConfig});
     const cgvJsonRunTime = elapsedTime(cgvJsonStartTime);
     updateTime('time-cgv-json', cgvJsonRunTime);
     // Convert to string (and pretty print with 2 spaces)

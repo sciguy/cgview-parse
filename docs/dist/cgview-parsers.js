@@ -1,37 +1,615 @@
 var CGVParse = (function () {
   'use strict';
 
-  // NOTES:
-  // - This code is heavily based on Paul's seq_to_json.py script with some exceptions:
-  //   - Feature sequence is not extracted (add_feature_sequences)
-  // TODO:
-  // - Add Paul's sanity checks
-  // - Separate parsers to separate files
-  // - Need log and overal success status
-  // - Test start_codon
-  // - Genetic codes
+  class Logger {
+
+    // TODO:
+    // - add groups to group logs
+    constructor() {
+      this.logs = [];
+    }
+
+    get count() {
+      return this.logs.length;
+    }
+
+    log(message, options={}) {
+      this._log(message, 'log', options);
+    }
+
+    info(message, options={}) {
+      this._log(message, 'info', options);
+    }
+
+    warn(message, options={}) {
+      this._log(message, 'warn', options);
+    }
+
+    error(message, options={}) {
+      this._log(message, 'error', options);
+    }
+
+    // level: warn, error, info, log
+    _log(message, level, options={}) {
+      const timestamp = this.formatTime(new Date());
+      this.logs.push({ message, level, timestamp });
+      console[level](`[${timestamp}] ${message}`);
+    }
+
+    // 15:30:00
+    formatTime(date) {
+      return date.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      });
+    }
+
+  }
+
+  // Methods to convert obejcts to CGView JSON
+
+
   // OPTIONS:
   // - config: jsonConfig
-  // - includeQualifiers: boolean (not implemented yet)
+  // - includeQualifiers: boolean (not implemented yet) [Defualt: false]
   //   - If true, include ALL qualifiers in the JSON
   //   - If array of strings, include only those qualifiers
-  // . - ADD TEST FOR THIS
+  //   - ADD TEST FOR THIS
+  // - skipTypes: boolean (TEST) [Default: ['gene', 'source', 'exon']]
+  //   - If false, include ALL feature types in the JSON
+  // - skipComplexLocations: boolean (not implemented yet) [Defualt: true]
+
+  class SeqRecordsToCGVJSON {
+
+    constructor(seqRecords, options = {}) {
+      this.version = "1.6.0";
+      this.options = options;
+      this.logger = options.logger || new Logger();
+      this.seqRecords = seqRecords;
+      this.inputType = seqRecords[0].inputType;
+      this.defaultTypesToSkip = ['gene', 'source', 'exon'];
+
+      this.json = this._convert(seqRecords);
+    }
+
+    _convert(seqRecord) {
+      this.logger.info(`Converting ${seqRecord.length} sequence record(s) to CGView JSON (version ${this.version})`);
+      // Here json refers to the CGView JSON
+      let json = this._addConfigToJSON({}, this.options.config); 
+      // Version: we should keep the version the same as the latest for CGView.js
+      json.version = this.version;
+      json = this._extractSequenceAndFeatures(json, seqRecord);
+      json.name = json.sequence?.contigs[0]?.name || "Untitled";
+      json = this._removeUnusedLegends(json);
+      // Add track for features (if there are any)
+      json.tracks = this._buildTracks(json, this.inputType);
+      return { cgview: json };
+    }
+
+    // Add config to JSON. Note that no validation of the config is done.
+    _addConfigToJSON(json, config) {
+      if (!config) { return json; }
+      if (config.settings) { json.settings = config.settings; }
+      if (config.backbone) { json.backbone = config.backbone; }
+      if (config.ruler) { json.ruler = config.ruler; }
+      if (config.dividers) { json.dividers = config.dividers; }
+      if (config.annotation) { json.annotation = config.annotation; }
+      if (config.sequence) { json.sequence = config.sequence; }
+      if (config.legend) { json.legend = config.legend; }
+      if (config.tracks) { json.tracks = config.tracks; }
+      return json;
+    }
+
+    // TODO: contig names MUST BE UNIQUE
+    _extractSequenceAndFeatures(json, seqJson) {
+      const contigs = [];
+      const features = [];
+      this._skippedTypesSetup();
+      seqJson.forEach((seqRecord) => {
+        contigs.push({name: seqRecord.name, length: seqRecord.sequence.length, seq: seqRecord.sequence});
+        const contigFeatures = this._extractFeatures(seqRecord, seqRecord.name, seqRecord.inputType);
+        features.push(...contigFeatures);
+      });
+      json.sequence = {contigs};
+      json.features = features;
+      return json;
+    }
+
+    _skippedTypesSetup() {
+      const options = this.options;
+      if (options.skipTypes === false) {
+        this.featuresToSkip = [];
+      } else if (Array.isArray(options.skipTypes)) {
+        this.featuresToSkip = options.skipTypes;
+      } else {
+        this.featuresToSkip = this.defaultTypesToSkip;
+      }
+      this.logger.info(`Features of the following type will be skipped: ${this.featuresToSkip.join(', ')}`);
+    }
+
+    // Onlys adds a Features track if there are features
+    // Other tracks may come from the config (in which case they are already added to the JSON)
+    _buildTracks(json, inputType) {
+      const tracks = json.tracks || [];
+      if (json.features && json.features.length > 0) {
+        tracks.push({
+          name: 'Features',
+          separateFeaturesBy: 'strand',
+          position: 'both',
+          dataType: 'feature',
+          dataMethod: 'source',
+          dataKeys: `${inputType}-features`,
+        });
+      }
+      return tracks;
+    }
+
+    // TODO: Remove legends from config that are not used
+    _removeUnusedLegends(json) {
+      const legendItems = json.legend?.items || [];
+      if (legendItems.length === 0) { return json; }
+      const featureLegends = json.features?.map((f) => f.legend) || [];
+      const uniqueFeatureLegends = [...new Set(featureLegends)];
+      const filteredLegendItems = legendItems.filter((i) => uniqueFeatureLegends.includes(i.name));
+      json.legend.items = filteredLegendItems;
+      return json
+    }
+
+    _extractFeatures(seqContig, contigName, inputType) {
+      const featuresToSkip = ['source', 'gene', 'exon'];
+      const skippedFeatures = {};
+      const features = [];
+      const source = inputType ? `${inputType}-features` : "features";
+      for (const f of seqContig.features) {
+        if (featuresToSkip.includes(f.type)) {
+          skippedFeatures[f.type] = skippedFeatures[f.type] ? skippedFeatures[f.type] + 1 : 1;
+          continue;
+        }
+        // NEED TO LOG
+        const feature = {
+          start: f.start,
+          stop: f.stop,
+          strand: f.strand,
+          name: f.name,
+          type: f.type,
+          contig: contigName,
+          source,
+          legend: f.type,
+        };
+        if (f.qualifiers && f.qualifiers.start_codon && f.qualifiers.start_codon[0] !== 1) {
+          feature.start_codon = f.qualifiers.start_codon[0];
+        }
+        features.push(feature);
+      }    if (Object.keys(skippedFeatures).length > 0) {
+        // LOG!!!!
+        console.log("Features of the following type are skipped: ...");
+        for (const [key, value] of Object.entries(skippedFeatures)) {
+          console.log(`${key}: ${value}`);
+        }
+      }
+      return features;
+    }
+
+  }
+
+  // export function seqRecordsToCGVJSON(seqRecords, options = {}) {
+  //     options.logger = options.logger || new Logger();
+  //     // Here json refers to the CGView JSON
+  //     let json = _addConfigToJSON({}, options.config); 
+  //     // Version: we should keep the version the same as the latest for CGView.js
+  //     json.version = "1.6.0";
+  //     json = _extractSequenceAndFeatures(json, seqRecords);
+  //     json.name = json.sequence?.contigs[0]?.name || "Untitled";
+  //     json = _removeUnusedLegends(json);
+  //     // Add track for features (if there are any)
+  //     json.tracks = _buildTracks(json, seqRecords[0].inputType);
+
+  //     return { cgview: json };
+  // }
+
+  function removeWhiteSpace(string) {
+    return string.replace(/\s+/g, "");
+  }
+
+  function removeDigits(string) {
+    return string.replace(/\d+/g, "");
+  }
+
+  // Holds a sequence and feature from a sequence file: genbank, embl, fasta, raw
+  // Parese text from sequence file
+  // Holds seq records from our parser
+  // Array of sequence records containing array of features
+  // - These will be simple object for now but could become classes
+
+
+  class SequenceFile {
+
+    // Options:
+    // - logger: logger object
+    constructor(inputText, options={}) {
+      this.inputText;
+      this.logger = options.logger || new Logger();
+      options.logger = this.logger;
+      if (inputText && inputText !== '') {
+        this.records = this._parse(inputText, options);
+      } else {
+        this.records = [];
+        this.logger.error('No input text provided.');
+      }
+    }
+
+    /////////////////////////////////////////////////////////////////////////////
+    // EXPORTERS
+    /////////////////////////////////////////////////////////////////////////////
+
+    toCGVJSON(options={}) {
+      const parser = new SeqRecordsToCGVJSON(this.records, options);
+      return parser.json;
+      // return seqRecordsToCGVJSON(this.records, options);
+    }
+
+    /////////////////////////////////////////////////////////////////////////////
+    // INITIAL PARSERS
+    /////////////////////////////////////////////////////////////////////////////
+
+    _parse(seqText, options={}) {
+      // Attempt to parse as genbank or embl first
+      let records = this._parseGenbankOrEmbl(seqText, options);
+      // If that fails, try to parse as fasta or raw
+      if ((records.length === 0) ||
+          (records[0].name === '' && records[0].length === undefined && records[0].sequence === '')) {
+        if (/^\s*>/.test(seqText)) {
+          console.log("Parsing FASTA-here...");
+          records = this._parseFasta(seqText, options);
+        } else {
+          console.log("Parsing RAW-here...");
+          records = this._parseRaw(seqText, options);
+        }
+      }
+      return records;
+    }
+
+    _parseGenbankOrEmbl(seqText, options={}) {
+      const records = [];
+      this.logger.info("Parsing GenBank or EMBL...");
+      seqText.split(/^\/\//m).filter(this._isSeqRecord).forEach((seqRecord) => {
+        const record = {inputType: 'UNKNOWN'};
+        if (/^\s*LOCUS|^\s*FEATURES/m.test(seqRecord)) {
+          record.inputType = 'genbank';
+        } else if (/^\s*ID|^\s*SQ/m.test(seqRecord)) {
+          record.inputType = 'embl';
+        }
+        record.name = this._getSeqName(seqRecord);
+        record.length = this._getSeqLength(seqRecord);
+        record.sequence = this._getSequence(seqRecord);
+        record.features = this._getFeatures(seqRecord);
+        records.push(record);
+      });
+      return records;
+    }
+
+    _parseFasta(seqText, options={}) {
+      console.log("Parsing FASTA...");
+      const records = [];
+      seqText.split(/^\s*>/m).filter(this._isSeqRecord).forEach((seqRecord) => {
+        const record = {inputType: 'fasta', name: '', length: undefined, sequence: ''};
+        const match = seqRecord.match(/^\s*([^\n\r]+)(.*)/s);
+        if (match) {
+          record.name = match[1];
+          record.sequence = removeWhiteSpace(removeDigits(match[2]));
+          record.length = record.sequence.length;
+          record.features = [];
+        }
+        records.push(record);
+      });
+      return records;
+    }
+
+    _parseRaw(seqText, options={}) {
+      const record = {inputType: 'raw', name: '', features: []};
+      record.sequence = removeWhiteSpace(removeDigits(seqText));
+      record.length = record.sequence.length;
+      return [record];
+    }
+
+    /////////////////////////////////////////////////////////////////////////////
+    // SEQUENCE - this could become a class
+    /////////////////////////////////////////////////////////////////////////////
+
+    // Return FALSE if sequence record appears to be empty, e.g. just // or blank line
+    _isSeqRecord(seqRecord) {
+      if (/^\s*\/\/\s*$/.test(seqRecord)) {
+        return false;
+      } else if (/^\s*$/.test(seqRecord)) {
+        return false
+      } else {
+        return true;
+      }
+    }
+
+    // Get a sequence name from a GenBank or EMBL record
+    // in GenBank look for e.g.:
+    // LOCUS       AF177870     3123 bp    DNA             INV       31-OCT-1999
+    // in EMBL look for e.g.:
+    // ID   AF177870; SV 1; linear; genomic DNA; STD; INV; 3123 BP.
+    // name is AF177870
+    _getSeqName(seqRecordText) {
+      const match = seqRecordText.match(/^\s*(?:LOCUS|ID)\s*(\S+)/);
+      if (match) {
+        let name = match[1];
+        // Remove trailing ';' from embl files
+        name = name.replace(/;$/, "");
+        return name
+      } else {
+        return "";
+      }
+    }
+
+    // Get a sequence length from a GenBank or EMBL record
+    // in GenBank look for e.g.:
+    // LOCUS       AF177870     3123 bp    DNA             INV       31-OCT-1999
+    // in EMBL look for e.g.:
+    // ID   AF177870; SV 1; linear; genomic DNA; STD; INV; 3123 BP.
+    // length is 3123
+    // Returns undefined if it can't be parsed
+    _getSeqLength(seqRecordText) {
+      const match = seqRecordText.match(/^\s*(?:LOCUS|ID).*?(\d+)\s[Bb][Pp]/);
+      if (match) {
+        return parseInt(match[1]);
+      // } else {
+      //   return 0;
+      }
+    }
+
+    // Get the full sequence from a GenBank or EMBL record
+    // in GenBank look for e.g.:
+    // ORIGIN
+    //        1 ttttgccctc agtccgtgac ggcgcaggct ttccgtcacg gtttttactt taaaatggta
+    // in EMBL look for e.g.:
+    // SQ   Sequence 3123 BP; 986 A; 605 C; 597 G; 935 T; 0 other;
+    //     gaacgcgaat gcctctctct ctttcgatgg gtatgccaat tgtccacatt cactcgtgtt        60
+    _getSequence(seqRecordText) {
+      const match = seqRecordText.match(/^(?:ORIGIN|SQ\s{3}).*?$([^\/]*)(^\s*$|^\s*LOCUS)?/ms);
+      if (match) {
+        return removeDigits(removeWhiteSpace(match[1]));
+      } else {
+        return "" 
+      }
+    }
+
+
+    /////////////////////////////////////////////////////////////////////////////
+    // FEATURES - this could become a class
+    /////////////////////////////////////////////////////////////////////////////
+
+    // Get an array of objects containing feature information from a GenBank or EMBL record
+    // in GenBank look for:
+    // FEATURES             Location/Qualifiers
+    // in EMBL look for:
+    // FH   Key             Location/Qualifiers
+    // FH
+    _getFeatures(seqRecordText) {
+      this.logger.info("Parsing features...");
+      const features = [];
+      const match = seqRecordText.match(/^(?:FEATURES.*?$|FH.*?^FH.*?$)(.*)^(?:ORIGIN|SQ\s{3}).*?$/ms);
+      if (match) {
+        let featureAllText = match[1];
+        // Replace FT from the start of EMBL lines with 2 spaces
+        featureAllText = featureAllText.replaceAll(/^FT/mg, "  ");
+        featureAllText.split(/(?=^\s{5}\S+)/m).filter(this._isFeatureRecord).forEach((featureText) => {
+          const feature = {};
+          feature.type = this._getFeatureType(featureText);
+          feature.strand = this._getFeatureStrand(featureText);
+          feature.locationText = this._getFeatureLocationText(featureText);
+          feature.locations = this._getFeatureLocations(feature.locationText);
+          feature.start = feature.locations.map((location) => location[0]).sort((a, b) => a - b)[0];
+          feature.stop = feature.locations.map((location) => location[1]).sort((a, b) => b - a)[0];
+          feature.qualifiers = this._getFeatureQualifiers(featureText);
+          feature.name = this._getFeatureName(feature.qualifiers);
+          if (feature.type) {
+            features.push(feature);
+          }
+        });
+      }
+      return features
+    }
+
+    // Return FALSE if feature appears to be empty, e.g. just / or blank line
+    _isFeatureRecord(featureText) {
+      if (/^\s*\/\s*$/.test(featureText)) {
+        return false;
+      } else if (/^\s*$/.test(featureText)) {
+        return false
+      } else {
+        return true;
+      }
+    }
+
+    // Get type of a feature from a feature string
+    // e.g.
+    //      gene            complement(<1..>172)
+    //                      /locus_tag="ECPA2_RS30085"
+    //                      /old_locus_tag="ECPA2_5227"
+    //                      /pseudo
+    _getFeatureType(featureText) {
+      const match = featureText.match(/^\s{5}(\S+)/);
+      if (match) {
+        return match[1];
+      } else {
+        // TODO: Probably log this
+        return null;
+      }
+    }
+
+    // Get strand of a feature (1 or -1) from a feature string # e.g.
+    //      gene            complement(<1..>172)
+    //                      /locus_tag="ECPA2_RS30085"
+    //                      /old_locus_tag="ECPA2_5227"
+    //                      /pseudo
+    // FIXME: What about joins?
+    _getFeatureStrand(featureText) {
+      const match = featureText.match(/^\s{5}\S+\s+complement/);
+      return match ? -1 : 1;
+    }
+
+    // Get location text of a feature (1 or -1) from a feature string
+    // e.g.
+    //      gene            complement(<1..>172)
+    //                      /locus_tag="ECPA2_RS30085"
+    //                      /old_locus_tag="ECPA2_5227"
+    //                      /pseudo
+    _getFeatureLocationText(featureText) {
+      const match = featureText.match(/^\s{5}\S+\s+([^\/]+)/s);
+      if (match) {
+        return removeWhiteSpace(match[1]);
+      } else {
+        return "";
+      }
+    }
+
+    // Return an array of locations from a location string
+    // FIXME: What about > and <?
+    _getFeatureLocations(locationText) {
+      const locations = [];
+      const ranges = locationText.split(/(?=,)/).filter(this._isParsableFeatureRange);
+      for (const range of ranges) {
+        let match = range.match(/(\d+)\D*\.\.\D*(\d+)/);
+        if (match) {
+          const start = parseInt(match[1]);
+          const end = parseInt(match[2]);
+          locations.push([start, end]);
+        } else {
+          match = range.match(/(\d+)/);
+          if (match) {
+            const start = parseInt(match[1]);
+            const end = start;
+            locations.push([start, end]);
+          }
+        }
+      }
+      return locations;
+    }
+
+    // Return FALSE if feature range is of a type that cannot be converted to a start and end
+    // examples of ranges that cannot be converted to start and end:
+    // 102.110
+    // 123^124
+    // J00194.1:100..202
+    // join(1..100,J00194.1:100..202)
+    _isParsableFeatureRange(range) {
+      if (/\d\.\d/.test(range)) {
+        return false;
+      } else if (/\^/.test(range)) {
+        return false;
+      } else if (/:/.test(range)) {
+        return false;
+      } else if (/^\s*$/.test(range)) {
+        return false;
+      } else {
+        return true;
+      }
+    }
+
+    // Return FALSE if feature qualifier appears to be empty, e.g. just / or blank line
+    _isFeatureQualifier(qualifierText) {
+      if (/^\s*\/\s*$/.test(qualifierText)) {
+        return false;
+      } else if (/^\s*$/.test(qualifierText)) {
+        return false
+      } else {
+        return true;
+      }
+    }
+
+    // Format feature qualifier value by removing newlines if there are no spaces within the value
+    // otherwise replace newlines with spaces
+    _formatFeatureQualifier(qualifierText) {
+      if (/\S\s\S/.test(qualifierText)) {
+        return qualifierText.replace(/[\s]+/g, " ");
+      } else {
+        return qualifierText.replace(/[\s]+/g, "");
+      }
+    }
+
+    // Get an array of objects containing feature qualifier names and values from a feature string
+    // e.g.
+    //      gene            complement(<1..>172)
+    //                      /locus_tag="ECPA2_RS30085"
+    //                      /old_locus_tag="ECPA2_5227"
+    //                      /pseudo
+    _getFeatureQualifiers(featureText) {
+      const qualifiers = {};
+      let match = featureText.match(/(\/.*)/s);
+      if (match) {
+        const allQualifierText = match[1];
+        allQualifierText.split(/(?=^\s*\/)/m).filter(this._isFeatureQualifier).forEach((qualifierText) => {
+          let name;
+          let value;
+          match = qualifierText.match(/\/([^\"\s]+)\s*=\s*\"?([^\"]*)\"?(?=^\s*\/|$)/ms);
+          if (match) {
+            name = match[1];
+            value = this._formatFeatureQualifier(match[2]);
+          } else {
+            name = removeWhiteSpace(qualifierText);
+            value = "";
+          }
+          if (qualifiers[name]) {
+            qualifiers[name].push(value);
+          } else {
+            qualifiers[name] = [value];
+          }
+        });
+      }
+      return qualifiers;
+    }
+
+    _getFeatureName(qualifiers) {
+      if (qualifiers?.gene) {
+        return qualifiers.gene[0];
+      } else if (qualifiers?.locus_tag) {
+        return qualifiers.locus_tag[0];
+      } else if (qualifiers?.product) {
+        return qualifiers.product[0];
+      } else if (qualifiers?.note) {
+        return qualifiers.note[0];
+      } else if (qualifiers?.db_xref) {
+        return qualifiers.db_xref[0];
+      } else {
+        return "";
+      }
+    }
+
+
+  }
+
   class CGVParse {
+
+    // constructor(input) {
+    //   this.input = input;
+    //   // this.logger = new Logger();
+    // }
 
     // seq: string
     // options:
     // - config: jsonConfig
     static seqToJSON(seq, options={}) {
-      const seqRecords = this.parseSeqRecords(seq, options);
-      return seqRecords;
+      // TODO: add logger options to logger
+      options.logger = new Logger();
+      const seqJSON = this.seqToSeqJSON(seq, options);
+      const cgvJSON = CGVParse.seqJSONToCgvJSON(seqJSON, options);
+      return cgvJSON;
     }
 
     static seqToSeqJSON(seq, options={}) {
+      options.logger = options.logger || new Logger();
       const seqRecords = this.parseSeqRecords(seq, options);
       return seqRecords;
     }
 
     static seqJSONToCgvJSON(seqJson, options={}) {
+      options.logger = options.logger || new Logger();
       // Here json refers to the CGView JSON
       let json = this.addConfigToJSON({}, options.config); 
       // Version: we should keep the version the same as the latest for CGView.js
@@ -136,11 +714,14 @@ var CGVParse = (function () {
         for (const [key, value] of Object.entries(skippedFeatures)) {
           console.log(`${key}: ${value}`);
         }
-        console.log("Skipped features:", skippedFeatures);
       }
       return features;
     }
 
+    ///////////////////
+    ///////////////////
+    ///////////////////
+    ///////////////////
     ///////////////////
     // seqToSeqJSON
     ///////////////////
@@ -163,6 +744,7 @@ var CGVParse = (function () {
 
     static parseGenbankOrEmbl(seqText, options={}) {
       const records = [];
+      // this.log("Parsing GenBank or EMBL...", options)
       seqText.split(/^\/\//m).filter(this.isSeqRecord).forEach((seqRecord) => {
         const record = {inputType: 'UNKNOWN'};
         if (/^\s*LOCUS|^\s*FEATURES/m.test(seqRecord)) {
@@ -33240,6 +33822,9 @@ ${seq.sequence}
   // import genbankToJSON from "./genbankToJSON.js";
   // import seqToJSON from "./seqToJSON.js";
   CGVParse.anyToTeselagen = anyToJson;
+
+
+  CGVParse.SequenceFile = SequenceFile;
 
 
 
