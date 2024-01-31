@@ -20,5 +20,24 @@ describe('Helpers', () => {
     const output = helpers.removeNewlines(input);
     expect(output).toBe("some unknown stringwith newlines");
   });
+  // reverse
+  test('- reverse a string', () => {
+    const input = "This string should be reversed";
+    const output = helpers.reverse(input);
+    expect(output).toBe("desrever eb dluohs gnirts sihT");
+  });
+  // complement
+  test('- complement a DNA string', () => {
+    const input = "ACGTURYSWKMBDHVNacgturyswkmbdhvn";
+    const output = helpers.complement(input);
+    expect(output).toBe("TGCAAYRSWMKVHDBNtgcaayrswmkvhdbn");
+  });
+  // count characters in sequence
+  test('- countCharactersInSequence', () => {
+    const input = "ATGBASATAGaTafgtAGAS";
+    const output = helpers.countCharactersInSequence(input, "AT");
+    expect(output).toBe(12);
+  });
+
 
 });

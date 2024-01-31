@@ -7,6 +7,7 @@ var CGVParse = (function () {
   // - levelIcons: Add level as icon: warn, info, etc (not implemented yet)
   // NOTE:
   // - logToConsole and showTimestamps can be overridden in each log call
+  //   as well as the history
   // TODO:
   // - add groups to group logs together for formatting and filtering
   class Logger {
@@ -38,10 +39,10 @@ var CGVParse = (function () {
       this._log(message, 'error', options);
     }
 
-    history() {
+    history(options={}) {
       let text = '';
-      for (const log of this.logs) {
-        text += `[${log.timestamp}] ${log.message}\n`;
+      for (const logItem of this.logs) {
+        text += `${this._formatMessage(logItem, options)}\n`;
       }
       return text;
     }
@@ -244,26 +245,117 @@ var CGVParse = (function () {
     return string.replace(/\d+/g, "");
   }
 
+  // Basic testing shows that Method #2 is faster
+  // Using E.Coli PA2 as a test case:
+  // Times are for full parsing of the file
+  // Method #1: ~500ms
+  // Method #2: ~420ms
+  function reverse(string) {
+    // Method #1
+    // return string.split("").reverse().join("");
+    // Method #2
+    let reversed = '';
+    for (let i = string.length - 1; i >= 0; i--) {
+      reversed += string[i];
+    }
+    return reversed;
+  }
+
+  // May not be very fast
+  // https://medium.com/@marco.amato/playing-with-javascript-performances-and-dna-cb0270ad37c1
+  function complement(dna) {
+    const table = {
+        'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A', 'U': 'A', 'R': 'Y', 'Y': 'R', 'S': 'S', 'W': 'W',
+        'K': 'M', 'M': 'K', 'B': 'V', 'D': 'H', 'H': 'D', 'V': 'B', 'N': 'N', 
+        'a': 't', 'c': 'g', 'g': 'c', 't': 'a', 'u': 'a', 'r': 'y', 'y': 'r', 's': 's', 'w': 'w',
+        'k': 'm', 'm': 'k', 'b': 'v', 'd': 'h', 'h': 'd', 'v': 'b', 'n': 'n'
+    };
+
+    return dna.split('').map(char => table[char] || char).join('');
+  }
+
+  // Args:
+  // - sequence (upper or lower case) is a string of the sequence to count characters in
+  // - characters (upper case) is a string of the individual characters (not pattern) to count
+  //   (e.g. "A", "AT", "ATGC", "ATGCN", "ATCG.-")
+  // Note about speed.
+  // - I've tested sevaral methods and this one is the fastest.
+  // - The other methods are below for reference (ranked by speed)
+  // - Speed is based on the parse test page for E.Coli PA2
+  // - The speed is the total parse time (in orange on the test page)
+  // Speeds
+  // - base speed (no countCharactersInSequence): ~190ms
+  // - selected method (using Set and for loop): ~330ms (~140ms slower than base speed)
+  // - regex: ~700ms (~510ms slower than base speed)
+  // - split(regex): ~840ms (~650ms slower than base speed)
+  // - includes: ~930ms (~740ms slower than base speed)
+  function countCharactersInSequence(sequence, characters) {
+    const seq = sequence.toUpperCase();
+    const charsSet = new Set(characters.split(""));
+    let count = 0;
+    for (let i=0, len=seq.length; i < len; i++) {
+      if (charsSet.has(seq[i])) {
+        count++;
+      }
+    }
+    return count;
+  }
+  // - regex is pretty damn slow: ~700ms (adds ~500ms to Ecoli PA2 parsing time from 190ms to 700ms)
+  // export function countCharactersInSequence(sequence, characters) {
+  //   const regString = `[${characters}]`
+  //   const regex = new RegExp(regString, "gi");
+  //   return (sequence.match(regex) || []).length;
+  //   // const regex = new RegExp(regString, "g");
+  //   // const seq = sequence.toUpperCase();
+  //   // return (seq.match(regex) || []).length;
+  // }
+  // This one is still slow: ~840ms
+  // export function countCharactersInSequence(sequence, characters) {
+  //   const regString = `[${characters}]`
+  //   const regex = new RegExp(regString, "gi");
+  //   return (sequence.split(regex).length - 1);
+  // }
+  // This one is even slower: ~930ms
+  // export function countCharactersInSequence(sequence, characters) {
+  //   const seq = sequence.toUpperCase();
+  //   const chars = characters.toUpperCase().split("");
+  //   let count = 0;
+  //   for (let i=0, len=seq.length; i < len; i++) {
+  //     if (chars.includes(seq[i])) {
+  //       count++;
+  //     }
+  //   }
+  //   return count;
+  // }
+
   // Holds a sequence and feature from a sequence file: genbank, embl, fasta, raw
-  // Parese text from sequence file
+  // Parses text from sequence file
   // Holds seq records from our parser
   // Array of sequence records containing array of features
-  // - These will be simple object for now but could become classes
 
 
   class SequenceFile {
 
     // Options:
+    // - addFeatureSequences: boolean [Default: false]. This can increase run time ~3x.
     // - logger: logger object
     constructor(inputText, options={}) {
       this.inputText;
       this.logger = options.logger || new Logger();
       options.logger = this.logger;
+      this._success = true;
       if (inputText && inputText !== '') {
-        this.records = this._parse(inputText, options);
+        this._records = this._parse(inputText, options);
+        if (options.addFeatureSequences) {
+          this._addFeatureSequence(this._records);
+        }
+        this._determineSequenceTypes(this._records);
+        this._validateRecords(this._records);
+        this.parseSummary();
       } else {
-        this.records = [];
+        this._records = [];
         this.logger.error('No input text provided.');
+        // FAIL
       }
     }
 
@@ -278,21 +370,51 @@ var CGVParse = (function () {
       // return seqRecordsToCGVJSON(this.records, options);
     }
 
+    get records() {
+      return this._records;
+    }
+
+    /////////////////////////////////////////////////////////////////////////////
+    // SUMMARY
+    /////////////////////////////////////////////////////////////////////////////
+    parseSummary() {
+      const records = this.records;
+      const inputTypes = records.map((record) => record.inputType);
+      const uniqueInputTypes = [...new Set(inputTypes)];
+
+      if (uniqueInputTypes.length > 1) {
+        this.logger.error(`Input file contains multiple input types: ${uniqueInputTypes.join(', ')}`);
+        // FAIL!!!!
+      }
+
+      this.inputType = uniqueInputTypes[0];
+      const features = records.map((record) => record.features).flat();
+      const seqLength = records.map((record) => record.length).reduce((a, b) => a + b, 0);
+      this.logger.info('Parsing summary:');
+      this.logger.info(`- Input file type: ${this.inputType}`);
+      this.logger.info(`- Sequence Count: ${records.length}`);
+      this.logger.info(`- Feature Count: ${features.length}`);
+      this.logger.info(`- Total Length: ${seqLength.toLocaleString()} bp`);
+    }
+
+
     /////////////////////////////////////////////////////////////////////////////
     // INITIAL PARSERS
     /////////////////////////////////////////////////////////////////////////////
 
     _parse(seqText, options={}) {
+      this.logger.info("Parsing sequence file...");
       // Attempt to parse as genbank or embl first
       let records = this._parseGenbankOrEmbl(seqText, options);
       // If that fails, try to parse as fasta or raw
       if ((records.length === 0) ||
           (records[0].name === '' && records[0].length === undefined && records[0].sequence === '')) {
+        this.logger.info("- empty results");
         if (/^\s*>/.test(seqText)) {
-          console.log("Parsing FASTA-here...");
+          this.logger.info("- attempting as FASTA...");
           records = this._parseFasta(seqText, options);
         } else {
-          console.log("Parsing RAW-here...");
+          this.logger.info("- attempting as raw...");
           records = this._parseRaw(seqText, options);
         }
       }
@@ -301,7 +423,7 @@ var CGVParse = (function () {
 
     _parseGenbankOrEmbl(seqText, options={}) {
       const records = [];
-      this.logger.info("Parsing GenBank or EMBL...");
+      this.logger.info("- attempting as GenBank or EMBL...");
       seqText.split(/^\/\//m).filter(this._isSeqRecord).forEach((seqRecord) => {
         const record = {inputType: 'UNKNOWN'};
         if (/^\s*LOCUS|^\s*FEATURES/m.test(seqRecord)) {
@@ -419,10 +541,10 @@ var CGVParse = (function () {
     // FH   Key             Location/Qualifiers
     // FH
     _getFeatures(seqRecordText) {
-      this.logger.info("Parsing features...");
       const features = [];
       const match = seqRecordText.match(/^(?:FEATURES.*?$|FH.*?^FH.*?$)(.*)^(?:ORIGIN|SQ\s{3}).*?$/ms);
       if (match) {
+        // this.logger.info("- parsing features...")
         let featureAllText = match[1];
         // Replace FT from the start of EMBL lines with 2 spaces
         featureAllText = featureAllText.replaceAll(/^FT/mg, "  ");
@@ -609,6 +731,60 @@ var CGVParse = (function () {
       }
     }
 
+    // Optional
+    _addFeatureSequence(seqRecords) {
+      for (const seqRecord of seqRecords) {
+        for (const feature of seqRecord.features) {
+          const dna = [];
+          for (const location of feature.locations) {
+            const start = location[0];
+            const end = location[1];
+            dna.push(seqRecord.sequence.slice(start-1, end));
+            // ERROR CHECK
+          }
+          if (feature.strand === -1) {
+            feature.sequence = reverse(complement(dna.join("")));
+          } else {
+            feature.sequence = dna.join("");
+          }
+        }
+      }
+    }
+
+    // Try to determine whether the sequence in each record is DNA or protein
+    // and whether there are unexpected characters in sequence
+    _determineSequenceTypes(seqRecords) {
+      const commonDNAChars = "ATGC";
+      // const allDNAChars    = "ACGTURYSWKMBDHVN\.\-";
+      const allDNAChars    = "ACGTURYSWKMBDHVN.-";
+      const commonProteinChars = "ACDEFGHIKLMNPQRSTVWY";
+      // const allProteinChars    = "ABCDEFGHIJKLMNOPQRSTUVWYZ\*\-\.";
+      const allProteinChars    = "ABCDEFGHIJKLMNOPQRSTUVWYZ*-.";
+      for (const seqRecord of seqRecords) {
+        const sequence = seqRecord.sequence;
+        const seqLength = sequence.length;
+        const numCommonDNAChars = countCharactersInSequence(sequence, commonDNAChars);
+        const numCommonProteinChars = countCharactersInSequence(sequence, commonProteinChars);
+        const numAllDNAChars = countCharactersInSequence(sequence, allDNAChars);
+        const numAllProteinChars = countCharactersInSequence(sequence, allProteinChars);
+
+        if ( (numCommonDNAChars / seqLength) > 0.9) {
+          seqRecord.type = 'dna';
+        } else if ( (numCommonProteinChars / seqLength) > 0.9) {
+          seqRecord.type = 'protein';
+        } else {
+          seqRecord.type = 'unknown';
+        }
+        if (numAllDNAChars !== seqLength && numAllProteinChars !== seqLength) {
+          seqRecord.hasUnexpectedCharacters = true;
+          // THIS WILL BE IN VALIDATION
+          // this.logger.warn(`- unexpected characters in sequence: ${seqRecord.name}`);
+        }
+      }
+    }
+
+    _validateRecords(records) {
+    }
 
   }
 
@@ -33413,24 +33589,10 @@ ${seq.sequence}
   }
   __name(jsonToJsonString, "jsonToJsonString");
 
-  // import teselagenToCGJson from "./teselagenToCGView.js";
-  // import genbankToJSON from "./genbankToJSON.js";
-  // import seqToJSON from "./seqToJSON.js";
   CGVParse.anyToTeselagen = anyToJson;
 
 
   CGVParse.SequenceFile = SequenceFile;
-
-
-
-
-
-  // Export Size
-  // Both the following gave the same export size
-  // export { genbankToJson, anyToJson };
-  // export { genbankToJson};
-  // -rw-r--r--  1 jason  staff   1.0M Jan 18 07:55 cgview-parsers.js
-  // -rw-r--r--  1 jason  staff   463K Jan 18 07:55 cgview-parsers.min.js
 
   return CGVParse;
 

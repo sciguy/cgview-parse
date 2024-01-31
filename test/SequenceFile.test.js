@@ -131,4 +131,36 @@ describe('SequenceFile', () => {
     });
   });
 
+  describe('_addFeatureSequence', () => {
+    test("- forward simple sequence", () => {
+      const records = [{
+        inputType: "genbank", name: "AF177870", length: 3123,
+        features: [{locations: [[2,3]], strand: 1}],
+        sequence: "aTGc"
+      }];
+      seqFile._addFeatureSequence(records);
+      expect(records[0].features[0].sequence).toBe("TG");
+    });
+    test("- forward joined sequence", () => {
+      const records = [{
+        inputType: "genbank", name: "AF177870", length: 3123,
+        features: [{locations: [[2,3], [11, 14]], strand: 1}],
+        sequence: "aTGcatcgatGCATactg"
+        //         123456789012345678
+      }];
+      seqFile._addFeatureSequence(records);
+      expect(records[0].features[0].sequence).toBe("TGGCAT");
+    });
+    test("- reversed joined sequence", () => {
+      const records = [{
+        inputType: "genbank", name: "AF177870", length: 3123,
+        features: [{locations: [[2,3], [11, 14]], strand: -1}],
+        sequence: "aTGcatcgatGCATactg"
+        //         123456789012345678
+      }];
+      seqFile._addFeatureSequence(records);
+      expect(records[0].features[0].sequence).toBe("ATGCCA");
+    });
+  });
+
 });

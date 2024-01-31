@@ -1,18 +1,19 @@
 // Holds a sequence and feature from a sequence file: genbank, embl, fasta, raw
-// Parese text from sequence file
+// Parses text from sequence file
 // Holds seq records from our parser
 // Array of sequence records containing array of features
-// - These will be simple object for now but could become classes
 
 // NOTES:
 // - This code is heavily based on Paul's seq_to_json.py script with some exceptions:
-//   - Feature sequence is not extracted (add_feature_sequences)
+//   - Feature sequence is not extracted yet (add_feature_sequences)
 // TODO:
 // - Add Paul's sanity checks
-// - Separate parsers to separate files
 // - Need log and overal success status
 // - Test start_codon
 // - Genetic codes
+// - Give examples of output (the record format)
+// LOG
+// - status/success
 import Logger from './Logger.js';
 import { SeqRecordsToCGVJSON } from './SeqRecToCGVJSON.js';
 import * as helpers from './Helpers.js';
@@ -20,16 +21,25 @@ import * as helpers from './Helpers.js';
 class SequenceFile {
 
   // Options:
+  // - addFeatureSequences: boolean [Default: false]. This can increase run time ~3x.
   // - logger: logger object
   constructor(inputText, options={}) {
     this.inputText;
     this.logger = options.logger || new Logger();
     options.logger = this.logger;
+    this._success = true
     if (inputText && inputText !== '') {
-      this.records = this._parse(inputText, options);
+      this._records = this._parse(inputText, options);
+      if (options.addFeatureSequences) {
+        this._addFeatureSequence(this._records)
+      }
+      this._determineSequenceTypes(this._records);
+      this._validateRecords(this._records);
+      this.parseSummary();
     } else {
-      this.records = [];
+      this._records = [];
       this.logger.error('No input text provided.')
+      // FAIL
     }
   }
 
@@ -44,21 +54,51 @@ class SequenceFile {
     // return seqRecordsToCGVJSON(this.records, options);
   }
 
+  get records() {
+    return this._records;
+  }
+
+  /////////////////////////////////////////////////////////////////////////////
+  // SUMMARY
+  /////////////////////////////////////////////////////////////////////////////
+  parseSummary() {
+    const records = this.records;
+    const inputTypes = records.map((record) => record.inputType);
+    const uniqueInputTypes = [...new Set(inputTypes)];
+
+    if (uniqueInputTypes.length > 1) {
+      this.logger.error(`Input file contains multiple input types: ${uniqueInputTypes.join(', ')}`);
+      // FAIL!!!!
+    }
+
+    this.inputType = uniqueInputTypes[0];
+    const features = records.map((record) => record.features).flat();
+    const seqLength = records.map((record) => record.length).reduce((a, b) => a + b, 0);
+    this.logger.info('Parsing summary:');
+    this.logger.info(`- Input file type: ${this.inputType}`);
+    this.logger.info(`- Sequence Count: ${records.length}`);
+    this.logger.info(`- Feature Count: ${features.length}`);
+    this.logger.info(`- Total Length: ${seqLength.toLocaleString()} bp`);
+  }
+
+
   /////////////////////////////////////////////////////////////////////////////
   // INITIAL PARSERS
   /////////////////////////////////////////////////////////////////////////////
 
   _parse(seqText, options={}) {
+    this.logger.info("Parsing sequence file...");
     // Attempt to parse as genbank or embl first
     let records = this._parseGenbankOrEmbl(seqText, options);
     // If that fails, try to parse as fasta or raw
     if ((records.length === 0) ||
         (records[0].name === '' && records[0].length === undefined && records[0].sequence === '')) {
+      this.logger.info("- empty results");
       if (/^\s*>/.test(seqText)) {
-        console.log("Parsing FASTA-here...")
+        this.logger.info("- attempting as FASTA...");
         records = this._parseFasta(seqText, options);
       } else {
-        console.log("Parsing RAW-here...")
+        this.logger.info("- attempting as raw...");
         records = this._parseRaw(seqText, options);
       }
     }
@@ -67,7 +107,7 @@ class SequenceFile {
 
   _parseGenbankOrEmbl(seqText, options={}) {
     const records = [];
-    this.logger.info("Parsing GenBank or EMBL...");
+    this.logger.info("- attempting as GenBank or EMBL...");
     seqText.split(/^\/\//m).filter(this._isSeqRecord).forEach((seqRecord) => {
       const record = {inputType: 'UNKNOWN'};
       if (/^\s*LOCUS|^\s*FEATURES/m.test(seqRecord)) {
@@ -185,10 +225,10 @@ class SequenceFile {
   // FH   Key             Location/Qualifiers
   // FH
   _getFeatures(seqRecordText) {
-    this.logger.info("Parsing features...")
     const features = [];
     const match = seqRecordText.match(/^(?:FEATURES.*?$|FH.*?^FH.*?$)(.*)^(?:ORIGIN|SQ\s{3}).*?$/ms);
     if (match) {
+      // this.logger.info("- parsing features...")
       let featureAllText = match[1];
       // Replace FT from the start of EMBL lines with 2 spaces
       featureAllText = featureAllText.replaceAll(/^FT/mg, "  ");
@@ -206,6 +246,8 @@ class SequenceFile {
           features.push(feature);
         }
       });
+    } else {
+      // this.logger.warn("- no features found");
     }
     return features
   }
@@ -377,6 +419,60 @@ class SequenceFile {
     }
   }
 
+  // Optional
+  _addFeatureSequence(seqRecords) {
+    for (const seqRecord of seqRecords) {
+      for (const feature of seqRecord.features) {
+        const dna = [];
+        for (const location of feature.locations) {
+          const start = location[0];
+          const end = location[1];
+          dna.push(seqRecord.sequence.slice(start-1, end));
+          // ERROR CHECK
+        }
+        if (feature.strand === -1) {
+          feature.sequence = helpers.reverse(helpers.complement(dna.join("")));
+        } else {
+          feature.sequence = dna.join("");
+        }
+      }
+    }
+  }
+
+  // Try to determine whether the sequence in each record is DNA or protein
+  // and whether there are unexpected characters in sequence
+  _determineSequenceTypes(seqRecords) {
+    const commonDNAChars = "ATGC";
+    // const allDNAChars    = "ACGTURYSWKMBDHVN\.\-";
+    const allDNAChars    = "ACGTURYSWKMBDHVN.-";
+    const commonProteinChars = "ACDEFGHIKLMNPQRSTVWY";
+    // const allProteinChars    = "ABCDEFGHIJKLMNOPQRSTUVWYZ\*\-\.";
+    const allProteinChars    = "ABCDEFGHIJKLMNOPQRSTUVWYZ*-.";
+    for (const seqRecord of seqRecords) {
+      const sequence = seqRecord.sequence;
+      const seqLength = sequence.length;
+      const numCommonDNAChars = helpers.countCharactersInSequence(sequence, commonDNAChars);
+      const numCommonProteinChars = helpers.countCharactersInSequence(sequence, commonProteinChars);
+      const numAllDNAChars = helpers.countCharactersInSequence(sequence, allDNAChars);
+      const numAllProteinChars = helpers.countCharactersInSequence(sequence, allProteinChars);
+
+      if ( (numCommonDNAChars / seqLength) > 0.9) {
+        seqRecord.type = 'dna';
+      } else if ( (numCommonProteinChars / seqLength) > 0.9) {
+        seqRecord.type = 'protein';
+      } else {
+        seqRecord.type = 'unknown';
+      }
+      if (numAllDNAChars !== seqLength && numAllProteinChars !== seqLength) {
+        seqRecord.hasUnexpectedCharacters = true;
+        // THIS WILL BE IN VALIDATION
+        // this.logger.warn(`- unexpected characters in sequence: ${seqRecord.name}`);
+      }
+    }
+  }
+
+  _validateRecords(records) {
+  }
 
 }
 

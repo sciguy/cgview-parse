@@ -4,6 +4,7 @@
 // - levelIcons: Add level as icon: warn, info, etc (not implemented yet)
 // NOTE:
 // - logToConsole and showTimestamps can be overridden in each log call
+//   as well as the history
 // TODO:
 // - add groups to group logs together for formatting and filtering
 class Logger {
@@ -35,10 +36,10 @@ class Logger {
     this._log(message, 'error', options);
   }
 
-  history() {
+  history(options={}) {
     let text = '';
-    for (const log of this.logs) {
-      text += `[${log.timestamp}] ${log.message}\n`;
+    for (const logItem of this.logs) {
+      text += `${this._formatMessage(logItem, options)}\n`;
     }
     return text;
   }

@@ -10,7 +10,7 @@ const defaultMap = 'mito_gb';
 // const defaultMap = 'contigs';
 
 // Deafult Options
-const prettyPrint = true;
+const prettyPrint = false;
 const showInput = true;
 const showSeqJson = true;
 const showTesJson = false;
@@ -207,6 +207,7 @@ async function runParse() {
   // Parse to seqJson
   const seqJsonStartTime = new Date().getTime();
   // const seqJSON = CGVParse.seqToSeqJSON(inputText, {config: jsonConfig});
+  // const seqFile = new CGVParse.SequenceFile(inputText, {addFeatureSequences: true});
   const seqFile = new CGVParse.SequenceFile(inputText);
   const seqJSON = seqFile.records;
   console.log(seqJSON)
@@ -263,7 +264,7 @@ async function runParse() {
   //   messages += `Sequence ${index + 1} [${status}]: ${tes?.parsedSequence?.name}\n`;
   // });
   const logDiv = document.getElementById('log-text');
-  const messages = seqFile.logger.history();
+  const messages = seqFile.logger.history({showTimestamps: false});
   console.log(messages)
   logDiv.innerHTML = messages;
 
