@@ -1,4 +1,4 @@
-import CGVParse from "../src/seqToJSON.js";
+import CGVParse from "../OLD/seqToJSON.js";
 
 ///////////////////////////
 // Sequence Records

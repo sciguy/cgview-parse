@@ -262,8 +262,10 @@ async function runParse() {
   //   const status = tes.success ? 'PASS' : 'FAIL';
   //   messages += `Sequence ${index + 1} [${status}]: ${tes?.parsedSequence?.name}\n`;
   // });
-  // const logDiv = document.getElementById('log-text');
-  // logDiv.innerHTML = messages;
+  const logDiv = document.getElementById('log-text');
+  const messages = seqFile.logger.history();
+  console.log(messages)
+  logDiv.innerHTML = messages;
 
   // Load Map with JSON
   if (cgvJSON) {

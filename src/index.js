@@ -2,7 +2,7 @@
 // import genbankToJSON from "./genbankToJSON.js";
 // import seqToJSON from "./seqToJSON.js";
 import SequenceFile from "./SequenceFile.js";
-import CGViewParse from "./seqToJSON.js";
+import CGVParse from "./CGVParse.js";
 
 // export { seqToJSON, genbankToJSON, teselagenToCGJson, genbankToTeselagen, anyToJson };
 // export { seqToJSON };
@@ -11,12 +11,12 @@ import CGViewParse from "./seqToJSON.js";
 // import { genbankToJson as genbankToTeselagen} from "@teselagen/bio-parsers";
 // CGViewParse.genbankToTeselagen = genbankToTeselagen;
 import { anyToJson as anyToTeselagen} from "@teselagen/bio-parsers";
-CGViewParse.anyToTeselagen = anyToTeselagen;
+CGVParse.anyToTeselagen = anyToTeselagen;
 
 
-CGViewParse.SequenceFile = SequenceFile;
+CGVParse.SequenceFile = SequenceFile;
 
-export default CGViewParse;
+export default CGVParse;
 
 
 

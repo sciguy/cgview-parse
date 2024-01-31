@@ -1,16 +1,22 @@
-// Methods to convert obejcts to CGView JSON
-
 import Logger from './Logger.js';
 
 // OPTIONS:
 // - config: jsonConfig
+// - skipTypes: boolean (TEST) [Default: ['gene', 'source', 'exon']]
+//   - If false, include ALL feature types in the JSON
 // - includeQualifiers: boolean (not implemented yet) [Defualt: false]
 //   - If true, include ALL qualifiers in the JSON
 //   - If array of strings, include only those qualifiers
 //   - ADD TEST FOR THIS
-// - skipTypes: boolean (TEST) [Default: ['gene', 'source', 'exon']]
-//   - If false, include ALL feature types in the JSON
 // - skipComplexLocations: boolean (not implemented yet) [Defualt: true]
+
+// LOGING (including from sequence file)
+// - start with date and version (and options: skipTypes, includeQualifiers, skipComplexLocations)
+// - provide summary of sequence file (input type, number of sequences, number of features)
+// - provide summary of CGView JSON (contigs, features, tracks, legends)
+// - provide summary of skipped features
+// - provide summary of skipped features becuase of complex locations
+// - total number of features skipped
 
 export class SeqRecordsToCGVJSON {
 
@@ -145,20 +151,3 @@ export class SeqRecordsToCGVJSON {
   }
 
 }
-
-// export function seqRecordsToCGVJSON(seqRecords, options = {}) {
-//     options.logger = options.logger || new Logger();
-//     // Here json refers to the CGView JSON
-//     let json = _addConfigToJSON({}, options.config); 
-//     // Version: we should keep the version the same as the latest for CGView.js
-//     json.version = "1.6.0";
-//     json = _extractSequenceAndFeatures(json, seqRecords);
-//     json.name = json.sequence?.contigs[0]?.name || "Untitled";
-//     json = _removeUnusedLegends(json);
-//     // Add track for features (if there are any)
-//     json.tracks = _buildTracks(json, seqRecords[0].inputType);
-
-//     return { cgview: json };
-// }
-
-

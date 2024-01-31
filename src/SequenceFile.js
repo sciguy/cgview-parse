@@ -38,6 +38,7 @@ class SequenceFile {
   /////////////////////////////////////////////////////////////////////////////
 
   toCGVJSON(options={}) {
+    options.logger = options.logger || this.logger
     const parser = new SeqRecordsToCGVJSON(this.records, options);
     return parser.json;
     // return seqRecordsToCGVJSON(this.records, options);

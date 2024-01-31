@@ -82,7 +82,7 @@ main {
   font-size: 10px;
   color: gray;
   margin: 10px;
-  white-space: break-space;
+  white-space: break-spaces;
 }
 
 #reparse-btn {
