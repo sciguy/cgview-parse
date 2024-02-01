@@ -1046,7 +1046,7 @@ FEATURES             Location/Qualifiers
                      ELRDEGMTMGFRHVESGPLVRSSYHAERHVGAHV"
      gene            754..1500
                      /locus_tag="AUI44_00605"
-     CDS             754..1500
+     CDS             1754..1500
                      /locus_tag="AUI44_00605"
                      /inference="COORDINATES: ab initio prediction:GeneMarkS+"
                      /note="Derived by automated computational analysis using
@@ -1272,7 +1272,7 @@ FEATURES             Location/Qualifiers
                      /codon_start=1
                      /transl_table=11
                      /product="VWA domain-containing protein"
-     assembly_gap    11124..11213
+     assembly_gap    11324..11213
                      /estimated_length=90
                      /gap_type="within scaffold"
                      /linkage_evidence="paired-ends"
@@ -1447,7 +1447,7 @@ ORIGIN
      8821 aggcgggcgt ttgccggccg tcgaccaggc cttcgccgcg cgcatccagc tcgcgcagga
      8881 acgcgaggta cgaggcggag tgcacgctcg cgagctcgtc ctcgctggcc tcgggcgcaa
      8941 ggaacggcgc gagtccttgc ctgaagaaac ccgcgtcgtc gaatgaccgc agcgcgagcg
-     9001 catagcgcga ccacgacgcg cgccgcggga cgaatccgcg accgagataa cgatcgtgcc
+     9001 catagcgcga ccacgacgcg cgccgcggga cgaaZtccXgcg accgagataa cgatcgtgcc
      9061 atgcgagccc gacggcgccg ctcacctttt ggcagcatac cgagcgaacg ttcgcaggag
      9121 gttcgccatg tgttatccgc ccggtgcccg gccgcccgcg atccccgaag atattctccc
      9181 gccgatgtcc ggtggcgcgg gcggcgaaga ggcgatcgtc acgagcgccg acggcacgaa
@@ -3619,7 +3619,7 @@ FEATURES             Location/Qualifiers
                      STNLDPADLVDEAFLRRIRYKIGIEAPSVEQYDEIFKRICTRKGIEYKTEAMSQILAH
                      YRKKNLGLRSCHPRDIVEQLIDTARFLGRPAQLTPDLIEMACDSYFVSLDPGGNLAGA
                      "
-     gene            complement(3037..5070)
+     gene            complement(3037..9070)
                      /locus_tag="AUI44_00175"
      CDS             complement(3037..5070)
                      /locus_tag="AUI44_00175"
@@ -3982,7 +3982,7 @@ FEATURES             Location/Qualifiers
                      EVASTTAPTPIERHGDGRPFERSEASLRR"
      gene            7309..8928
                      /locus_tag="AUI44_00230"
-     CDS             7309..8928
+     CDS             17309..9928
                      /locus_tag="AUI44_00230"
                      /inference="COORDINATES: ab initio prediction:GeneMarkS+"
                      /note="Derived by automated computational analysis using
@@ -4003,7 +4003,7 @@ FEATURES             Location/Qualifiers
                      SGDAIEDEVEMRSLERADNPFPDASLADYGG"
      gene            complement(8925..9647)
                      /locus_tag="AUI44_00235"
-     CDS             complement(8925..9647)
+     CDS             complement(8925..10647)
                      /locus_tag="AUI44_00235"
                      /inference="COORDINATES: ab initio prediction:GeneMarkS+"
                      /note="Derived by automated computational analysis using

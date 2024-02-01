@@ -36,10 +36,19 @@ class Logger {
     this._log(message, 'error', options);
   }
 
+  break(divider="\n") {
+    const logItem = { type: 'break', break: divider };
+    this.logs.push(logItem);
+  }
+
   history(options={}) {
     let text = '';
     for (const logItem of this.logs) {
-      text += `${this._formatMessage(logItem, options)}\n`;
+      if (logItem.type === 'message') {
+        text += `${this._formatMessage(logItem, options)}\n`;
+      } else if (logItem.type === 'break') {
+        text += logItem.break;
+      }
     }
     return text;
   }
@@ -51,7 +60,7 @@ class Logger {
   // level: warn, error, info, log
   _log(message, level, options={}) {
     const timestamp = this._formatTime(new Date());
-    const logItem = { message, level, timestamp };
+    const logItem = { type: 'message', message, level, timestamp };
     this.logs.push(logItem);
     this._consoleMessage(logItem, options);
   }

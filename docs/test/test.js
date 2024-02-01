@@ -242,7 +242,7 @@ async function runParse() {
       tesString = tesString.replace(/"sequence": ".*"/g, '"sequence": "..."');
     }
     // outputTesJsonDiv.innerHTML = prismMode ? Prism.highlight(tesString, Prism.languages.json, 'json') : tesString;
-    outputSeqJsonDiv.innerHTML = filterJSONText(tesString);
+    outputTesJsonDiv.innerHTML = filterJSONText(tesString);
     window.json.tes = tesJSON; // For debugging
   }
 
