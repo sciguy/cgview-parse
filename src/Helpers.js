@@ -26,6 +26,10 @@ export function reverse(string) {
   return reversed;
 }
 
+export function isASCII(text) {
+  return /^[\x00-\x7F]*$/.test(text);
+}
+
 // May not be very fast
 // https://medium.com/@marco.amato/playing-with-javascript-performances-and-dna-cb0270ad37c1
 export function complement(dna) {
@@ -38,6 +42,50 @@ export function complement(dna) {
 
   return dna.split('').map(char => table[char] || char).join('');
 }
+
+
+  // OLD PROKSEE METHOD
+  // _seqMolType(seq) {
+  //   const nonDNASeq = seq.replace(/[AGCTN\-]/gi, '');
+  //   return ( (nonDNASeq.length / seq.length) > 0.25 ) ? 'protein' : 'dna';
+  // }
+  // NOTE we may need to be less stringent with dna check (like above)
+  // - allow n's and -'s
+  export function determineSeqMolType(sequence) {
+    let type;
+    const commonDNAChars = "ATGC";
+    const commonProteinChars = "ACDEFGHIKLMNPQRSTVWY";
+    const seqLength = sequence.length;
+    const numCommonDNAChars = countCharactersInSequence(sequence, commonDNAChars);
+    if ( (numCommonDNAChars / seqLength) > 0.9) {
+      type = 'dna';
+    } else {
+      const numCommonProteinChars = countCharactersInSequence(sequence, commonProteinChars);
+      if ( (numCommonProteinChars / seqLength) > 0.9) {
+        type = 'protein';
+      } else {
+        type = 'unknown';
+      }
+    }
+    return type;
+  }
+
+  export function findNonIUPACCharacters(seq, type) {
+    const seqType = type.toLowerCase();
+    let chars;
+    if (seqType === 'dna') {
+      const nonIUPAC = seq.replace(/[AGCTURYSWKMBDHVN\-\.]/gi, '');
+      if (nonIUPAC.length > 0) {
+        chars = Array.from(new Set([...nonIUPAC])).join(',');
+      }
+    } else if (seqType === 'protein') {
+      const nonIUPAC = seq.replace(/[ARNDCQEGHILKMFPOSUTWYVBZJ\-\.\*]/gi, '');
+      if (nonIUPAC.length > 0) {
+        chars = Array.from(new Set([...nonIUPAC])).join(',');
+      }
+    }
+    return chars;
+  }
 
 // Args:
 // - sequence (upper or lower case) is a string of the sequence to count characters in

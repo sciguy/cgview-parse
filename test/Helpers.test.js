@@ -38,6 +38,38 @@ describe('Helpers', () => {
     const output = helpers.countCharactersInSequence(input, "AT");
     expect(output).toBe(12);
   });
+  // determineSeqMolType
+  test('- determineSeqMolType: dna', () => {
+    const input = "atgtagATgCTAGN";
+    const output = helpers.determineSeqMolType(input);
+    expect(output).toBe('dna');
+  });
+  test('- determineSeqMolType: protein', () => {
+    const input = "kvamdMGWYRKLiN";
+    const output = helpers.determineSeqMolType(input);
+    expect(output).toBe('protein');
+  });
+  test('- determineSeqMolType: unknown', () => {
+    const input = "xxxxxxxxxxxxxxxxx";
+    const output = helpers.determineSeqMolType(input);
+    expect(output).toBe('unknown');
+  });
+  // findNonIUPACCharacters
+  test('- findNonIUPACCharacters: none', () => {
+    const input = "ATGCTatgcgtacgat";
+    const output = helpers.findNonIUPACCharacters(input, 'dna');
+    expect(output).toBe(undefined);
+  });
+  test('- findNonIUPACCharacters: dna', () => {
+    const input = "ATGCTatfxgcOpgtacgat";
+    const output = helpers.findNonIUPACCharacters(input, 'dna');
+    expect(output).toBe("f,x,O,p");
+  });
+  test('- findNonIUPACCharacters: protein', () => {
+    const input = "MSGHTGKLMxNXQWYVX*";
+    const output = helpers.findNonIUPACCharacters(input, 'protein');
+    expect(output).toBe("x,X");
+  });
 
 
 });

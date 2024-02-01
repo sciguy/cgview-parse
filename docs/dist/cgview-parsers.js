@@ -261,6 +261,10 @@ var CGVParse = (function () {
     return reversed;
   }
 
+  function isASCII(text) {
+    return /^[\x00-\x7F]*$/.test(text);
+  }
+
   // May not be very fast
   // https://medium.com/@marco.amato/playing-with-javascript-performances-and-dna-cb0270ad37c1
   function complement(dna) {
@@ -273,6 +277,50 @@ var CGVParse = (function () {
 
     return dna.split('').map(char => table[char] || char).join('');
   }
+
+
+    // OLD PROKSEE METHOD
+    // _seqMolType(seq) {
+    //   const nonDNASeq = seq.replace(/[AGCTN\-]/gi, '');
+    //   return ( (nonDNASeq.length / seq.length) > 0.25 ) ? 'protein' : 'dna';
+    // }
+    // NOTE we may need to be less stringent with dna check (like above)
+    // - allow n's and -'s
+    function determineSeqMolType(sequence) {
+      let type;
+      const commonDNAChars = "ATGC";
+      const commonProteinChars = "ACDEFGHIKLMNPQRSTVWY";
+      const seqLength = sequence.length;
+      const numCommonDNAChars = countCharactersInSequence(sequence, commonDNAChars);
+      if ( (numCommonDNAChars / seqLength) > 0.9) {
+        type = 'dna';
+      } else {
+        const numCommonProteinChars = countCharactersInSequence(sequence, commonProteinChars);
+        if ( (numCommonProteinChars / seqLength) > 0.9) {
+          type = 'protein';
+        } else {
+          type = 'unknown';
+        }
+      }
+      return type;
+    }
+
+    function findNonIUPACCharacters(seq, type) {
+      const seqType = type.toLowerCase();
+      let chars;
+      if (seqType === 'dna') {
+        const nonIUPAC = seq.replace(/[AGCTURYSWKMBDHVN\-\.]/gi, '');
+        if (nonIUPAC.length > 0) {
+          chars = Array.from(new Set([...nonIUPAC])).join(',');
+        }
+      } else if (seqType === 'protein') {
+        const nonIUPAC = seq.replace(/[ARNDCQEGHILKMFPOSUTWYVBZJ\-\.\*]/gi, '');
+        if (nonIUPAC.length > 0) {
+          chars = Array.from(new Set([...nonIUPAC])).join(',');
+        }
+      }
+      return chars;
+    }
 
   // Args:
   // - sequence (upper or lower case) is a string of the sequence to count characters in
@@ -345,11 +393,16 @@ var CGVParse = (function () {
       options.logger = this.logger;
       this._success = true;
       if (inputText && inputText !== '') {
+        if (!isASCII(inputText)) {
+          this.logger.error('Input contains non-text characters. Is this binary data?');
+        }
         this._records = this._parse(inputText, options);
         if (options.addFeatureSequences) {
           this._addFeatureSequence(this._records);
         }
         this._determineSequenceTypes(this._records);
+        this._determineOverallInputAndSequenceType(this._records);
+        this.logger.info('- done parsing sequence file');
         this._validateRecords(this._records);
         this.parseSummary();
       } else {
@@ -357,6 +410,18 @@ var CGVParse = (function () {
         this.logger.error('No input text provided.');
         // FAIL
       }
+    }
+
+    get success() {
+      return this._success;
+    }
+
+    get inputType() {
+      return this._inputType;
+    }
+
+    get sequenceType() {
+      return this._sequenceType;
     }
 
     /////////////////////////////////////////////////////////////////////////////
@@ -379,15 +444,15 @@ var CGVParse = (function () {
     /////////////////////////////////////////////////////////////////////////////
     parseSummary() {
       const records = this.records;
-      const inputTypes = records.map((record) => record.inputType);
-      const uniqueInputTypes = [...new Set(inputTypes)];
-
-      if (uniqueInputTypes.length > 1) {
-        this.logger.error(`Input file contains multiple input types: ${uniqueInputTypes.join(', ')}`);
-        // FAIL!!!!
-      }
-
-      this.inputType = uniqueInputTypes[0];
+      // const inputTypes = records.map((record) => record.inputType);
+      // const uniqueInputTypes = [...new Set(inputTypes)];
+      // move to validations
+      // if (uniqueInputTypes.length > 1) {
+      //   this.logger.error(`Input file contains multiple input types: ${uniqueInputTypes.join(', ')}`);
+      //   // FAIL!!!!
+      // }
+      // this.inputType = uniqueInputTypes[0];
+      // this.inputType = uniqueInputTypes.join(', ');
       const features = records.map((record) => record.features).flat();
       const seqLength = records.map((record) => record.length).reduce((a, b) => a + b, 0);
       this.logger.info('Parsing summary:');
@@ -425,7 +490,7 @@ var CGVParse = (function () {
       const records = [];
       this.logger.info("- attempting as GenBank or EMBL...");
       seqText.split(/^\/\//m).filter(this._isSeqRecord).forEach((seqRecord) => {
-        const record = {inputType: 'UNKNOWN'};
+        const record = {inputType: 'unknown'};
         if (/^\s*LOCUS|^\s*FEATURES/m.test(seqRecord)) {
           record.inputType = 'genbank';
         } else if (/^\s*ID|^\s*SQ/m.test(seqRecord)) {
@@ -434,6 +499,9 @@ var CGVParse = (function () {
         record.name = this._getSeqName(seqRecord);
         record.length = this._getSeqLength(seqRecord);
         record.sequence = this._getSequence(seqRecord);
+        if (!record.length) {
+          record.length = record.sequence.length;
+        }
         record.features = this._getFeatures(seqRecord);
         records.push(record);
       });
@@ -751,39 +819,131 @@ var CGVParse = (function () {
       }
     }
 
+
     // Try to determine whether the sequence in each record is DNA or protein
     // and whether there are unexpected characters in sequence
     _determineSequenceTypes(seqRecords) {
-      const commonDNAChars = "ATGC";
-      // const allDNAChars    = "ACGTURYSWKMBDHVN\.\-";
-      const allDNAChars    = "ACGTURYSWKMBDHVN.-";
-      const commonProteinChars = "ACDEFGHIKLMNPQRSTVWY";
-      // const allProteinChars    = "ABCDEFGHIJKLMNOPQRSTUVWYZ\*\-\.";
-      const allProteinChars    = "ABCDEFGHIJKLMNOPQRSTUVWYZ*-.";
       for (const seqRecord of seqRecords) {
         const sequence = seqRecord.sequence;
-        const seqLength = sequence.length;
-        const numCommonDNAChars = countCharactersInSequence(sequence, commonDNAChars);
-        const numCommonProteinChars = countCharactersInSequence(sequence, commonProteinChars);
-        const numAllDNAChars = countCharactersInSequence(sequence, allDNAChars);
-        const numAllProteinChars = countCharactersInSequence(sequence, allProteinChars);
-
-        if ( (numCommonDNAChars / seqLength) > 0.9) {
-          seqRecord.type = 'dna';
-        } else if ( (numCommonProteinChars / seqLength) > 0.9) {
-          seqRecord.type = 'protein';
-        } else {
-          seqRecord.type = 'unknown';
-        }
-        if (numAllDNAChars !== seqLength && numAllProteinChars !== seqLength) {
-          seqRecord.hasUnexpectedCharacters = true;
-          // THIS WILL BE IN VALIDATION
-          // this.logger.warn(`- unexpected characters in sequence: ${seqRecord.name}`);
+        seqRecord.type = determineSeqMolType(sequence);
+        const nonIUPAC = findNonIUPACCharacters(sequence, seqRecord.type);
+        if (nonIUPAC) {
+          seqRecord.hasUnexpectedCharacters = nonIUPAC;
         }
       }
     }
 
+    _determineOverallInputAndSequenceType(records) {
+      const inputTypes = records.map((record) => record.inputType);
+      const uniqueInputTypes = [...new Set(inputTypes)];
+      this._inputType = (uniqueInputTypes.length > 1) ? 'multiple' : uniqueInputTypes[0];
+
+      const seqTypes = records.map((record) => record.type);
+      const uniqueSeqTypes = [...new Set(seqTypes)];
+      this._sequenceType = (uniqueSeqTypes.length > 1) ? 'multiple' : uniqueSeqTypes[0];
+    }
+
+    // Try to determine whether the sequence in each record is DNA or protein
+    // and whether there are unexpected characters in sequence
+    // _determineSequenceTypesOLD(seqRecords) {
+    //   const commonDNAChars = "ATGC";
+    //   // const allDNAChars    = "ACGTURYSWKMBDHVN\.\-";
+    //   const allDNAChars    = "ACGTURYSWKMBDHVN.-";
+    //   const commonProteinChars = "ACDEFGHIKLMNPQRSTVWY";
+    //   // const allProteinChars    = "ABCDEFGHIJKLMNOPQRSTUVWYZ\*\-\.";
+    //   const allProteinChars    = "ABCDEFGHIJKLMNOPQRSTUVWYZ*-.";
+    //   for (const seqRecord of seqRecords) {
+    //     const sequence = seqRecord.sequence;
+    //     const seqLength = sequence.length;
+    //     const numCommonDNAChars = helpers.countCharactersInSequence(sequence, commonDNAChars);
+    //     const numCommonProteinChars = helpers.countCharactersInSequence(sequence, commonProteinChars);
+    //     const numAllDNAChars = helpers.countCharactersInSequence(sequence, allDNAChars);
+    //     const numAllProteinChars = helpers.countCharactersInSequence(sequence, allProteinChars);
+
+    //     if ( (numCommonDNAChars / seqLength) > 0.9) {
+    //       seqRecord.type = 'dna';
+    //     } else if ( (numCommonProteinChars / seqLength) > 0.9) {
+    //       seqRecord.type = 'protein';
+    //     } else {
+    //       seqRecord.type = 'unknown';
+    //     }
+    //     if (numAllDNAChars !== seqLength && numAllProteinChars !== seqLength) {
+    //       seqRecord.hasUnexpectedCharacters = true;
+    //       // THIS WILL BE IN VALIDATION
+    //       // this.logger.warn(`- unexpected characters in sequence: ${seqRecord.name}`);
+    //     }
+    //   }
+    // }
+
+    _fail(message) {
+      this.logger.error(message);
+      this._success = false;
+    }
+
     _validateRecords(records) {
+      this.logger.info('Validating...');
+
+      // Input Type
+      if (this.inputType === 'multiple') {
+        const inputTypes = records.map((record) => record.inputType);
+        const uniqueInputTypes = [...new Set(inputTypes)];
+        this._fail(`Input file contains multiple input types: ${uniqueInputTypes.join(', ')}`);
+      }
+      // Sequence Type
+      if (this.sequenceType === 'multiple') {
+        const seqTypes = records.map((record) => record.type);
+        const uniqueSeqTypes = [...new Set(seqTypes)];
+        this._fail(`Input file contains multiple sequence types: ${uniqueSeqTypes.join(', ')}`);
+      }
+      if (this.sequenceType === 'unknown') {
+        this._fail(`Input file contains an unknown sequence type (i.e. not dna or protein).`);
+      }
+      // Sequence length is 0
+      const recordsZeroLength = records.filter((record) => record.length === 0);
+      if (recordsZeroLength.length > 0) {
+        this._fail(`The following sequence have zero length: ${recordsZeroLength.map((record) => record.name).join(', ')}`);
+      }
+      // Sequence lengths do not match length in sequence
+      const recordsDiffLengths = records.filter((record) => record.length !== record.sequence.length);
+      if (recordsDiffLengths.length > 0) {
+        this._fail(`The following sequences have mismatched lengths (length attribute vs sequence length):`);
+        for (const record of recordsDiffLengths) {
+          this.logger.error(`- ${record.name}: ${record.length.toLocaleString()} bp vs ${record.sequence.length.toLocaleString()} bp`);
+        }
+      }
+      // Sequence contains unexpected characters
+      const recordsUnexpectedChars = records.filter((record) => record.hasUnexpectedCharacters);
+      if (recordsUnexpectedChars.length > 0) {
+        this._fail(`The following sequences contain unexpected characters:`);
+        for (const record of recordsUnexpectedChars) {
+          this.logger.error(`- ${record.name}: ${record.hasUnexpectedCharacters}`);
+        }
+      }
+      // Features start or end/stop is greater than sequence length
+      // Features end is less than start
+      // - NOTE: we may want to allow features that wrap around the sequence
+      const featureStartEndErrors = [];
+      const featureStartGreaterThanEnd = [];
+      for (const record of records) {
+        for (const feature of record.features) {
+          if (feature.start > record.length || feature.stop > record.length) {
+            featureStartEndErrors.push(`${record.name} [${record.length.toLocaleString()} bp]: ${feature.name} ${feature.start}..${feature.stop}`);
+          }
+          if (feature.start > feature.stop) {
+            featureStartGreaterThanEnd.push(`${record.name}: ${feature.name} ${feature.start}..${feature.stop}`);
+          }
+        }
+      }
+      if (featureStartEndErrors.length > 0) {
+        this._fail(`The following ${featureStartEndErrors.length} feature(s) have start or end greater than the sequence length:`);
+        featureStartEndErrors.forEach((error) => this.logger.error(`- ${error}`));
+      }
+      if (featureStartGreaterThanEnd.length > 0) {
+        this._fail(`The following ${featureStartGreaterThanEnd.length} feature(s) have a start greater than the end:`);
+        featureStartGreaterThanEnd.forEach((error) => this.logger.error(`- ${error}`));
+      }
+
+      this.logger.info(`- status: ${this.success ? 'success' : 'fail'}`);
     }
 
   }

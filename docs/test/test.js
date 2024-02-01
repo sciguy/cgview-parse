@@ -16,6 +16,7 @@ const showSeqJson = true;
 const showTesJson = false;
 const showCgvJson = true;
 const showMap = true;
+const showAllText = false; // or only the first 1000 lines
 const filterSequence = true;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -56,6 +57,9 @@ showCgvJsonCheckbox.checked = showCgvJson;
 // Show/Hide Map
 const showMapCheckbox = document.querySelector('#option-show-map');
 showMapCheckbox.checked = showMap;
+// Show All Text (or only the first 1000 lines)
+const showAllTextCheckbox = document.querySelector('#option-show-all-text');
+showAllTextCheckbox.checked = showAllText;
 updatePageLayout();
 
 // Load default map
@@ -221,7 +225,8 @@ async function runParse() {
   seqString = seqString.replace(/"locations":(.*?)(\s+)([}"])/smg, (match, p1, p2, p3) => {
     return `"locations": ${p1.replace(/\s+/g, '')}${p2}${p3}`;
   });
-  outputSeqJsonDiv.innerHTML = prismMode ? Prism.highlight(seqString, Prism.languages.json, 'json') : seqString;
+  // outputSeqJsonDiv.innerHTML = prismMode ? Prism.highlight(seqString, Prism.languages.json, 'json') : seqString;
+  outputSeqJsonDiv.innerHTML = filterJSONText(seqString);
   window.json.seq = seqJSON; // For debugging
   // return;
 
@@ -236,7 +241,8 @@ async function runParse() {
     if (filterSeqMode) {
       tesString = tesString.replace(/"sequence": ".*"/g, '"sequence": "..."');
     }
-    outputTesJsonDiv.innerHTML = prismMode ? Prism.highlight(tesString, Prism.languages.json, 'json') : tesString;
+    // outputTesJsonDiv.innerHTML = prismMode ? Prism.highlight(tesString, Prism.languages.json, 'json') : tesString;
+    outputSeqJsonDiv.innerHTML = filterJSONText(tesString);
     window.json.tes = tesJSON; // For debugging
   }
 
@@ -251,7 +257,7 @@ async function runParse() {
     // Convert to string (and pretty print with 2 spaces)
     let cgvString = JSON.stringify(cgvJSON, null, 2);
     if (filterSeqMode) {
-      cgvString = cgvString.replace(/"seq": ".*"/g, '"sequence": "..."');
+      cgvString = cgvString.replace(/"seq": ".*"/g, '"seq": "..."');
     }
     outputCgvJsonDiv.innerHTML = prismMode ? Prism.highlight(cgvString, Prism.languages.json, 'json') : cgvString;
     window.json.cgv = cgvJSON; // For debugging
@@ -276,6 +282,24 @@ async function runParse() {
     cgv.draw();
     myResize();
   }
+}
+
+function filterJSONText(text) {
+  // let filteredText = text;
+  const skipLines = 1000;
+  const prismMode = prettyPrintCheckbox.checked;
+  const allMode = showAllTextCheckbox.checked;
+  if (!allMode) {
+    const lines = text.split('\n');
+    const firstLines = lines.slice(0, skipLines);
+    if (lines.length > skipLines) {
+      firstLines.push(`...skipping ${lines.length - skipLines} lines...`);
+    }
+    text = firstLines.join('\n');
+  }
+
+  filteredText = prismMode ? Prism.highlight(text, Prism.languages.json, 'json') : text;
+  return filteredText;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
