@@ -526,12 +526,11 @@ var CGVParse = (function () {
       const seqLength = records.map((record) => record.length).reduce((a, b) => a + b, 0);
 
       this.logger.break('------------------------------------------\n');
-      this.logger.info('Parsing summary:');
+      this.logger.info('Parsing Summary:');
       this.logger.info(`- Input file type: ${this.inputType.padStart(12)}`);
       this.logger.info(`- Sequence Type: ${this.sequenceType.padStart(14)}`);
       this.logger.info(`- Sequence Count: ${records.length.toLocaleString().padStart(13)}`);
       this.logger.info(`- Feature Count: ${features.length.toLocaleString().padStart(14)}`);
-      // this.logger.info('- Total Length: ' + `${seqLength.toLocaleString()} bp`.padStart(13));
       this.logger.info('- Total Length (bp): ' + `${seqLength.toLocaleString()}`.padStart(10));
       this.logger.info('- Status: ' + `${this.success ? 'Success' : 'FAILED'}`.padStart(21));
       this.logger.break('------------------------------------------\n');
