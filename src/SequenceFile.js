@@ -4,13 +4,11 @@
 // Array of sequence records containing array of features
 
 // NOTES:
-// - This code is heavily based on Paul's seq_to_json.py script with some exceptions:
+// - This code is heavily based on Paul's seq_to_json.py script with some exceptions.
 // TODO:
 // - Test start_codon
 // - Genetic codes
 // - Give examples of output (the record format)
-// LOG
-// - status/success
 import Logger from './Logger.js';
 import { SeqRecordsToCGVJSON } from './SeqRecToCGVJSON.js';
 import * as helpers from './Helpers.js';
@@ -24,11 +22,14 @@ class SequenceFile {
     this.inputText;
     this.logger = options.logger || new Logger();
     options.logger = this.logger;
+    this.logger.info(`Date: ${new Date().toUTCString()}`);
     this._success = true
-    if (inputText && inputText !== '') {
-      if (!helpers.isASCII(inputText)) {
-        this.logger.error('Input contains non-text characters. Is this binary data?');
-      }
+    this._records = [];
+    if (!inputText || inputText === '') {
+      this._fail('Parsing Failed: No input text provided.')
+    } else if (!helpers.isASCII(inputText)) {
+      this._fail('Parsing Failed: Input contains non-text characters. Is this binary data?');
+    } else {
       this._records = this._parse(inputText, options);
       if (options.addFeatureSequences) {
         this._addFeatureSequence(this._records)
@@ -38,13 +39,13 @@ class SequenceFile {
       this.logger.info('- done parsing sequence file');
       this._validateRecords(this._records);
       this.parseSummary();
-    } else {
-      this._records = [];
-      this.logger.error('No input text provided.')
-      // FAIL
     }
     this.logger.break();
   }
+
+  /////////////////////////////////////////////////////////////////////////////
+  // Properties
+  /////////////////////////////////////////////////////////////////////////////
 
   get success() {
     return this._success;
@@ -58,15 +59,23 @@ class SequenceFile {
     return this._sequenceType;
   }
 
+  // { inputType, sequenceType, sequenceCount, featureCount, totalLength, success }
+  get summary() {
+    return this._summary;
+  }
+
   /////////////////////////////////////////////////////////////////////////////
   // EXPORTERS
   /////////////////////////////////////////////////////////////////////////////
 
   toCGVJSON(options={}) {
-    options.logger = options.logger || this.logger
-    const parser = new SeqRecordsToCGVJSON(this.records, options);
-    return parser.json;
-    // return seqRecordsToCGVJSON(this.records, options);
+    if (this.success) {
+      options.logger = options.logger || this.logger
+      const parser = new SeqRecordsToCGVJSON(this.records, options);
+      return parser.json;
+    } else {
+      this.logger.error('*** Cannot convert to CGView JSON because parsing failed ***');
+    }
   }
 
   get records() {
@@ -76,26 +85,32 @@ class SequenceFile {
   /////////////////////////////////////////////////////////////////////////////
   // SUMMARY
   /////////////////////////////////////////////////////////////////////////////
+
   parseSummary() {
     const records = this.records;
-    // const inputTypes = records.map((record) => record.inputType);
-    // const uniqueInputTypes = [...new Set(inputTypes)];
-    // move to validations
-    // if (uniqueInputTypes.length > 1) {
-    //   this.logger.error(`Input file contains multiple input types: ${uniqueInputTypes.join(', ')}`);
-    //   // FAIL!!!!
-    // }
-    // this.inputType = uniqueInputTypes[0];
-    // this.inputType = uniqueInputTypes.join(', ');
     const features = records.map((record) => record.features).flat();
     const seqLength = records.map((record) => record.length).reduce((a, b) => a + b, 0);
-    this.logger.info('Parsing summary:');
-    this.logger.info(`- Input file type: ${this.inputType}`);
-    this.logger.info(`- Sequence Count: ${records.length.toLocaleString()}`);
-    this.logger.info(`- Feature Count: ${features.length.toLocaleString()}`);
-    this.logger.info(`- Total Length: ${seqLength.toLocaleString()} bp`);
-  }
 
+    this.logger.break('------------------------------------------\n')
+    this.logger.info('Parsing summary:');
+    this.logger.info(`- Input file type: ${this.inputType.padStart(12)}`);
+    this.logger.info(`- Sequence Type: ${this.sequenceType.padStart(14)}`);
+    this.logger.info(`- Sequence Count: ${records.length.toLocaleString().padStart(13)}`);
+    this.logger.info(`- Feature Count: ${features.length.toLocaleString().padStart(14)}`);
+    // this.logger.info('- Total Length: ' + `${seqLength.toLocaleString()} bp`.padStart(13));
+    this.logger.info('- Total Length (bp): ' + `${seqLength.toLocaleString()}`.padStart(10));
+    this.logger.info('- Status: ' + `${this.success ? 'Success' : 'FAILED'}`.padStart(21));
+    this.logger.break('------------------------------------------\n')
+
+    this._summary = {
+      inputType: this.inputType,
+      sequenceType: this.sequenceType,
+      sequenceCount: records.length,
+      featureCount: features.length,
+      totalLength: seqLength,
+      success: this.success
+    };
+  }
 
   /////////////////////////////////////////////////////////////////////////////
   // INITIAL PARSERS
@@ -107,7 +122,7 @@ class SequenceFile {
     let records = this._parseGenbankOrEmbl(seqText, options);
     // If that fails, try to parse as fasta or raw
     if ((records.length === 0) ||
-        (records[0].name === '' && records[0].length === undefined && records[0].sequence === '')) {
+        (records[0].name === '' && records[0].length === 0  && records[0].sequence === '')) {
       this.logger.info("- empty results");
       if (/^\s*>/.test(seqText)) {
         this.logger.info("- attempting as FASTA...");
@@ -146,7 +161,7 @@ class SequenceFile {
     console.log("Parsing FASTA...")
     const records = [];
     seqText.split(/^\s*>/m).filter(this._isSeqRecord).forEach((seqRecord) => {
-      const record = {inputType: 'fasta', name: '', length: undefined, sequence: ''};
+      const record = {inputType: 'fasta', name: '', length: 0, sequence: ''};
       const match = seqRecord.match(/^\s*([^\n\r]+)(.*)/s);
       if (match) {
         record.name = match[1];
@@ -205,13 +220,13 @@ class SequenceFile {
   // in EMBL look for e.g.:
   // ID   AF177870; SV 1; linear; genomic DNA; STD; INV; 3123 BP.
   // length is 3123
-  // Returns undefined if it can't be parsed
+  // Returns 0 if it can't be parsed
   _getSeqLength(seqRecordText) {
     const match = seqRecordText.match(/^\s*(?:LOCUS|ID).*?(\d+)\s[Bb][Pp]/);
     if (match) {
       return parseInt(match[1]);
-    // } else {
-    //   return 0;
+    } else {
+      return 0;
     }
   }
 
@@ -513,12 +528,15 @@ class SequenceFile {
     // Sequence length is 0
     const recordsZeroLength = records.filter((record) => record.length === 0);
     if (recordsZeroLength.length > 0) {
-      this._fail(`The following sequence have zero length: ${recordsZeroLength.map((record) => record.name).join(', ')}`);
+      const count = recordsZeroLength.length.toLocaleString();
+      this._fail(`The following sequences (${count}) have zero length:`);
+      this._fail(`- ${recordsZeroLength.map((record) => record.name).join(', ')}`);
     }
     // Sequence lengths do not match length in sequence
     const recordsDiffLengths = records.filter((record) => record.length !== record.sequence.length);
     if (recordsDiffLengths.length > 0) {
-      this._fail(`The following sequences have mismatched lengths (length attribute vs sequence length):`);
+      const count = recordsDiffLengths.length.toLocaleString();
+      this._fail(`The following sequences (${count}) have mismatched lengths (length attribute vs sequence length):`);
       for (const record of recordsDiffLengths) {
         this.logger.error(`- ${record.name}: ${record.length.toLocaleString()} bp vs ${record.sequence.length.toLocaleString()} bp`);
       }
@@ -526,7 +544,8 @@ class SequenceFile {
     // Sequence contains unexpected characters
     const recordsUnexpectedChars = records.filter((record) => record.hasUnexpectedCharacters);
     if (recordsUnexpectedChars.length > 0) {
-      this._fail(`The following sequences contain unexpected characters:`);
+      const count = recordsUnexpectedChars.length.toLocaleString();
+      this._fail(`The following sequences (${count}) contain unexpected characters:`);
       for (const record of recordsUnexpectedChars) {
         this.logger.error(`- ${record.name}: ${record.hasUnexpectedCharacters}`);
       }
@@ -539,19 +558,22 @@ class SequenceFile {
     for (const record of records) {
       for (const feature of record.features) {
         if (feature.start > record.length || feature.stop > record.length) {
-          featureStartEndErrors.push(`${record.name} [${record.length.toLocaleString()} bp]: ${feature.name} ${feature.start}..${feature.stop}`);
+          // featureStartEndErrors.push(`${record.name} [${record.length.toLocaleString()} bp]: ${feature.name} ${feature.start}..${feature.stop}`);
+          featureStartEndErrors.push(`${record.name} [${record.length.toLocaleString()} bp]: '${feature.name}' [${feature.start}..${feature.stop}]`);
         }
         if (feature.start > feature.stop) {
-          featureStartGreaterThanEnd.push(`${record.name}: ${feature.name} ${feature.start}..${feature.stop}`);
+          featureStartGreaterThanEnd.push(`${record.name}: '${feature.name}' [${feature.start}..${feature.stop}]`);
         }
       }
     }
     if (featureStartEndErrors.length > 0) {
-      this._fail(`The following features (${featureStartEndErrors.length}) have start or end greater than the sequence length:`);
+      const count = featureStartEndErrors.length.toLocaleString();
+      this._fail(`The following features (${count}) have start or end greater than the sequence length:`);
       featureStartEndErrors.forEach((error) => this.logger.error(`- ${error}`));
     }
     if (featureStartGreaterThanEnd.length > 0) {
-      this._fail(`The following features (${featureStartGreaterThanEnd.length}) have a start greater than the end:`);
+      const count = featureStartGreaterThanEnd.length.toLocaleString();
+      this._fail(`The following features (${count}) have a start greater than the end:`);
       featureStartGreaterThanEnd.forEach((error) => this.logger.error(`- ${error}`));
     }
 

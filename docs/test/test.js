@@ -255,11 +255,13 @@ async function runParse() {
     const cgvJsonRunTime = elapsedTime(cgvJsonStartTime);
     updateTime('time-cgv-json', cgvJsonRunTime);
     // Convert to string (and pretty print with 2 spaces)
-    let cgvString = JSON.stringify(cgvJSON, null, 2);
-    if (filterSeqMode) {
-      cgvString = cgvString.replace(/"seq": ".*"/g, '"seq": "..."');
+    if (cgvJSON) {
+      let cgvString = JSON.stringify(cgvJSON, null, 2);
+      if (filterSeqMode) {
+        cgvString = cgvString.replace(/"seq": ".*"/g, '"seq": "..."');
+      }
+      outputCgvJsonDiv.innerHTML = prismMode ? Prism.highlight(cgvString, Prism.languages.json, 'json') : cgvString;
     }
-    outputCgvJsonDiv.innerHTML = prismMode ? Prism.highlight(cgvString, Prism.languages.json, 'json') : cgvString;
     window.json.cgv = cgvJSON; // For debugging
   }
 
@@ -270,7 +272,8 @@ async function runParse() {
   //   messages += `Sequence ${index + 1} [${status}]: ${tes?.parsedSequence?.name}\n`;
   // });
   const logDiv = document.getElementById('log-text');
-  const messages = seqFile.logger.history({showTimestamps: false});
+  // const messages = seqFile.logger.history({showTimestamps: false});
+  const messages = seqFile.logger.history();
   console.log(messages)
   logDiv.innerHTML = messages;
 

@@ -105,13 +105,17 @@ var CGVParse = (function () {
   //   - ADD TEST FOR THIS
   // - skipComplexLocations: boolean (not implemented yet) [Defualt: true]
 
-  // LOGING (including from sequence file)
+  // LOGGING (including from sequence file)
   // - start with date and version (and options: skipTypes, includeQualifiers, skipComplexLocations)
-  // - provide summary of sequence file (input type, number of sequences, number of features)
   // - provide summary of CGView JSON (contigs, features, tracks, legends)
-  // - provide summary of skipped features
-  // - provide summary of skipped features becuase of complex locations
   // - total number of features skipped
+
+  // TODO:
+  // - FAIL if sequence type is protein
+  // - better binary check see example proksee5.txt
+  // - add name to CGView JSON summary
+  // - Read over cgview_builder.rb script
+  // - genetic code, codon_start
 
   class SeqRecordsToCGVJSON {
 
@@ -120,28 +124,82 @@ var CGVParse = (function () {
       this.options = options;
       this.logger = options.logger || new Logger();
       this.seqRecords = seqRecords;
-      this.inputType = seqRecords[0].inputType;
+      this.inputType = seqRecords && seqRecords[0]?.inputType;
       this.defaultTypesToSkip = ['gene', 'source', 'exon'];
 
       this.json = this._convert(seqRecords);
     }
 
-    _convert(seqRecord) {
-      this.logger.info(`Converting ${seqRecord.length} sequence record(s) to CGView JSON (version ${this.version})`);
+    _convert(seqRecords) {
+      // this.logger.info(`Converting ${seqRecord.length} sequence record(s) to CGView JSON (version ${this.version})`);
+      this._skippedFeaturesByType = {};
+      this._skippedComplexFeatures = [];
+      this.logger.info(`Converting to CGView JSON...`);
+      this.logger.info(`- CGView JSON version ${this.version}`);
+      this.logger.info(`- Input Sequence Count: ${seqRecords.length}`);
       // Here json refers to the CGView JSON
       let json = this._addConfigToJSON({}, this.options.config); 
       // Version: we should keep the version the same as the latest for CGView.js
       json.version = this.version;
-      json = this._extractSequenceAndFeatures(json, seqRecord);
+      json = this._extractSequenceAndFeatures(json, seqRecords);
+      this._summarizeSkippedFeatures();
       json.name = json.sequence?.contigs[0]?.name || "Untitled";
       json = this._removeUnusedLegends(json);
       // Add track for features (if there are any)
       json.tracks = this._buildTracks(json, this.inputType);
+      this._convertSummary(json);
       return { cgview: json };
+    }
+
+    _convertSummary(json) {
+      const contigs = json.sequence?.contigs || [];
+      const contigCount = contigs.length || 0;
+      const featureCount = json.features?.length || 0;
+      const trackCount = json.tracks?.length || 0;
+      const legendCount = json.legend?.items?.length || 0;
+      const seqLength = contigs.map((contig) => contig.length).reduce((a, b) => a + b, 0);
+      let skippedFeatures = Object.values(this._skippedFeaturesByType).reduce((a, b) => a + b, 0);
+      skippedFeatures += this._skippedComplexFeatures.length;
+      this.logger.break('------------------------------------------\n');
+      this.logger.info('CGView JSON Summary:');
+      this.logger.info(`- Contig Count: ${contigCount.toLocaleString().padStart(15)}`);
+      this.logger.info('- Total Length (bp): ' + `${seqLength.toLocaleString()}`.padStart(10));
+      this.logger.info(`- Track Count: ${trackCount.toLocaleString().padStart(16)}`);
+      this.logger.info(`- Legend Count: ${legendCount.toLocaleString().padStart(15)}`);
+      this.logger.info(`- Features Included: ${featureCount.toLocaleString().padStart(10)}`);
+      this.logger.info(`- Features Skipped: ${skippedFeatures.toLocaleString().padStart(11)}`);
+      this.logger.break('------------------------------------------\n');
+    }
+
+    _summarizeSkippedFeatures() {
+      // Skipped Types
+      const skippedFeatures = this._skippedFeaturesByType;
+      const skippedFeatureCount = Object.values(this._skippedFeaturesByType).reduce((a, b) => a + b, 0);
+      if (Object.keys(skippedFeatures).length > 0) {
+        this.logger.info(`- Skipped features (${skippedFeatureCount}) by type:`);
+        for (const [key, value] of Object.entries(skippedFeatures)) {
+          this.logger.info(`  - ${key}: ${value.toLocaleString().padStart(15 - key.length)}`);
+        }
+      }
+      // Complex Locations
+      const complexFeatures = this._skippedComplexFeatures;
+      const complexCount = complexFeatures.length;
+      if (complexCount > 0) {
+        const exampleCount = Math.min(5, complexFeatures.length);
+        this.logger.info(`- Skipped features (${complexCount}) with complex locations:`);
+        complexFeatures.slice(0, exampleCount).forEach(f => this.logger.info(`  - ${f.type} '${f.name}': ${f.locationText}`));
+        if (complexCount > exampleCount) {
+          this.logger.info(`  - ${complexCount - exampleCount} more not shown (${complexCount.toLocaleString()} total)`);
+        }
+      }
+
     }
 
     // Add config to JSON. Note that no validation of the config is done.
     _addConfigToJSON(json, config) {
+      const configKeys = config ? Object.keys(config) : ['none'];
+      this.logger.info(`- Config properties provided: ${configKeys.join(', ')}`);
+
       if (!config) { return json; }
       if (config.settings) { json.settings = config.settings; }
       if (config.backbone) { json.backbone = config.backbone; }
@@ -178,7 +236,8 @@ var CGVParse = (function () {
       } else {
         this.featuresToSkip = this.defaultTypesToSkip;
       }
-      this.logger.info(`Features of the following type will be skipped: ${this.featuresToSkip.join(', ')}`);
+      const skipTypes = this.featuresToSkip.length === 0 ? "none" : this.featuresToSkip.join(', ');
+      this.logger.info(`- Feature types to skip: ${skipTypes}`);
     }
 
     // Onlys adds a Features track if there are features
@@ -210,13 +269,17 @@ var CGVParse = (function () {
     }
 
     _extractFeatures(seqContig, contigName, inputType) {
-      const featuresToSkip = ['source', 'gene', 'exon'];
-      const skippedFeatures = {};
       const features = [];
+      // const skippedFeatures = {};
+      // const complexFeatures = [];
       const source = inputType ? `${inputType}-features` : "features";
       for (const f of seqContig.features) {
-        if (featuresToSkip.includes(f.type)) {
-          skippedFeatures[f.type] = skippedFeatures[f.type] ? skippedFeatures[f.type] + 1 : 1;
+        if (this.featuresToSkip.includes(f.type)) {
+          this._skippedFeaturesByType[f.type] = this._skippedFeaturesByType[f.type] ? this._skippedFeaturesByType[f.type] + 1 : 1;
+          continue;
+        }
+        if (f.locations.length > 1) {
+          this._skippedComplexFeatures.push(f);
           continue;
         }
         // NEED TO LOG
@@ -234,14 +297,7 @@ var CGVParse = (function () {
           feature.start_codon = f.qualifiers.start_codon[0];
         }
         features.push(feature);
-      }    if (Object.keys(skippedFeatures).length > 0) {
-        // LOG!!!!
-        console.log("Features of the following type are skipped: ...");
-        for (const [key, value] of Object.entries(skippedFeatures)) {
-          console.log(`${key}: ${value}`);
-        }
-      }
-      return features;
+      }    return features;
     }
 
   }
@@ -400,11 +456,14 @@ var CGVParse = (function () {
       this.inputText;
       this.logger = options.logger || new Logger();
       options.logger = this.logger;
+      this.logger.info(`Date: ${new Date().toUTCString()}`);
       this._success = true;
-      if (inputText && inputText !== '') {
-        if (!isASCII(inputText)) {
-          this.logger.error('Input contains non-text characters. Is this binary data?');
-        }
+      this._records = [];
+      if (!inputText || inputText === '') {
+        this._fail('Parsing Failed: No input text provided.');
+      } else if (!isASCII(inputText)) {
+        this._fail('Parsing Failed: Input contains non-text characters. Is this binary data?');
+      } else {
         this._records = this._parse(inputText, options);
         if (options.addFeatureSequences) {
           this._addFeatureSequence(this._records);
@@ -414,13 +473,13 @@ var CGVParse = (function () {
         this.logger.info('- done parsing sequence file');
         this._validateRecords(this._records);
         this.parseSummary();
-      } else {
-        this._records = [];
-        this.logger.error('No input text provided.');
-        // FAIL
       }
       this.logger.break();
     }
+
+    /////////////////////////////////////////////////////////////////////////////
+    // Properties
+    /////////////////////////////////////////////////////////////////////////////
 
     get success() {
       return this._success;
@@ -434,15 +493,23 @@ var CGVParse = (function () {
       return this._sequenceType;
     }
 
+    // { inputType, sequenceType, sequenceCount, featureCount, totalLength, success }
+    get summary() {
+      return this._summary;
+    }
+
     /////////////////////////////////////////////////////////////////////////////
     // EXPORTERS
     /////////////////////////////////////////////////////////////////////////////
 
     toCGVJSON(options={}) {
-      options.logger = options.logger || this.logger;
-      const parser = new SeqRecordsToCGVJSON(this.records, options);
-      return parser.json;
-      // return seqRecordsToCGVJSON(this.records, options);
+      if (this.success) {
+        options.logger = options.logger || this.logger;
+        const parser = new SeqRecordsToCGVJSON(this.records, options);
+        return parser.json;
+      } else {
+        this.logger.error('*** Cannot convert to CGView JSON because parsing failed ***');
+      }
     }
 
     get records() {
@@ -452,26 +519,32 @@ var CGVParse = (function () {
     /////////////////////////////////////////////////////////////////////////////
     // SUMMARY
     /////////////////////////////////////////////////////////////////////////////
+
     parseSummary() {
       const records = this.records;
-      // const inputTypes = records.map((record) => record.inputType);
-      // const uniqueInputTypes = [...new Set(inputTypes)];
-      // move to validations
-      // if (uniqueInputTypes.length > 1) {
-      //   this.logger.error(`Input file contains multiple input types: ${uniqueInputTypes.join(', ')}`);
-      //   // FAIL!!!!
-      // }
-      // this.inputType = uniqueInputTypes[0];
-      // this.inputType = uniqueInputTypes.join(', ');
       const features = records.map((record) => record.features).flat();
       const seqLength = records.map((record) => record.length).reduce((a, b) => a + b, 0);
-      this.logger.info('Parsing summary:');
-      this.logger.info(`- Input file type: ${this.inputType}`);
-      this.logger.info(`- Sequence Count: ${records.length.toLocaleString()}`);
-      this.logger.info(`- Feature Count: ${features.length.toLocaleString()}`);
-      this.logger.info(`- Total Length: ${seqLength.toLocaleString()} bp`);
-    }
 
+      this.logger.break('------------------------------------------\n');
+      this.logger.info('Parsing summary:');
+      this.logger.info(`- Input file type: ${this.inputType.padStart(12)}`);
+      this.logger.info(`- Sequence Type: ${this.sequenceType.padStart(14)}`);
+      this.logger.info(`- Sequence Count: ${records.length.toLocaleString().padStart(13)}`);
+      this.logger.info(`- Feature Count: ${features.length.toLocaleString().padStart(14)}`);
+      // this.logger.info('- Total Length: ' + `${seqLength.toLocaleString()} bp`.padStart(13));
+      this.logger.info('- Total Length (bp): ' + `${seqLength.toLocaleString()}`.padStart(10));
+      this.logger.info('- Status: ' + `${this.success ? 'Success' : 'FAILED'}`.padStart(21));
+      this.logger.break('------------------------------------------\n');
+
+      this._summary = {
+        inputType: this.inputType,
+        sequenceType: this.sequenceType,
+        sequenceCount: records.length,
+        featureCount: features.length,
+        totalLength: seqLength,
+        success: this.success
+      };
+    }
 
     /////////////////////////////////////////////////////////////////////////////
     // INITIAL PARSERS
@@ -483,7 +556,7 @@ var CGVParse = (function () {
       let records = this._parseGenbankOrEmbl(seqText, options);
       // If that fails, try to parse as fasta or raw
       if ((records.length === 0) ||
-          (records[0].name === '' && records[0].length === undefined && records[0].sequence === '')) {
+          (records[0].name === '' && records[0].length === 0  && records[0].sequence === '')) {
         this.logger.info("- empty results");
         if (/^\s*>/.test(seqText)) {
           this.logger.info("- attempting as FASTA...");
@@ -522,7 +595,7 @@ var CGVParse = (function () {
       console.log("Parsing FASTA...");
       const records = [];
       seqText.split(/^\s*>/m).filter(this._isSeqRecord).forEach((seqRecord) => {
-        const record = {inputType: 'fasta', name: '', length: undefined, sequence: ''};
+        const record = {inputType: 'fasta', name: '', length: 0, sequence: ''};
         const match = seqRecord.match(/^\s*([^\n\r]+)(.*)/s);
         if (match) {
           record.name = match[1];
@@ -581,13 +654,13 @@ var CGVParse = (function () {
     // in EMBL look for e.g.:
     // ID   AF177870; SV 1; linear; genomic DNA; STD; INV; 3123 BP.
     // length is 3123
-    // Returns undefined if it can't be parsed
+    // Returns 0 if it can't be parsed
     _getSeqLength(seqRecordText) {
       const match = seqRecordText.match(/^\s*(?:LOCUS|ID).*?(\d+)\s[Bb][Pp]/);
       if (match) {
         return parseInt(match[1]);
-      // } else {
-      //   return 0;
+      } else {
+        return 0;
       }
     }
 
@@ -885,12 +958,15 @@ var CGVParse = (function () {
       // Sequence length is 0
       const recordsZeroLength = records.filter((record) => record.length === 0);
       if (recordsZeroLength.length > 0) {
-        this._fail(`The following sequence have zero length: ${recordsZeroLength.map((record) => record.name).join(', ')}`);
+        const count = recordsZeroLength.length.toLocaleString();
+        this._fail(`The following sequences (${count}) have zero length:`);
+        this._fail(`- ${recordsZeroLength.map((record) => record.name).join(', ')}`);
       }
       // Sequence lengths do not match length in sequence
       const recordsDiffLengths = records.filter((record) => record.length !== record.sequence.length);
       if (recordsDiffLengths.length > 0) {
-        this._fail(`The following sequences have mismatched lengths (length attribute vs sequence length):`);
+        const count = recordsDiffLengths.length.toLocaleString();
+        this._fail(`The following sequences (${count}) have mismatched lengths (length attribute vs sequence length):`);
         for (const record of recordsDiffLengths) {
           this.logger.error(`- ${record.name}: ${record.length.toLocaleString()} bp vs ${record.sequence.length.toLocaleString()} bp`);
         }
@@ -898,7 +974,8 @@ var CGVParse = (function () {
       // Sequence contains unexpected characters
       const recordsUnexpectedChars = records.filter((record) => record.hasUnexpectedCharacters);
       if (recordsUnexpectedChars.length > 0) {
-        this._fail(`The following sequences contain unexpected characters:`);
+        const count = recordsUnexpectedChars.length.toLocaleString();
+        this._fail(`The following sequences (${count}) contain unexpected characters:`);
         for (const record of recordsUnexpectedChars) {
           this.logger.error(`- ${record.name}: ${record.hasUnexpectedCharacters}`);
         }
@@ -911,19 +988,22 @@ var CGVParse = (function () {
       for (const record of records) {
         for (const feature of record.features) {
           if (feature.start > record.length || feature.stop > record.length) {
-            featureStartEndErrors.push(`${record.name} [${record.length.toLocaleString()} bp]: ${feature.name} ${feature.start}..${feature.stop}`);
+            // featureStartEndErrors.push(`${record.name} [${record.length.toLocaleString()} bp]: ${feature.name} ${feature.start}..${feature.stop}`);
+            featureStartEndErrors.push(`${record.name} [${record.length.toLocaleString()} bp]: '${feature.name}' [${feature.start}..${feature.stop}]`);
           }
           if (feature.start > feature.stop) {
-            featureStartGreaterThanEnd.push(`${record.name}: ${feature.name} ${feature.start}..${feature.stop}`);
+            featureStartGreaterThanEnd.push(`${record.name}: '${feature.name}' [${feature.start}..${feature.stop}]`);
           }
         }
       }
       if (featureStartEndErrors.length > 0) {
-        this._fail(`The following features (${featureStartEndErrors.length}) have start or end greater than the sequence length:`);
+        const count = featureStartEndErrors.length.toLocaleString();
+        this._fail(`The following features (${count}) have start or end greater than the sequence length:`);
         featureStartEndErrors.forEach((error) => this.logger.error(`- ${error}`));
       }
       if (featureStartGreaterThanEnd.length > 0) {
-        this._fail(`The following features (${featureStartGreaterThanEnd.length}) have a start greater than the end:`);
+        const count = featureStartGreaterThanEnd.length.toLocaleString();
+        this._fail(`The following features (${count}) have a start greater than the end:`);
         featureStartGreaterThanEnd.forEach((error) => this.logger.error(`- ${error}`));
       }
 

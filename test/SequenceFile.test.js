@@ -35,10 +35,10 @@ describe('SequenceFile', () => {
       const length = seqFile._getSeqLength(input);
       expect(length).toBe(3123);
     });
-    test('- return undefined if it can not be parsed', () => {
+    test('- return 0 if it can not be parsed', () => {
       const input = "some unknown string";
       const length = seqFile._getSeqLength(input);
-      expect(length).toBe(undefined);
+      expect(length).toBe(0);
     });
   });
 
