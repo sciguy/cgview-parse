@@ -4,7 +4,7 @@ var CGVParse = (function () {
   // OPTIONS:
   // - logToConsole [Default: true]: log to console
   // - showTimestamps [Default: true]: Add time stamps
-  // - levelIcons: Add level as icon: warn, info, etc (not implemented yet)
+  // - showLevelIcons: Add level as icon: warn, info, etc (not implemented yet)
   // NOTE:
   // - logToConsole and showTimestamps can be overridden in each log call
   //   as well as the history
@@ -16,6 +16,8 @@ var CGVParse = (function () {
       this.options = options;
       this.logToConsole = (options.logToConsole === undefined) ? true : options.logToConsole;
       this.showTimestamps = (options.showTimestamps === undefined) ? true : options.showTimestamps;
+      // this.showLevelIcons = (options.showLevelIcons === undefined) ? true : options.showLevelIcons;
+      this.showLevelIcons = (options.showLevelIcons === undefined) ? false : options.showLevelIcons;
       this.logs = [];
     }
 
@@ -76,6 +78,10 @@ var CGVParse = (function () {
 
     _formatMessage(logItem, options={}) {
       let message = "";
+      if (this.showLevelIcons && options.showLevelIcons !== false) {
+        const levels = { log: '📝', info: 'ℹ️', warn: '⚠️', error: '🛑' };
+        message += levels[logItem.level] + " ";
+      }
       if (this.showTimestamps && options.showTimestamps !== false) {
         message += `[${logItem.timestamp}] `;
       }

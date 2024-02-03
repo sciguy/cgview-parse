@@ -77,12 +77,17 @@ main {
   justify-content: space-between;
 }
 
+.sidebar-log {
+  overflow: scroll;
+}
+
 #log-text {
   font-family: monospace;
   font-size: 10px;
   color: gray;
   margin: 10px;
-  white-space: break-spaces;
+  /* white-space: break-spaces; */
+  white-space: pre;
 }
 
 #reparse-btn {
