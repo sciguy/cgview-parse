@@ -10,6 +10,46 @@ export function removeNewlines(string) {
   return string.replace(/[\n\r]+/g, "");
 }
 
+/**
+ * Returns a string id using the _name_ and _start_ while
+ * making sure the id is not in _currentIds_.
+ * ```javascript
+ * JSV.uniqueName('CDS', ['RNA', 'CDS']);
+ * //=> 'CDS-2'
+ * ```
+ * @param {String} name - Name to check
+ * @param {Array} allNames - Array of all names to compare against
+ * @return {String}
+ */
+export function uniqueName(name, allNames) {
+  if (allNames.includes(name)) {
+    return uniqueId(`${name}-`, 2, allNames);
+  } else {
+    return name;
+  }
+};
+
+/**
+ * Returns a string id using the _idBase_ and _start_ while
+ * making sure the id is not in _currentIds_.
+ * ```javascript
+ * JSV.uniqueId('spectra_', 1, ['spectra_1', 'spectra_2']);
+ * //=> 'spectra_3'
+ * ```
+ * @param {String} idBase - Base of ids
+ * @param {Integer} start - Integer to start trying to creat ids with
+ * @param {Array} currentIds - Array of current ids
+ * @return {String}
+ */
+export function uniqueId(idBase, start, currentIds) {
+  let id;
+  do {
+    id = idBase + start;
+    start++;
+  } while (currentIds.indexOf(id) > -1);
+  return id;
+};
+
 // Basic testing shows that Method #2 is faster
 // Using E.Coli PA2 as a test case:
 // Times are for full parsing of the file

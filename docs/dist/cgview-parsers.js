@@ -4,7 +4,7 @@ var CGVParse = (function () {
   // OPTIONS:
   // - logToConsole [Default: true]: log to console
   // - showTimestamps [Default: true]: Add time stamps
-  // - showLevelIcons: Add level as icon: warn, info, etc (not implemented yet)
+  // - howLevelIcons: Add level as icon: warn, info, etc (not implemented yet)
   // NOTE:
   // - logToConsole and showTimestamps can be overridden in each log call
   //   as well as the history
@@ -16,8 +16,7 @@ var CGVParse = (function () {
       this.options = options;
       this.logToConsole = (options.logToConsole === undefined) ? true : options.logToConsole;
       this.showTimestamps = (options.showTimestamps === undefined) ? true : options.showTimestamps;
-      // this.showLevelIcons = (options.showLevelIcons === undefined) ? true : options.showLevelIcons;
-      this.showLevelIcons = (options.showLevelIcons === undefined) ? false : options.showLevelIcons;
+      this.showIcons = (options.showIcons === undefined) ? false : options.showIcons;
       this.logs = [];
     }
 
@@ -65,24 +64,24 @@ var CGVParse = (function () {
     // level: warn, error, info, log
     _log(message, level, options={}) {
       const timestamp = this._formatTime(new Date());
-      const logItem = { type: 'message', message, level, timestamp };
+      const logItem = { type: 'message', message, level, timestamp, icon: options.icon };
       this.logs.push(logItem);
       this._consoleMessage(logItem, options);
     }
 
     _consoleMessage(logItem, options={} ) {
-      if (this.logToConsole && options.logToConsole !== false) {
+      if (this._optionFor('logToConsole', options)) {
         console[logItem.level](this._formatMessage(logItem, options));
       }
     }
 
     _formatMessage(logItem, options={}) {
       let message = "";
-      if (this.showLevelIcons && options.showLevelIcons !== false) {
-        const levels = { log: '📝', info: 'ℹ️', warn: '⚠️', error: '🛑' };
-        message += levels[logItem.level] + " ";
+      if (this._optionFor('showIcons', options)) {
+        const icon = logItem.icon || logItem.level;
+        message += this._icon(icon) + "";
       }
-      if (this.showTimestamps && options.showTimestamps !== false) {
+      if (this._optionFor('showTimestamps', options)) {
         message += `[${logItem.timestamp}] `;
       }
       message += logItem.message;
@@ -95,215 +94,34 @@ var CGVParse = (function () {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
+        timeZone: 'UTC',
         hour12: false
       });
     }
 
-  }
-
-  // OPTIONS:
-  // - config: jsonConfig
-  // - skipTypes: boolean (TEST) [Default: ['gene', 'source', 'exon']]
-  //   - If false, include ALL feature types in the JSON
-  // - includeQualifiers: boolean (not implemented yet) [Defualt: false]
-  //   - If true, include ALL qualifiers in the JSON
-  //   - If array of strings, include only those qualifiers
-  //   - ADD TEST FOR THIS
-  // - skipComplexLocations: boolean (not implemented yet) [Defualt: true]
-
-  // LOGGING (including from sequence file)
-  // - start with date and version (and options: skipTypes, includeQualifiers, skipComplexLocations)
-  // - provide summary of CGView JSON (contigs, features, tracks, legends)
-  // - total number of features skipped
-
-  // TODO:
-  // - FAIL if sequence type is protein
-  // - better binary check see example proksee5.txt
-  // - add name to CGView JSON summary
-  // - Read over cgview_builder.rb script
-  // - genetic code, codon_start
-
-  class SeqRecordsToCGVJSON {
-
-    constructor(seqRecords, options = {}) {
-      this.version = "1.6.0";
-      this.options = options;
-      this.logger = options.logger || new Logger();
-      this.seqRecords = seqRecords;
-      this.inputType = seqRecords && seqRecords[0]?.inputType;
-      this.defaultTypesToSkip = ['gene', 'source', 'exon'];
-
-      this.json = this._convert(seqRecords);
-    }
-
-    _convert(seqRecords) {
-      // this.logger.info(`Converting ${seqRecord.length} sequence record(s) to CGView JSON (version ${this.version})`);
-      this._skippedFeaturesByType = {};
-      this._skippedComplexFeatures = [];
-      this.logger.info(`Converting to CGView JSON...`);
-      this.logger.info(`- CGView JSON version ${this.version}`);
-      this.logger.info(`- Input Sequence Count: ${seqRecords.length}`);
-      // Here json refers to the CGView JSON
-      let json = this._addConfigToJSON({}, this.options.config); 
-      // Version: we should keep the version the same as the latest for CGView.js
-      json.version = this.version;
-      json = this._extractSequenceAndFeatures(json, seqRecords);
-      this._summarizeSkippedFeatures();
-      json.name = json.sequence?.contigs[0]?.name || "Untitled";
-      json = this._removeUnusedLegends(json);
-      // Add track for features (if there are any)
-      json.tracks = this._buildTracks(json, this.inputType);
-      this._convertSummary(json);
-      return { cgview: json };
-    }
-
-    _convertSummary(json) {
-      const contigs = json.sequence?.contigs || [];
-      const contigCount = contigs.length || 0;
-      const featureCount = json.features?.length || 0;
-      const trackCount = json.tracks?.length || 0;
-      const legendCount = json.legend?.items?.length || 0;
-      const seqLength = contigs.map((contig) => contig.length).reduce((a, b) => a + b, 0);
-      let skippedFeatures = Object.values(this._skippedFeaturesByType).reduce((a, b) => a + b, 0);
-      skippedFeatures += this._skippedComplexFeatures.length;
-      this.logger.break('------------------------------------------\n');
-      this.logger.info('CGView JSON Summary:');
-      this.logger.info(`- Contig Count: ${contigCount.toLocaleString().padStart(15)}`);
-      this.logger.info('- Total Length (bp): ' + `${seqLength.toLocaleString()}`.padStart(10));
-      this.logger.info(`- Track Count: ${trackCount.toLocaleString().padStart(16)}`);
-      this.logger.info(`- Legend Count: ${legendCount.toLocaleString().padStart(15)}`);
-      this.logger.info(`- Features Included: ${featureCount.toLocaleString().padStart(10)}`);
-      this.logger.info(`- Features Skipped: ${skippedFeatures.toLocaleString().padStart(11)}`);
-      this.logger.break('------------------------------------------\n');
-    }
-
-    _summarizeSkippedFeatures() {
-      // Skipped Types
-      const skippedFeatures = this._skippedFeaturesByType;
-      const skippedFeatureCount = Object.values(this._skippedFeaturesByType).reduce((a, b) => a + b, 0);
-      if (Object.keys(skippedFeatures).length > 0) {
-        this.logger.info(`- Skipped features (${skippedFeatureCount}) by type:`);
-        for (const [key, value] of Object.entries(skippedFeatures)) {
-          this.logger.info(`  - ${key}: ${value.toLocaleString().padStart(15 - key.length)}`);
+    // Return an icon for the name which may be a level or a custom icon
+    // - name can be a level (e.g. log, info, warn, error), one of the other
+    //   icons names (e.g. success, fail), or a custom icon (e.g. name = '🍎')
+    _icon(name) {
+        const icons = {
+          log: '📝', info: 'ℹ️', warn: '⚠️', error: '🛑',
+          success: '✅', fail: '🛑', none: ' ',
+       };
+       if (name) {
+          return icons[name] || name;
+        } else {
+          return icons.none;
         }
-      }
-      // Complex Locations
-      const complexFeatures = this._skippedComplexFeatures;
-      const complexCount = complexFeatures.length;
-      if (complexCount > 0) {
-        const exampleCount = Math.min(5, complexFeatures.length);
-        this.logger.info(`- Skipped features (${complexCount}) with complex locations:`);
-        complexFeatures.slice(0, exampleCount).forEach(f => this.logger.info(`  - ${f.type} '${f.name}': ${f.locationText}`));
-        if (complexCount > exampleCount) {
-          this.logger.info(`  - ${complexCount - exampleCount} more not shown (${complexCount.toLocaleString()} total)`);
-        }
-      }
-
     }
 
-    // Add config to JSON. Note that no validation of the config is done.
-    _addConfigToJSON(json, config) {
-      const configKeys = config ? Object.keys(config) : ['none'];
-      this.logger.info(`- Config properties provided: ${configKeys.join(', ')}`);
-
-      if (!config) { return json; }
-      if (config.settings) { json.settings = config.settings; }
-      if (config.backbone) { json.backbone = config.backbone; }
-      if (config.ruler) { json.ruler = config.ruler; }
-      if (config.dividers) { json.dividers = config.dividers; }
-      if (config.annotation) { json.annotation = config.annotation; }
-      if (config.sequence) { json.sequence = config.sequence; }
-      if (config.legend) { json.legend = config.legend; }
-      if (config.tracks) { json.tracks = config.tracks; }
-      return json;
-    }
-
-    // TODO: contig names MUST BE UNIQUE
-    _extractSequenceAndFeatures(json, seqJson) {
-      const contigs = [];
-      const features = [];
-      this._skippedTypesSetup();
-      seqJson.forEach((seqRecord) => {
-        contigs.push({name: seqRecord.name, length: seqRecord.sequence.length, seq: seqRecord.sequence});
-        const contigFeatures = this._extractFeatures(seqRecord, seqRecord.name, seqRecord.inputType);
-        features.push(...contigFeatures);
-      });
-      json.sequence = {contigs};
-      json.features = features;
-      return json;
-    }
-
-    _skippedTypesSetup() {
-      const options = this.options;
-      if (options.skipTypes === false) {
-        this.featuresToSkip = [];
-      } else if (Array.isArray(options.skipTypes)) {
-        this.featuresToSkip = options.skipTypes;
+    // Return the value for the option name from the default options (provided in Logger constructor)
+    // Options passed here will override the default options
+    _optionFor(name, options={}) {
+      if (options[name] !== undefined) {
+        return options[name];
       } else {
-        this.featuresToSkip = this.defaultTypesToSkip;
+        return this[name];
       }
-      const skipTypes = this.featuresToSkip.length === 0 ? "none" : this.featuresToSkip.join(', ');
-      this.logger.info(`- Feature types to skip: ${skipTypes}`);
-    }
-
-    // Onlys adds a Features track if there are features
-    // Other tracks may come from the config (in which case they are already added to the JSON)
-    _buildTracks(json, inputType) {
-      const tracks = json.tracks || [];
-      if (json.features && json.features.length > 0) {
-        tracks.push({
-          name: 'Features',
-          separateFeaturesBy: 'strand',
-          position: 'both',
-          dataType: 'feature',
-          dataMethod: 'source',
-          dataKeys: `${inputType}-features`,
-        });
-      }
-      return tracks;
-    }
-
-    // TODO: Remove legends from config that are not used
-    _removeUnusedLegends(json) {
-      const legendItems = json.legend?.items || [];
-      if (legendItems.length === 0) { return json; }
-      const featureLegends = json.features?.map((f) => f.legend) || [];
-      const uniqueFeatureLegends = [...new Set(featureLegends)];
-      const filteredLegendItems = legendItems.filter((i) => uniqueFeatureLegends.includes(i.name));
-      json.legend.items = filteredLegendItems;
-      return json
-    }
-
-    _extractFeatures(seqContig, contigName, inputType) {
-      const features = [];
-      // const skippedFeatures = {};
-      // const complexFeatures = [];
-      const source = inputType ? `${inputType}-features` : "features";
-      for (const f of seqContig.features) {
-        if (this.featuresToSkip.includes(f.type)) {
-          this._skippedFeaturesByType[f.type] = this._skippedFeaturesByType[f.type] ? this._skippedFeaturesByType[f.type] + 1 : 1;
-          continue;
-        }
-        if (f.locations.length > 1) {
-          this._skippedComplexFeatures.push(f);
-          continue;
-        }
-        // NEED TO LOG
-        const feature = {
-          start: f.start,
-          stop: f.stop,
-          strand: f.strand,
-          name: f.name,
-          type: f.type,
-          contig: contigName,
-          source,
-          legend: f.type,
-        };
-        if (f.qualifiers && f.qualifiers.start_codon && f.qualifiers.start_codon[0] !== 1) {
-          feature.start_codon = f.qualifiers.start_codon[0];
-        }
-        features.push(feature);
-      }    return features;
     }
 
   }
@@ -316,6 +134,44 @@ var CGVParse = (function () {
     return string.replace(/\d+/g, "");
   }
 
+  /**
+   * Returns a string id using the _name_ and _start_ while
+   * making sure the id is not in _currentIds_.
+   * ```javascript
+   * JSV.uniqueName('CDS', ['RNA', 'CDS']);
+   * //=> 'CDS-2'
+   * ```
+   * @param {String} name - Name to check
+   * @param {Array} allNames - Array of all names to compare against
+   * @return {String}
+   */
+  function uniqueName(name, allNames) {
+    if (allNames.includes(name)) {
+      return uniqueId(`${name}-`, 2, allNames);
+    } else {
+      return name;
+    }
+  }
+  /**
+   * Returns a string id using the _idBase_ and _start_ while
+   * making sure the id is not in _currentIds_.
+   * ```javascript
+   * JSV.uniqueId('spectra_', 1, ['spectra_1', 'spectra_2']);
+   * //=> 'spectra_3'
+   * ```
+   * @param {String} idBase - Base of ids
+   * @param {Integer} start - Integer to start trying to creat ids with
+   * @param {Array} currentIds - Array of current ids
+   * @return {String}
+   */
+  function uniqueId(idBase, start, currentIds) {
+    let id;
+    do {
+      id = idBase + start;
+      start++;
+    } while (currentIds.indexOf(id) > -1);
+    return id;
+  }
   // Basic testing shows that Method #2 is faster
   // Using E.Coli PA2 as a test case:
   // Times are for full parsing of the file
@@ -447,6 +303,291 @@ var CGVParse = (function () {
   //   return count;
   // }
 
+  // OPTIONS:
+  // - config: jsonConfig
+  // - skipTypes: boolean (TEST) [Default: ['gene', 'source', 'exon']]
+  //   - If false, include ALL feature types in the JSON
+  // - includeQualifiers: boolean (not implemented yet) [Defualt: false]
+  //   - If true, include ALL qualifiers in the JSON
+  //   - If array of strings, include only those qualifiers
+  //   - ADD TEST FOR THIS
+  // - skipComplexLocations: boolean (not implemented yet) [Defualt: true]
+
+  // LOGGING (including from sequence file)
+  // - start with date and version (and options: skipTypes, includeQualifiers, skipComplexLocations)
+  // - provide summary of CGView JSON (contigs, features, tracks, legends)
+  // - total number of features skipped
+
+  // TODO:
+  // - FAIL if sequence type is protein
+  // - better binary check see example proksee5.txt
+  // - add name to CGView JSON summary
+  // - Read over cgview_builder.rb script
+  // - genetic code, codon_start
+
+  class SeqRecordsToCGVJSON {
+
+    constructor(seqRecords, options = {}) {
+      this.version = "1.6.0";
+      this.options = options;
+      this.logger = options.logger || new Logger();
+      this.seqRecords = seqRecords;
+      this.inputType = seqRecords && seqRecords[0]?.inputType;
+      this.defaultTypesToSkip = ['gene', 'source', 'exon'];
+
+      this.json = this._convert(seqRecords);
+    }
+
+    _convert(seqRecords) {
+      // this.logger.info(`Converting ${seqRecord.length} sequence record(s) to CGView JSON (version ${this.version})`);
+      this._skippedFeaturesByType = {};
+      this._skippedComplexFeatures = [];
+      this.logger.info(`Date: ${new Date().toUTCString()}`);
+      this.logger.info(`Converting to CGView JSON...`);
+      this.logger.info(`- CGView JSON version ${this.version}`);
+      this.logger.info(`- Input Sequence Count: ${seqRecords.length}`);
+      // Here json refers to the CGView JSON
+      let json = this._addConfigToJSON({}, this.options.config); 
+      // Version: we should keep the version the same as the latest for CGView.js
+      json.version = this.version;
+      this._adjustContigNames(seqRecords);
+      json = this._extractSequenceAndFeatures(json, seqRecords);
+      this._summarizeSkippedFeatures();
+      json.name = json.sequence?.contigs[0]?.name || "Untitled";
+      json = this._removeUnusedLegends(json);
+      // Add track for features (if there are any)
+      json.tracks = this._buildTracks(json, this.inputType);
+      this._convertSummary(json);
+      return { cgview: json };
+    }
+
+    _convertSummary(json) {
+      const contigs = json.sequence?.contigs || [];
+      const contigCount = contigs.length || 0;
+      const featureCount = json.features?.length || 0;
+      const trackCount = json.tracks?.length || 0;
+      const legendCount = json.legend?.items?.length || 0;
+      const seqLength = contigs.map((contig) => contig.length).reduce((a, b) => a + b, 0);
+      let skippedFeatures = Object.values(this._skippedFeaturesByType).reduce((a, b) => a + b, 0);
+      skippedFeatures += this._skippedComplexFeatures.length;
+      this.logger.break('------------------------------------------\n');
+      this.logger.info('CGView JSON Summary:');
+      this.logger.info(`- Contig Count: ${contigCount.toLocaleString().padStart(15)}`);
+      this.logger.info('- Total Length (bp): ' + `${seqLength.toLocaleString()}`.padStart(10));
+      this.logger.info(`- Track Count: ${trackCount.toLocaleString().padStart(16)}`);
+      this.logger.info(`- Legend Count: ${legendCount.toLocaleString().padStart(15)}`);
+      this.logger.info(`- Features Included: ${featureCount.toLocaleString().padStart(10)}`);
+      this.logger.info(`- Features Skipped: ${skippedFeatures.toLocaleString().padStart(11)}`);
+      this.logger.break('------------------------------------------\n');
+    }
+
+    _summarizeSkippedFeatures() {
+      // Skipped Types
+      const skippedFeatures = this._skippedFeaturesByType;
+      const skippedFeatureCount = Object.values(this._skippedFeaturesByType).reduce((a, b) => a + b, 0);
+      if (Object.keys(skippedFeatures).length > 0) {
+        this.logger.info(`- Skipped features (${skippedFeatureCount}) by type:`);
+        for (const [key, value] of Object.entries(skippedFeatures)) {
+          this.logger.info(`  - ${key}: ${value.toLocaleString().padStart(15 - key.length)}`);
+        }
+      }
+      // Complex Locations
+      const complexFeatures = this._skippedComplexFeatures;
+      const complexCount = complexFeatures.length;
+      if (complexCount > 0) {
+        const exampleCount = Math.min(5, complexFeatures.length);
+        this.logger.info(`- Skipped features (${complexCount}) with complex locations:`);
+        complexFeatures.slice(0, exampleCount).forEach(f => this.logger.info(`  - ${f.type} '${f.name}': ${f.locationText}`));
+        if (complexCount > exampleCount) {
+          this.logger.info(`  - ${complexCount - exampleCount} more not shown (${complexCount.toLocaleString()} total)`);
+        }
+      }
+
+    }
+
+    // Add config to JSON. Note that no validation of the config is done.
+    _addConfigToJSON(json, config) {
+      const configKeys = config ? Object.keys(config) : ['none'];
+      this.logger.info(`- Config properties provided: ${configKeys.join(', ')}`);
+
+      if (!config) { return json; }
+      if (config.settings) { json.settings = config.settings; }
+      if (config.backbone) { json.backbone = config.backbone; }
+      if (config.ruler) { json.ruler = config.ruler; }
+      if (config.dividers) { json.dividers = config.dividers; }
+      if (config.annotation) { json.annotation = config.annotation; }
+      if (config.sequence) { json.sequence = config.sequence; }
+      if (config.legend) { json.legend = config.legend; }
+      if (config.tracks) { json.tracks = config.tracks; }
+      return json;
+    }
+
+    // Adjust contig names:
+    // - to be unique by adding a number to the end of duplicate names
+    // - replace nonstandard characters with underscores
+    // - length of contig names should be less than 37 characters
+
+    _adjustContigNames(seqRecords) {
+      const names = seqRecords.map((seqRecord) => seqRecord.name);
+      const adjustedNameResults = SeqRecordsToCGVJSON.adjustContigNames(names);
+      const adjustedNames = adjustedNameResults.names;
+      const reasons = adjustedNameResults.reasons;
+      this.logger.info('- Checking contig names...');
+      const changedNameIndexes = Object.keys(reasons);
+      if (changedNameIndexes.length > 0) {
+        // Chnage SeqRecord names
+        seqRecords.forEach((seqRecord, i) => {
+          seqRecord.name = adjustedNames[i];
+        });
+        // Log details
+        this.logger.info(`The following contig names (${changedNameIndexes.length}) were adjusted:`);
+        this.logger.info(`Reasons: DUP (duplicate), LONG (>34), REPLACE (nonstandard characters)`);
+        changedNameIndexes.forEach((i) => {
+          const reason = reasons[i];
+          this.logger.warn(`- [${reason.index + 1}] ${reason.origName} -> ${reason.newName} (${reason.reason.join(', ')})`);
+        });
+      }
+    }
+
+    // Given an array of sequence names, returns an object with:
+    // - names: an array of corrected sequence names
+    // - reasons: an array of object reasons for the correction:
+    //   - index: the index of the name in the original array
+    //   - origName: the original name
+    //   - newName: the corrected name
+    //   - reason: the reason for the correction
+    //     (e.g. "duplicate", "too long", "nonstandard characters")
+    //     (e.g. "DUP", "LONG", "REPLACE")
+    static adjustContigNames(names=[]) {
+      console.log(names);
+      const reasons = {};
+      // Replace nonstandard characters
+      let replacedNames = names.map((name) => name.replace(/[^a-zA-Z0-9\*\_\-]+/g, '_'));
+      names.forEach((name, i) => {
+        if (name !== replacedNames[i]) {
+          reasons[i] = {index: i, origName: name, newName: replacedNames[i], reason: ["REPLACE"]};
+        }
+      });
+      // Shorten names
+      replacedNames.forEach((name, i) => {
+        if (name.length > 34) {
+          replacedNames[i] = name.slice(0, 34);
+          if (reasons[i]) {
+            reasons[i].newName = replacedNames[i];
+            reasons[i].reason.push("LONG");
+          } else {
+            reasons[i] = {index: i, origName: name, newName: replacedNames[i], reason: ["LONG"]};
+          }
+        }
+      });
+      // Make names unique
+      const finalNames = [];
+      replacedNames.forEach((name, i) => {
+        const newName = uniqueName(name, finalNames);
+        finalNames.push(newName);
+        if (newName !== name) {
+          if (reasons[i]) {
+            reasons[i].newName = newName;
+            reasons[i].reason.push("DUP");
+          } else {
+            reasons[i] = {index: i, origName: name, newName: newName, reason: ["DUP"]};
+          }
+        }
+      });
+
+      return {names: finalNames, reasons: Object.values(reasons)};
+    }
+
+    // TODO: contig names MUST BE UNIQUE
+    _extractSequenceAndFeatures(json, seqJson) {
+      const contigs = [];
+      const features = [];
+      this._skippedTypesSetup();
+      seqJson.forEach((seqRecord) => {
+        contigs.push({name: seqRecord.name, length: seqRecord.sequence.length, seq: seqRecord.sequence});
+        const contigFeatures = this._extractFeatures(seqRecord, seqRecord.name, seqRecord.inputType);
+        features.push(...contigFeatures);
+      });
+      json.sequence = {contigs};
+      json.features = features;
+      return json;
+    }
+
+    _skippedTypesSetup() {
+      const options = this.options;
+      if (options.skipTypes === false) {
+        this.featuresToSkip = [];
+      } else if (Array.isArray(options.skipTypes)) {
+        this.featuresToSkip = options.skipTypes;
+      } else {
+        this.featuresToSkip = this.defaultTypesToSkip;
+      }
+      const skipTypes = this.featuresToSkip.length === 0 ? "none" : this.featuresToSkip.join(', ');
+      this.logger.info(`- Feature types to skip: ${skipTypes}`);
+    }
+
+    // Onlys adds a Features track if there are features
+    // Other tracks may come from the config (in which case they are already added to the JSON)
+    _buildTracks(json, inputType) {
+      const tracks = json.tracks || [];
+      if (json.features && json.features.length > 0) {
+        tracks.push({
+          name: 'Features',
+          separateFeaturesBy: 'strand',
+          position: 'both',
+          dataType: 'feature',
+          dataMethod: 'source',
+          dataKeys: `${inputType}-features`,
+        });
+      }
+      return tracks;
+    }
+
+    // TODO: Remove legends from config that are not used
+    _removeUnusedLegends(json) {
+      const legendItems = json.legend?.items || [];
+      if (legendItems.length === 0) { return json; }
+      const featureLegends = json.features?.map((f) => f.legend) || [];
+      const uniqueFeatureLegends = [...new Set(featureLegends)];
+      const filteredLegendItems = legendItems.filter((i) => uniqueFeatureLegends.includes(i.name));
+      json.legend.items = filteredLegendItems;
+      return json
+    }
+
+    _extractFeatures(seqContig, contigName, inputType) {
+      const features = [];
+      // const skippedFeatures = {};
+      // const complexFeatures = [];
+      const source = inputType ? `${inputType}-features` : "features";
+      for (const f of seqContig.features) {
+        if (this.featuresToSkip.includes(f.type)) {
+          this._skippedFeaturesByType[f.type] = this._skippedFeaturesByType[f.type] ? this._skippedFeaturesByType[f.type] + 1 : 1;
+          continue;
+        }
+        if (f.locations.length > 1) {
+          this._skippedComplexFeatures.push(f);
+          continue;
+        }
+        // NEED TO LOG
+        const feature = {
+          start: f.start,
+          stop: f.stop,
+          strand: f.strand,
+          name: f.name,
+          type: f.type,
+          contig: contigName,
+          source,
+          legend: f.type,
+        };
+        if (f.qualifiers && f.qualifiers.start_codon && f.qualifiers.start_codon[0] !== 1) {
+          feature.start_codon = f.qualifiers.start_codon[0];
+        }
+        features.push(feature);
+      }    return features;
+    }
+
+  }
+
   // Holds a sequence and feature from a sequence file: genbank, embl, fasta, raw
   // Parses text from sequence file
   // Holds seq records from our parser
@@ -538,7 +679,11 @@ var CGVParse = (function () {
       this.logger.info(`- Sequence Count: ${records.length.toLocaleString().padStart(13)}`);
       this.logger.info(`- Feature Count: ${features.length.toLocaleString().padStart(14)}`);
       this.logger.info('- Total Length (bp): ' + `${seqLength.toLocaleString()}`.padStart(10));
-      this.logger.info('- Status: ' + `${this.success ? 'Success' : 'FAILED'}`.padStart(21));
+      if (this.success) {
+        this.logger.info('- Status: ' + 'Success'.padStart(21), {icon: 'success'});
+      } else {
+        this.logger.error('- Status: ' + 'FAILED'.padStart(21), {icon: 'fail'});
+      }
       this.logger.break('------------------------------------------\n');
 
       this._summary = {
@@ -1012,7 +1157,11 @@ var CGVParse = (function () {
         featureStartGreaterThanEnd.forEach((error) => this.logger.error(`- ${error}`));
       }
 
-      this.logger.info(`- status: ${this.success ? 'success' : 'fail'}`);
+      if (this.success) {
+        this.logger.info('- validations passed', {icon: 'success'});
+      } else {
+        this.logger.error('- validations failed', {icon: 'fail'});
+      }
     }
 
   }

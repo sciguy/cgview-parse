@@ -29,6 +29,11 @@ inputs = {
     type: 'genbank',
     url: '../inputs/default/chloroflexi_contigs.gbk',
   },
+  contig_names: {
+    name: 'Contigs (with name changes): MNHM01000001 [133,342 bp]',
+    type: 'genbank',
+    url: '../inputs/default/contig_name_changes.gbk',
+  },
   bad_contigs: {
     name: 'BAD Contigs: MNHM01000001 [133,342 bp]',
     type: 'genbank',

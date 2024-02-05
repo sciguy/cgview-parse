@@ -5,12 +5,18 @@
 
 // NOTES:
 // - This code is heavily based on Paul's seq_to_json.py script with some exceptions.
+// - Maybe most errors will be warnings and those features are removed. We could
+//   let it continue but warn the user. The status could be WARNING. For feature
+//   based errors
+// - In proksee, if there are warnings, the user has to click a checkbox to
+//   remove the features when submitting. 
 // TODO:
 // - Test start_codon
 // - Genetic codes
 // - Give examples of output (the record format)
+// - Go over the cgview_builder.rb script
 import Logger from './Logger.js';
-import { SeqRecordsToCGVJSON } from './SeqRecToCGVJSON.js';
+import SeqRecordsToCGVJSON from './SeqRecToCGVJSON.js';
 import * as helpers from './Helpers.js';
 
 class SequenceFile {
@@ -98,7 +104,11 @@ class SequenceFile {
     this.logger.info(`- Sequence Count: ${records.length.toLocaleString().padStart(13)}`);
     this.logger.info(`- Feature Count: ${features.length.toLocaleString().padStart(14)}`);
     this.logger.info('- Total Length (bp): ' + `${seqLength.toLocaleString()}`.padStart(10));
-    this.logger.info('- Status: ' + `${this.success ? 'Success' : 'FAILED'}`.padStart(21));
+    if (this.success) {
+      this.logger.info('- Status: ' + 'Success'.padStart(21), {icon: 'success'});
+    } else {
+      this.logger.error('- Status: ' + 'FAILED'.padStart(21), {icon: 'fail'});
+    }
     this.logger.break('------------------------------------------\n')
 
     this._summary = {
@@ -576,7 +586,11 @@ class SequenceFile {
       featureStartGreaterThanEnd.forEach((error) => this.logger.error(`- ${error}`));
     }
 
-    this.logger.info(`- status: ${this.success ? 'success' : 'fail'}`);
+    if (this.success) {
+      this.logger.info('- validations passed', {icon: 'success'});
+    } else {
+      this.logger.error('- validations failed', {icon: 'fail'});
+    }
   }
 
 }

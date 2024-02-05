@@ -1,4 +1,5 @@
 import Logger from './Logger.js';
+import * as helpers from './Helpers.js';
 
 // OPTIONS:
 // - config: jsonConfig
@@ -22,7 +23,7 @@ import Logger from './Logger.js';
 // - Read over cgview_builder.rb script
 // - genetic code, codon_start
 
-export class SeqRecordsToCGVJSON {
+export default class SeqRecordsToCGVJSON {
 
   constructor(seqRecords, options = {}) {
     this.version = "1.6.0";
@@ -39,6 +40,7 @@ export class SeqRecordsToCGVJSON {
     // this.logger.info(`Converting ${seqRecord.length} sequence record(s) to CGView JSON (version ${this.version})`);
     this._skippedFeaturesByType = {};
     this._skippedComplexFeatures = [];
+    this.logger.info(`Date: ${new Date().toUTCString()}`);
     this.logger.info(`Converting to CGView JSON...`);
     this.logger.info(`- CGView JSON version ${this.version}`);
     this.logger.info(`- Input Sequence Count: ${seqRecords.length}`);
@@ -46,6 +48,7 @@ export class SeqRecordsToCGVJSON {
     let json = this._addConfigToJSON({}, this.options.config); 
     // Version: we should keep the version the same as the latest for CGView.js
     json.version = this.version;
+    this._adjustContigNames(seqRecords);
     json = this._extractSequenceAndFeatures(json, seqRecords);
     this._summarizeSkippedFeatures()
     json.name = json.sequence?.contigs[0]?.name || "Untitled";
@@ -115,6 +118,82 @@ export class SeqRecordsToCGVJSON {
     if (config.legend) { json.legend = config.legend; }
     if (config.tracks) { json.tracks = config.tracks; }
     return json;
+  }
+
+  // Adjust contig names:
+  // - to be unique by adding a number to the end of duplicate names
+  // - replace nonstandard characters with underscores
+  // - length of contig names should be less than 37 characters
+
+  _adjustContigNames(seqRecords) {
+    const names = seqRecords.map((seqRecord) => seqRecord.name);
+    const adjustedNameResults = SeqRecordsToCGVJSON.adjustContigNames(names);
+    const adjustedNames = adjustedNameResults.names;
+    const reasons = adjustedNameResults.reasons;
+    this.logger.info('- Checking contig names...');
+    const changedNameIndexes = Object.keys(reasons);
+    if (changedNameIndexes.length > 0) {
+      // Chnage SeqRecord names
+      seqRecords.forEach((seqRecord, i) => {
+        seqRecord.name = adjustedNames[i];
+      });
+      // Log details
+      this.logger.info(`The following contig names (${changedNameIndexes.length}) were adjusted:`);
+      this.logger.info(`Reasons: DUP (duplicate), LONG (>34), REPLACE (nonstandard characters)`);
+      changedNameIndexes.forEach((i) => {
+        const reason = reasons[i];
+        this.logger.warn(`- [${reason.index + 1}] ${reason.origName} -> ${reason.newName} (${reason.reason.join(', ')})`);
+      });
+    }
+  }
+
+  // Given an array of sequence names, returns an object with:
+  // - names: an array of corrected sequence names
+  // - reasons: an array of object reasons for the correction:
+  //   - index: the index of the name in the original array
+  //   - origName: the original name
+  //   - newName: the corrected name
+  //   - reason: the reason for the correction
+  //     (e.g. "duplicate", "too long", "nonstandard characters")
+  //     (e.g. "DUP", "LONG", "REPLACE")
+  static adjustContigNames(names=[]) {
+    console.log(names)
+    const reasons = {};
+    // Replace nonstandard characters
+    let replacedNames = names.map((name) => name.replace(/[^a-zA-Z0-9\*\_\-]+/g, '_'));
+    names.forEach((name, i) => {
+      if (name !== replacedNames[i]) {
+        reasons[i] = {index: i, origName: name, newName: replacedNames[i], reason: ["REPLACE"]};
+      }
+    });
+    // Shorten names
+    replacedNames.forEach((name, i) => {
+      if (name.length > 34) {
+        replacedNames[i] = name.slice(0, 34);
+        if (reasons[i]) {
+          reasons[i].newName = replacedNames[i];
+          reasons[i].reason.push("LONG");
+        } else {
+          reasons[i] = {index: i, origName: name, newName: replacedNames[i], reason: ["LONG"]};
+        }
+      }
+    });
+    // Make names unique
+    const finalNames = [];
+    replacedNames.forEach((name, i) => {
+      const newName = helpers.uniqueName(name, finalNames);
+      finalNames.push(newName);
+      if (newName !== name) {
+        if (reasons[i]) {
+          reasons[i].newName = newName;
+          reasons[i].reason.push("DUP");
+        } else {
+          reasons[i] = {index: i, origName: name, newName: newName, reason: ["DUP"]};
+        }
+      }
+    });
+
+    return {names: finalNames, reasons: Object.values(reasons)};
   }
 
   // TODO: contig names MUST BE UNIQUE

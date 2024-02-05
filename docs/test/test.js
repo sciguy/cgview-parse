@@ -273,8 +273,8 @@ async function runParse() {
   // });
   const logDiv = document.getElementById('log-text');
   // const messages = seqFile.logger.history({showTimestamps: false});
-  // const messages = seqFile.logger.history({showLevelIcons: true});
-  const messages = seqFile.logger.history();
+  const messages = seqFile.logger.history({showIcons: true});
+  // const messages = seqFile.logger.history();
   console.log(messages)
   logDiv.innerHTML = messages;
 
