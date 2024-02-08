@@ -2,6 +2,8 @@ import SeqRecToCGVJSON from '../src/SeqRecToCGVJSON.js';
 
 describe('SeqRecToCGVJSON', () => {
 
+
+
   describe('adjustContigNames', () => {
 
     test('- no changes', () => {

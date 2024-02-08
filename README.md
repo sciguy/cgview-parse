@@ -4,17 +4,24 @@ Parser for converting sequence files to CGView JSON via an Teselagen intermediat
 # Test Page
 The testing html page can open predefeind sequence files as well as use a file chooser to open custom files. The test page consists of
 - the input file
-- the intermediate teselagen JSON
+- the intermediate Sequence Record JSON
+- optional (for testing) teselagen JSON
 - the final CGView JSON
 - the CGView Map created from the JSON
 - a log of output messages
 - an Open in Proksee button
 
 # TODO
-- qualifiers without values still have a "\" at the beginning of their name
-- contig names need be unique
-- contig names need to have certain characters removed
-- any changes to contig names should print a warning to the log
+- qualifiers without values still have a "/" at the beginning of their name
+- add genbank/embl/fasta definition line
+- build_genetic_code
+
+# Tests
+- Add file tests
+  - have directory of input files one for good other for bad
+  - use fs.readFileSync to read in a file
+  - use SeqRecToCGVJSON to convert the file
+  - see if they pass or fail
 
 
 # Teselagen

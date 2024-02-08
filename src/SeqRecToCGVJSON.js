@@ -21,7 +21,6 @@ import * as helpers from './Helpers.js';
 // - better binary check see example proksee5.txt
 // - add name to CGView JSON summary
 // - Read over cgview_builder.rb script
-// - genetic code, codon_start
 
 export default class SeqRecordsToCGVJSON {
 
@@ -51,6 +50,7 @@ export default class SeqRecordsToCGVJSON {
     this._adjustContigNames(seqRecords);
     json = this._extractSequenceAndFeatures(json, seqRecords);
     this._summarizeSkippedFeatures()
+    this._adjustFeatureGeneticCode(json)
     json.name = json.sequence?.contigs[0]?.name || "Untitled";
     json = this._removeUnusedLegends(json);
     // Add track for features (if there are any)
@@ -108,15 +108,15 @@ export default class SeqRecordsToCGVJSON {
     const configKeys = config ? Object.keys(config) : ['none'];
     this.logger.info(`- Config properties provided: ${configKeys.join(', ')}`);
 
-    if (!config) { return json; }
-    if (config.settings) { json.settings = config.settings; }
-    if (config.backbone) { json.backbone = config.backbone; }
-    if (config.ruler) { json.ruler = config.ruler; }
-    if (config.dividers) { json.dividers = config.dividers; }
-    if (config.annotation) { json.annotation = config.annotation; }
-    if (config.sequence) { json.sequence = config.sequence; }
-    if (config.legend) { json.legend = config.legend; }
-    if (config.tracks) { json.tracks = config.tracks; }
+    json.settings = (config && config.settings) ? config.settings : {};
+    json.backbone = (config && config.backbone) ? config.backbone : {};
+    json.ruler = (config && config.ruler) ? config.ruler : {};
+    json.dividers = (config && config.dividers) ? config.dividers : {};
+    json.annotation = (config && config.annotation) ? config.annotation : {};
+    json.sequence = (config && config.sequence) ? config.sequence : {};
+    json.legend = (config && config.legend) ? config.legend : {};
+    json.tracks = (config && config.tracks) ? config.tracks : [];
+
     return json;
   }
 
@@ -138,13 +138,42 @@ export default class SeqRecordsToCGVJSON {
         seqRecord.name = adjustedNames[i];
       });
       // Log details
-      this.logger.info(`The following contig names (${changedNameIndexes.length}) were adjusted:`);
-      this.logger.info(`Reasons: DUP (duplicate), LONG (>34), REPLACE (nonstandard characters)`);
+      this.logger.warn(`The following contig names (${changedNameIndexes.length}) were adjusted:`);
+      this.logger.warn(`Reasons: DUP (duplicate), LONG (>34), REPLACE (nonstandard characters)`);
       changedNameIndexes.forEach((i) => {
         const reason = reasons[i];
         this.logger.warn(`- [${reason.index + 1}] ${reason.origName} -> ${reason.newName} (${reason.reason.join(', ')})`);
       });
     }
+  }
+
+  // Check what the most common genetic code is in the features
+  // Set the default genetic code to the most common one
+  // Features with the default genetic code do not need to have the genetic code specified
+  // We will only keep the genetic code for a feature if is different the common case.
+  _adjustFeatureGeneticCode(json) {
+    const features = json.features;
+    if (!features || features.length < 1) { return; }
+    const cdsFeatures = features.filter((f) => f.type === 'CDS');
+    const geneticCodes = cdsFeatures.map((f) => f.geneticCode);
+    const counts = {};
+    geneticCodes.forEach((code) => {
+
+      counts[code] = counts[code] ? counts[code] + 1 : 1;
+    });
+    let maxCode = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+    this.logger.info(`- Most common genetic code (transl_table): ${maxCode} (Count: ${counts[maxCode]}/${cdsFeatures.length} CDS features}`);
+    if (Object.keys(counts).length > 1) {
+      this.logger.warn(`- Additional genetic codes found: ${Object.keys(counts).join(', ')}`);
+    }
+    // Set the JSON genetic code to the most common one
+    json.settings.geneticCode = parseInt(maxCode);
+    // Remove common genetic code from features
+    json.features.forEach((f) => {
+      if (f.type === 'CDS' && f.geneticCode === parseInt(maxCode)) {
+        delete f.geneticCode;
+      }
+    });
   }
 
   // Given an array of sequence names, returns an object with:
@@ -266,7 +295,6 @@ export default class SeqRecordsToCGVJSON {
         this._skippedComplexFeatures.push(f);
         continue;
       }
-      // NEED TO LOG
       const feature = {
         start: f.start,
         stop: f.stop,
@@ -277,9 +305,19 @@ export default class SeqRecordsToCGVJSON {
         source,
         legend: f.type,
       };
-      if (f.qualifiers && f.qualifiers.start_codon && f.qualifiers.start_codon[0] !== 1) {
-        feature.start_codon = f.qualifiers.start_codon[0];
+      // codonStart (from codon_start)
+      if (f.qualifiers && f.qualifiers.codon_start && parseInt(f.qualifiers.codon_start[0]) !== 1) {
+        feature.codonStart = parseInt(f.qualifiers.codon_start[0]);
       }
+      // geneticCode (from transl_table)
+      if (feature.type === 'CDS') {
+        const geneticCode = f.qualifiers && f.qualifiers.transl_table && parseInt(f.qualifiers.transl_table[0]);
+        // The default genetic code for GenBank/EMBL is 1
+        feature.geneticCode = geneticCode || 1;
+      }
+
+
+      // Add feature to list
       features.push(feature);
     };
     return features;

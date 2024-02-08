@@ -2907,7 +2907,7 @@ FEATURES             Location/Qualifiers
                      /note="Derived by automated computational analysis using
                      gene prediction method: Protein Homology."
                      /codon_start=1
-                     /transl_table=11
+                     /transl_table=1
                      /product="50S ribosomal protein L5"
                      /protein_id="OLD33691.1"
                      /translation="MTAVLKERYDTTVKGELRKQFSYANVMQIPKVEKIILNIGMGEA
@@ -2923,7 +2923,7 @@ FEATURES             Location/Qualifiers
                      /note="Derived by automated computational analysis using
                      gene prediction method: Protein Homology."
                      /codon_start=1
-                     /transl_table=11
+                     /transl_table=1
                      /product="50S ribosomal protein L24"
                      /protein_id="OLD33692.1"
                      /translation="MAGIRLRKGDEVMVITGKDRGKRGRVQEVRPSARTVVVAGVNIA
@@ -2996,7 +2996,7 @@ FEATURES             Location/Qualifiers
                      /note="Derived by automated computational analysis using
                      gene prediction method: GeneMarkS+."
                      /codon_start=2
-                     /transl_table=11
+                     /transl_table=10
                      /product="30S ribosomal protein S3"
                      /protein_id="OLD33697.1"
                      /translation="AKVEELRQVLGKMTGKMVKVNIFEIRYPELDAYLIAENVAQQLE
