@@ -246,8 +246,12 @@ class SequenceFile {
   // in EMBL look for e.g.:
   // SQ   Sequence 3123 BP; 986 A; 605 C; 597 G; 935 T; 0 other;
   //     gaacgcgaat gcctctctct ctttcgatgg gtatgccaat tgtccacatt cactcgtgtt        60
+  //
+  // NOTE: the original regex had a 's' for dotall but it was cuasing an issue when integrating into proksee.
+  //       Oddly the issue did not occur in Chrome. It was only Safari.
+  //       The regex also didn't actually require the 's', so I removed it.
   _getSequence(seqRecordText) {
-    const match = seqRecordText.match(/^(?:ORIGIN|SQ\s{3}).*?$([^\/]*)(^\s*$|^\s*LOCUS)?/ms);
+    const match = seqRecordText.match(/^(?:ORIGIN|SQ\s{3}).*?$([^\/]*)(^\s*$|^\s*LOCUS)?/m);
     if (match) {
       return helpers.removeDigits(helpers.removeWhiteSpace(match[1]));
     } else {

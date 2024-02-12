@@ -15,7 +15,7 @@ const showInput = true;
 const showSeqJson = true;
 const showTesJson = false;
 const showCgvJson = true;
-const showMap = true;
+const showMap = false;
 const showAllText = false; // or only the first 1000 lines
 const filterSequence = true;
 

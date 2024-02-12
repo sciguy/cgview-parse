@@ -14,7 +14,6 @@ The testing html page can open predefeind sequence files as well as use a file c
 # TODO
 - qualifiers without values still have a "/" at the beginning of their name
 - add genbank/embl/fasta definition line
-- build_genetic_code
 
 # Tests
 - Add file tests
@@ -36,7 +35,6 @@ yarn build
 
 
 # NEXT
-- need summary stats
 - go over cgview_builder.rb and copy important stuff
 
 # Eventually
@@ -44,9 +42,6 @@ yarn build
   - Moves to first occurance of feature in both genbank and json so you can see side by side
 - summary below input and json of number of features
   - option to include breakdown of feature by type!!
-- Log possible issues
-  - start > stop
-  - joined locations
 - Would it be possible to click on a feature in input/output and see it highlighted in other file
 
 # Proksee Integration
@@ -56,7 +51,6 @@ yarn build
 
 # Notes
 rollup version being used for cgview: rollup v2.51.1
-
 
 # Code Layout 
 

@@ -20,6 +20,7 @@ import * as helpers from './Helpers.js';
 // - FAIL if sequence type is protein
 // - better binary check see example proksee5.txt
 // - add name to CGView JSON summary
+// - add optional "title" caption from config
 // - Read over cgview_builder.rb script
 
 export default class SeqRecordsToCGVJSON {

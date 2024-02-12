@@ -26,11 +26,11 @@ export default {
     //   globals: {d3: 'd3', svgcanvas: 'svgcanvas'},
     //   plugins: [terser()],
     // },
-    // {
-    //   file: 'docs/dist/cgview.esm.js',
-    //   // globals: {d3: 'd3', svgcanvas: 'svgcanvas'},
-    //   format: 'es',
-    // },
+    {
+      file: 'docs/dist/cgview-parsers.esm.js',
+      // globals: {d3: 'd3', svgcanvas: 'svgcanvas'},
+      format: 'es',
+    },
     // {
     //   file: 'dist/cgview.umd.min.js',
     //   format: 'umd',
