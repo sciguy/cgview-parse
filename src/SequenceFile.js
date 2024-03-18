@@ -12,7 +12,6 @@
 //   remove the features when submitting. 
 // TODO:
 // - Test start_codon
-// - Genetic codes
 // - Give examples of output (the record format)
 // - Go over the cgview_builder.rb script
 import Logger from './Logger.js';
@@ -24,6 +23,7 @@ class SequenceFile {
   // Options:
   // - addFeatureSequences: boolean [Default: false]. This can increase run time ~3x.
   // - logger: logger object
+  // - maxLogCount: number (undefined means no limit) (not implemented yet) [Default: 5]
   constructor(inputText, options={}) {
     this.inputText;
     this.logger = options.logger || new Logger();
@@ -31,10 +31,11 @@ class SequenceFile {
     this.logger.info(`Date: ${new Date().toUTCString()}`);
     this._success = true
     this._records = [];
+    this._errorCodes = new Set();
     if (!inputText || inputText === '') {
-      this._fail('Parsing Failed: No input text provided.')
+      this._fail('Parsing Failed: No input text provided.', 'empty')
     } else if (!helpers.isASCII(inputText)) {
-      this._fail('Parsing Failed: Input contains non-text characters. Is this binary data?');
+      this._fail('Parsing Failed: Input contains non-text characters. Is this binary data?', 'binary');
     } else {
       this._records = this._parse(inputText, options);
       if (options.addFeatureSequences) {
@@ -68,6 +69,12 @@ class SequenceFile {
   // { inputType, sequenceType, sequenceCount, featureCount, totalLength, success }
   get summary() {
     return this._summary;
+  }
+
+  // Returns an array of unique error codes
+  // Codes: unknown, binary, empty
+  get errorCodes() {
+    return Array.from(this._errorCodes);
   }
 
   /////////////////////////////////////////////////////////////////////////////
@@ -155,7 +162,11 @@ class SequenceFile {
         record.inputType = 'embl';
       }
       record.name = this._getSeqName(seqRecord);
+      record.seqID = this._getSeqID(seqRecord);
+      record.definition = this._getSeqDefinition(seqRecord);
       record.length = this._getSeqLength(seqRecord);
+      record.topology = this._getSeqTopology(seqRecord);
+      record.comments = this._getSeqComments(seqRecord);
       record.sequence = this._getSequence(seqRecord);
       if (!record.length) {
         record.length = record.sequence.length;
@@ -177,6 +188,12 @@ class SequenceFile {
         record.sequence = helpers.removeWhiteSpace(helpers.removeDigits(match[2]));
         record.length = record.sequence.length;
         record.features = [];
+        // Parse defintion line
+        const matchDef = record.name.match(/^(\S+)\s*(.*)/);
+        if (matchDef) {
+          record.seqID = matchDef[1];
+          record.definition = matchDef[2];
+        }
       }
       records.push(record);
     });
@@ -223,6 +240,51 @@ class SequenceFile {
     }
   }
 
+  // Get a sequence accessiona and version from a GenBank or EMBL record
+  // in GenBank look for e.g.:
+  // VERSION     NC_001823.1  GI:11466495
+  // in EMBL look for e.g.:
+  // ID   AF177870; SV 1; linear; genomic DNA; STD; INV; 3123 BP.
+  _getSeqID(seqRecordText) {
+    // GenBank
+    let match = seqRecordText.match(/^\s*(?:VERSION)\s*(\S+)/m);
+    if (match) {
+      let seqID = match[1];
+      return seqID;
+    }
+    // EMBL
+    match = seqRecordText.match(/^\s*AC\s*(\S+);/m);
+    if (match) {
+      let accession = match[1];
+      // Look for version
+      match = seqRecordText.match(/^\s*ID\s*(\S+);\s*SV\s*(\d+);/);
+      let version;
+      if (match) {
+        version = match[2];
+      }
+      return version ? `${accession}.${version}` : accession;
+    } else {
+      // no matches
+      return "";
+    }
+  }
+
+
+  // Get a sequence definition from a GenBank or EMBL record
+  // in GenBank look for e.g.:
+  // DEFINITION  Reclinomonas americana mitochondrion, complete genome.
+  // in EMBL look for e.g.:
+  // DE   Reclinomonas americana mitochondrion, complete genome.
+  _getSeqDefinition(seqRecordText) {
+    const match = seqRecordText.match(/^\s*(?:DEFINITION|DE)\s*(.+)$/m);
+    if (match) {
+      let definition = match[1];
+      return definition
+    } else {
+      return "";
+    }
+  }
+
   // Get a sequence length from a GenBank or EMBL record
   // in GenBank look for e.g.:
   // LOCUS       AF177870     3123 bp    DNA             INV       31-OCT-1999
@@ -238,6 +300,47 @@ class SequenceFile {
       return 0;
     }
   }
+
+  // Get a sequence topology from a GenBank or EMBL record
+  // in GenBank look for e.g.:
+  // LOCUS       NC_001823              69034 bp    DNA     circular INV 16-AUG-2005
+  // in EMBL look for e.g.:
+  // ID   AF177870; SV 1; linear; genomic DNA; STD; INV; 3123 BP.
+  // ID   NC_001823; SV 1; linear; unassigned DNA; STD; UNC; 69034 BP.
+  _getSeqTopology(seqRecordText) {
+    const match = seqRecordText.match(/^\s*(?:LOCUS|ID)\s*\S+\s+.*(linear|circular)/);
+    if (match) {
+      return this.topology = match[1];
+    } else {
+      return "unknown";
+    }
+  }
+
+  // Get a sequence comments from a GenBank or EMBL record
+  // in GenBank look for e.g.:
+  // COMMENT   REVIEWED REFSEQ: This record has been curated by NCBI staff. The
+  //           reference sequence was derived from AF007261.
+  // in EMBL look for e.g.:
+  // CC   REVIEWED REFSEQ: This record has been curated by NCBI staff. The
+  // CC   reference sequence was derived from AF007261.
+  _getSeqComments(seqRecordText) {
+    // Genbank
+    let match = seqRecordText.match(/^\s*COMMENT\s+(.*)\nFEATURES/ms);
+    let comments = '';
+    if (match) {
+      comments = match[1];
+      comments = comments.replace(/^\s*/mg, "");
+    } else {
+      // EMBL
+      match = seqRecordText.match(/^\s*CC\s+(.*)\nXX/ms);
+      if (match) {
+        comments = match[1];
+        comments = comments.replace(/^\s*CC\s*/mg, "");
+      }
+    }
+    return comments
+  }
+
 
   // Get the full sequence from a GenBank or EMBL record
   // in GenBank look for e.g.:
@@ -417,6 +520,8 @@ class SequenceFile {
   }
 
   // Get an array of objects containing feature qualifier names and values from a feature string
+  // NOTE: qualifiers without values will be set to true
+  // NOTE: we may want to only have arrays if there are multiple values
   // e.g.
   //      gene            complement(<1..>172)
   //                      /locus_tag="ECPA2_RS30085"
@@ -436,11 +541,14 @@ class SequenceFile {
           name = match[1];
           value = this._formatFeatureQualifier(match[2]);
         } else {
-          name = helpers.removeWhiteSpace(qualifierText);
-          value = "";
+          // not a key-value pair
+          name = helpers.removeWhiteSpace(qualifierText).replace(/^\//, "");
+          value = true;
         }
         if (qualifiers[name]) {
           qualifiers[name].push(value);
+        } else if (value === true) {
+          qualifiers[name] = true;
         } else {
           qualifiers[name] = [value];
         }
@@ -509,9 +617,10 @@ class SequenceFile {
     this._sequenceType = (uniqueSeqTypes.length > 1) ? 'multiple' : uniqueSeqTypes[0];
   }
 
-  _fail(message) {
+  _fail(message, errorCode='unknown') {
     this.logger.error(message);
     this._success = false;
+    this._errorCodes.add(errorCode);
   }
 
   // Simple way to pluralize a phrase

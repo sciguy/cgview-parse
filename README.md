@@ -1,6 +1,12 @@
 # CGView Parse
 Parser for converting sequence files to CGView JSON via an Teselagen intermediate JSON format.
 
+# Resources
+- Web interface for EMBL/GenBank Features and Qualifiers
+  https://www.ebi.ac.uk/ena/WebFeat/
+- ENA (European Nucleotide Archive) source for EMBL files
+  https://www.ebi.ac.uk/ena/browser/view/CP027060
+
 # Test Page
 The testing html page can open predefeind sequence files as well as use a file chooser to open custom files. The test page consists of
 - the input file
@@ -13,7 +19,10 @@ The testing html page can open predefeind sequence files as well as use a file c
 
 # TODO
 - qualifiers without values still have a "/" at the beginning of their name
+  - example contigs(MNHM): CDS (AUI44_00015) - "/pseudo"
 - add genbank/embl/fasta definition line
+- add template json based on proksee template yaml file
+- 
 
 # Tests
 - Add file tests

@@ -10,6 +10,7 @@ import * as helpers from './Helpers.js';
 //   - If array of strings, include only those qualifiers
 //   - ADD TEST FOR THIS
 // - skipComplexLocations: boolean (not implemented yet) [Defualt: true]
+// - maxLogCount: number (undefined means no limit) (not implemented yet) [Default: 5]
 
 // LOGGING (including from sequence file)
 // - start with date and version (and options: skipTypes, includeQualifiers, skipComplexLocations)
@@ -22,6 +23,8 @@ import * as helpers from './Helpers.js';
 // - add name to CGView JSON summary
 // - add optional "title" caption from config
 // - Read over cgview_builder.rb script
+
+// - Have ability to return a results object with the JSON, summary, stats and log
 
 export default class SeqRecordsToCGVJSON {
 
@@ -49,6 +52,7 @@ export default class SeqRecordsToCGVJSON {
     // Version: we should keep the version the same as the latest for CGView.js
     json.version = this.version;
     this._adjustContigNames(seqRecords);
+    json.settings.format = SeqRecordsToCGVJSON.determineFormat(seqRecords);
     json = this._extractSequenceAndFeatures(json, seqRecords);
     this._summarizeSkippedFeatures()
     this._adjustFeatureGeneticCode(json)
@@ -125,7 +129,6 @@ export default class SeqRecordsToCGVJSON {
   // - to be unique by adding a number to the end of duplicate names
   // - replace nonstandard characters with underscores
   // - length of contig names should be less than 37 characters
-
   _adjustContigNames(seqRecords) {
     const names = seqRecords.map((seqRecord) => seqRecord.name);
     const adjustedNameResults = SeqRecordsToCGVJSON.adjustContigNames(names);
@@ -134,7 +137,7 @@ export default class SeqRecordsToCGVJSON {
     this.logger.info('- Checking contig names...');
     const changedNameIndexes = Object.keys(reasons);
     if (changedNameIndexes.length > 0) {
-      // Chnage SeqRecord names
+      // Change SeqRecord names
       seqRecords.forEach((seqRecord, i) => {
         seqRecord.name = adjustedNames[i];
       });
@@ -176,6 +179,19 @@ export default class SeqRecordsToCGVJSON {
       }
     });
   }
+
+  // Based on seq records, determine the format of the sequence:
+  // Default wil be "circular" unless there is only one sequence and it is linear
+  static determineFormat(seqRecords=[]) {
+    if (seqRecords.length > 1) {
+      return "circular";
+    } else if (seqRecords[0]?.topology === 'linear') {
+      return "linear";
+    } else {
+      return "circular";
+    }
+  }
+
 
   // Given an array of sequence names, returns an object with:
   // - names: an array of corrected sequence names

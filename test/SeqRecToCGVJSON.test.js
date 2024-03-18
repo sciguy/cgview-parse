@@ -2,10 +2,7 @@ import SeqRecToCGVJSON from '../src/SeqRecToCGVJSON.js';
 
 describe('SeqRecToCGVJSON', () => {
 
-
-
   describe('adjustContigNames', () => {
-
     test('- no changes', () => {
       const names = ['contig1', 'contig_2', 'contig-3'];
       const result = SeqRecToCGVJSON.adjustContigNames(names);
@@ -51,8 +48,7 @@ describe('SeqRecToCGVJSON', () => {
       expect(result.names).toEqual(expected);
       expect(Object.keys(result.reasons).length).toBe(3);
     });
-
-
   });
+
 
 });

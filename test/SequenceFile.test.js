@@ -24,6 +24,43 @@ describe('SequenceFile', () => {
     });
   });
 
+  describe('_getSeqDefinition', () => {
+    test('- return GenBank name', () => {
+      const input = "\nDEFINITION  Reclinomonas americana mitochondrion, complete genome.\n";
+      const definition = seqFile._getSeqDefinition(input);
+      expect(definition).toBe("Reclinomonas americana mitochondrion, complete genome.");
+    });
+    test('- return EMBL name', () => {
+      const input = "\nDE   Reclinomonas americana mitochondrion, complete genome.\n";
+      const definition = seqFile._getSeqDefinition(input);
+      expect(definition).toBe("Reclinomonas americana mitochondrion, complete genome.");
+    });
+    test('- return "" if it can not be parsed', () => {
+      const input = "some unknown string";
+      const name = seqFile._getSeqName(input);
+      expect(name).toBe("");
+    });
+  });
+
+  describe('_getSeqID', () => {
+    test('- return GenBank accession.version', () => {
+      const input = "\nVERSION     NC_001823.1  GI:11466495\n";
+      const definition = seqFile._getSeqID(input);
+      expect(definition).toBe("NC_001823.1");
+    });
+    test('- return EMBL accesion.version', () => {
+      const input = "ID   AF177870; SV 1; linear; genomic DNA; STD; INV; 3123 BP.\nXX\nAC   AF177870;\nXX\n";
+      const definition = seqFile._getSeqID(input);
+      expect(definition).toBe("AF177870.1");
+    });
+    test('- return "" if it can not be parsed', () => {
+      const input = "some unknown string";
+      const name = seqFile._getSeqName(input);
+      expect(name).toBe("");
+    });
+  });
+
+
   describe('_getSeqLength', () => {
     test('- return length from GenBank', () => {
       const input = "LOCUS       AF177870     3123 bp    DNA             INV       31-OCT-1999\n\n\n";
@@ -41,6 +78,49 @@ describe('SequenceFile', () => {
       expect(length).toBe(0);
     });
   });
+
+  describe('_getSeqTopology', () => {
+    test('- return topology cicular from GenBank', () => {
+      const input = "LOCUS       NC_001823              69034 bp    DNA     circular INV 16-AUG-2005";
+      const topology = seqFile._getSeqTopology(input);
+      expect(topology).toBe('circular');
+    });
+    test('- return topology linear from GenBank', () => {
+      const input = "LOCUS       NC_001823              69034 bp    DNA     linear INV 16-AUG-2005";
+      const topology = seqFile._getSeqTopology(input);
+      expect(topology).toBe('linear');
+    });
+    test('- return topology circular from EMBL', () => {
+      const input = "ID   AF177870; SV 1; circular; genomic DNA; STD; INV; 3123 BP.\n\n\n";
+      const topology = seqFile._getSeqTopology(input);
+      expect(topology).toBe('circular');
+    });
+    test('- return topology linear from EMBL', () => {
+      const input = "ID   AF177870; SV 1; linear; genomic DNA; STD; INV; 3123 BP.\n\n\n";
+      const topology = seqFile._getSeqTopology(input);
+      expect(topology).toBe('linear');
+    });
+    test('- return unknown if it can not be parsed', () => {
+      const input = "some unknown string";
+      const topology = seqFile._getSeqTopology(input);
+      expect(topology).toBe('unknown');
+    });
+  });
+
+
+  describe('_parseFasta', () => {
+    test('- return seqID', () => {
+      const input = ">NC_001823.1 Reclinomonas americana mitochondrion, complete genome.\nATGCTT";
+      const fasta  = seqFile._parseFasta(input);
+      expect(fasta[0].seqID).toBe("NC_001823.1");
+    });
+    test('- return definition', () => {
+      const input = ">NC_001823.1 Reclinomonas americana mitochondrion, complete genome.\nATGCTT";
+      const fasta  = seqFile._parseFasta(input);
+      expect(fasta[0].definition).toBe("Reclinomonas americana mitochondrion, complete genome.");
+    });
+  });
+
 
   /////////////////////////////////////////////////
   // FEATURES
@@ -128,6 +208,12 @@ describe('SequenceFile', () => {
       const qualifiers = seqFile._getFeatureQualifiers(input);
       expect(Object.keys(qualifiers).length).toBe(1);
       expect(qualifiers.locus_tag).toEqual(["tag_1", "tag_2"]);
+    });
+    test("- returns qualifiers without values", () => {
+      const input = '       gene            1..172\n                     /pseudo\n';
+      const qualifiers = seqFile._getFeatureQualifiers(input);
+      expect(Object.keys(qualifiers).length).toBe(1);
+      expect(qualifiers.pseudo).toBe(true);
     });
   });
 
