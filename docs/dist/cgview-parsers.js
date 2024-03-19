@@ -326,10 +326,10 @@ var CGVParse = (function () {
   // - config: jsonConfig
   // - skipTypes: boolean (TEST) [Default: ['gene', 'source', 'exon']]
   //   - If false, include ALL feature types in the JSON
-  // - includeQualifiers: boolean (not implemented yet) [Defualt: false]
+  // - includeQualifiers: boolean [Defualt: false]
   //   - If true, include ALL qualifiers in the JSON
   //   - If array of strings, include only those qualifiers
-  //   - ADD TEST FOR THIS
+  //   - If false, include NO qualifiers
   // - skipComplexLocations: boolean (not implemented yet) [Defualt: true]
   // - maxLogCount: number (undefined means no limit) (not implemented yet) [Default: 5]
 

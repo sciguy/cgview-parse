@@ -37,9 +37,7 @@ The testing html page can open predefeind sequence files as well as use a file c
   - locus_tag, start_codon
 - Need status/success of cgview conversion
 - Sort Errors vs Warnings
-- add qualifers to json (and test)
 - add options (SeqFile and ToJson) to logger output 
-- FAIL if sequence type is protein
 - better binary check see example proksee5.txt
 - add name to CGView JSON summary
 - add optional "title" caption from config
