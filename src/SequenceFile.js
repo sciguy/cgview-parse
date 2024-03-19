@@ -14,6 +14,8 @@
 // - Test start_codon
 // - Give examples of output (the record format)
 // - Go over the cgview_builder.rb script
+// - consider changing type to molType
+// - consider changing inputType to fileType
 import Logger from './Logger.js';
 import SeqRecordsToCGVJSON from './SeqRecToCGVJSON.js';
 import * as helpers from './Helpers.js';

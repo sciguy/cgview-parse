@@ -50,5 +50,36 @@ describe('SeqRecToCGVJSON', () => {
     });
   });
 
+  describe('addQualifiers', () => {
+    test('- false: add none', () => {
+      const qualifiersIn = {number: 3, string: "test", single: true, multiple: ['one', 'two']};
+      const includeQualifiers = false;
+      const qualifiersOut = SeqRecToCGVJSON.extractQualifiers(qualifiersIn, includeQualifiers);
+      expect(qualifiersOut).toEqual(undefined);
+    });
+
+    test('- true: add all', () => {
+      const qualifiersIn = {number: 3, string: "test", single: true, multiple: ['one', 'two']};
+      const includeQualifiers = true;
+      const qualifiersOut = SeqRecToCGVJSON.extractQualifiers(qualifiersIn, includeQualifiers);
+      expect(qualifiersOut).toEqual(qualifiersIn);
+    });
+
+    test("- ['string'] : add string", () => {
+      const qualifiersIn = {number: 3, string: "test", single: true, multiple: ['one', 'two']};
+      const includeQualifiers = ['string'];
+      const qualifiersOut = SeqRecToCGVJSON.extractQualifiers(qualifiersIn, includeQualifiers);
+      expect(qualifiersOut).toEqual({string: "test"});
+    });
+
+    test("- ['string', 'single', 'multiple', 'fake'] : add string, single, multiple", () => {
+      const qualifiersIn = {number: 3, string: "test", single: true, multiple: ['one', 'two']};
+      const includeQualifiers = ['string', 'single', 'multiple', 'fake'];
+      const qualifiersOut = SeqRecToCGVJSON.extractQualifiers(qualifiersIn, includeQualifiers);
+      expect(qualifiersOut).toEqual({string: "test", single: true, multiple: ['one', 'two']});
+    });
+
+  });
+
 
 });

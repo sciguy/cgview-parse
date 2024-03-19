@@ -16,12 +16,17 @@ import * as helpers from './Helpers.js';
 // - start with date and version (and options: skipTypes, includeQualifiers, skipComplexLocations)
 export default class SeqRecordsToCGVJSON {
 
+  // NOTE: consider passing in SequenceFile instead of seqRecords (gives us summary)
   constructor(seqRecords, options = {}) {
     this.version = "1.6.0";
     this.options = options;
     this.logger = options.logger || new Logger();
     this.seqRecords = seqRecords;
+    this.includeQualifiers = options.includeQualifiers || false;
+    // This could come from SequenceFile summary
     this.inputType = seqRecords && seqRecords[0]?.inputType;
+    this.sequenceType = seqRecords && seqRecords[0]?.type;
+
     this.defaultTypesToSkip = ['gene', 'source', 'exon'];
 
     this.json = this._convert(seqRecords);
@@ -35,6 +40,17 @@ export default class SeqRecordsToCGVJSON {
     this.logger.info(`Converting to CGView JSON...`);
     this.logger.info(`- CGView JSON version ${this.version}`);
     this.logger.info(`- Input Sequence Count: ${seqRecords.length}`);
+    this.logger.info(`- Input File Type: ${this.inputType || 'Unknown'}`);
+    this.logger.info(`- Input Sequence Type: ${this.sequenceType || 'Unknown'}`);
+    // Check for records and make sure they are DNA
+    if (!seqRecords || seqRecords.length < 1) {
+      this.logger.error("Conversion Failed: No sequence records provided");
+      return {};
+    }
+    if (this.sequenceType?.toLowerCase() !== 'dna') {
+      this.logger.error(`Conversion Failed: Input type is not DNA: '${this.sequenceType}'`);
+      return {};
+    }
     // Here json refers to the CGView JSON
     let json = this._addConfigToJSON({}, this.options.config); 
     // Version: we should keep the version the same as the latest for CGView.js
@@ -44,12 +60,23 @@ export default class SeqRecordsToCGVJSON {
     json = this._extractSequenceAndFeatures(json, seqRecords);
     this._summarizeSkippedFeatures()
     this._adjustFeatureGeneticCode(json)
+    this._logQualifiers();
     json.name = json.sequence?.contigs[0]?.name || "Untitled";
     json = this._removeUnusedLegends(json);
     // Add track for features (if there are any)
     json.tracks = this._buildTracks(json, this.inputType);
     this._convertSummary(json);
     return { cgview: json };
+  }
+
+  _logQualifiers() {
+    let qualifiersToInclude = "none";
+    if (this.includeQualifiers === true) {
+      qualifiersToInclude = "all";
+    } else if (Array.isArray(this.includeQualifiers)) {
+      qualifiersToInclude = this.includeQualifiers.join(', ');
+    }
+    this.logger.info(`- Extracted Qualifiers: ${qualifiersToInclude} `);
   }
 
   _convertSummary(json) {
@@ -304,8 +331,6 @@ export default class SeqRecordsToCGVJSON {
 
   _extractFeatures(seqContig, contigName, inputType) {
     const features = [];
-    // const skippedFeatures = {};
-    // const complexFeatures = [];
     const source = inputType ? `${inputType}-features` : "features";
     for (const f of seqContig.features) {
       if (this.featuresToSkip.includes(f.type)) {
@@ -336,12 +361,35 @@ export default class SeqRecordsToCGVJSON {
         // The default genetic code for GenBank/EMBL is 1
         feature.geneticCode = geneticCode || 1;
       }
-
+      const qualifiers = SeqRecordsToCGVJSON.extractQualifiers(f.qualifiers, this.includeQualifiers);
+      if (qualifiers) {
+        feature.qualifiers = qualifiers;
+      }
 
       // Add feature to list
       features.push(feature);
     };
     return features;
   }
+
+  static extractQualifiers(qualifiersIn, includeQualifiers) {
+    let qualifiersOut = {};
+
+    if (includeQualifiers === true && qualifiersIn) {
+      qualifiersOut = qualifiersIn;
+    } else if (Array.isArray(includeQualifiers)) {
+      includeQualifiers.forEach((q) => {
+        if (qualifiersIn[q] !== undefined) {
+          qualifiersOut[q] = qualifiersIn[q];
+        }
+      });
+    }
+
+    if (Object.keys(qualifiersOut).length > 0) {
+      return qualifiersOut;
+    }
+  }
+
+
 
 }

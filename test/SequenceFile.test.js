@@ -201,7 +201,7 @@ describe('SequenceFile', () => {
       const input = '       gene            1..172\n                     /locus_tag="ECPA2_RS30085"';
       const qualifiers = seqFile._getFeatureQualifiers(input);
       expect(Object.keys(qualifiers).length).toBe(1);
-      expect(qualifiers.locus_tag).toEqual(["ECPA2_RS30085"]);
+      expect(qualifiers.locus_tag).toEqual("ECPA2_RS30085");
     });
     test("- returns mulitple qualifiers", () => {
       const input = '       gene            1..172\n                     /locus_tag="tag_1"\n                     /locus_tag="tag_2"';

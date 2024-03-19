@@ -251,7 +251,7 @@ async function runParse() {
   if (showCgvJsonCheckbox.checked) {
     const cgvJsonStartTime = new Date().getTime();
     // cgvJSON = CGVParse.seqJSONToCgvJSON(seqJSON, {config: jsonConfig});
-    cgvJSON = seqFile.toCGVJSON({config: jsonConfig});
+    cgvJSON = seqFile.toCGVJSON({config: jsonConfig, includeQualifiers: true});
     const cgvJsonRunTime = elapsedTime(cgvJsonStartTime);
     updateTime('time-cgv-json', cgvJsonRunTime);
     // Convert to string (and pretty print with 2 spaces)
