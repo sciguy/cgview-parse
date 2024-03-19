@@ -18,11 +18,33 @@ The testing html page can open predefeind sequence files as well as use a file c
 - an Open in Proksee button
 
 # TODO
-- qualifiers without values still have a "/" at the beginning of their name
-  - example contigs(MNHM): CDS (AUI44_00015) - "/pseudo"
-- add genbank/embl/fasta definition line
-- add template json based on proksee template yaml file
-- 
+- Proksee
+  - if there are warning the log button should have a warning logo in or beside button
+  - Same with errors (except the log will also automatically open)
+- Proksee Parse Options (This should be part of the tool and tool.yaml)
+  - Beside the Log button there should be an "Options" button which rbings up import options:
+    - Note: some options coudl be saved as cookies
+    - Import Sequence (useful to turn off on large files)
+    - Import Qualifers
+      - When yes, allow all or choice of qualifers
+      - The list could come from the file itself
+    - Feature name from qualifier options
+      - Note: qualifiers don't have to be imported for them to be use for name
+      - List of qualifer tags in order of preference
+      - User can change order, remove/add tags
+    - Full log (by default only show the first ~5 warnings/errors for the same type)
+- Warning/Error should occur if certain qualifiers have more than one:
+  - locus_tag, start_codon
+- Need status/success of cgview conversion
+- Sort Errors vs Warnings
+- add qualifers to json (and test)
+- add options (SeqFile and ToJson) to logger output 
+- FAIL if sequence type is protein
+- better binary check see example proksee5.txt
+- add name to CGView JSON summary
+- add optional "title" caption from config
+- Read over cgview_builder.rb script
+- Have ability to return a results object with the JSON, summary, stats and log
 
 # Tests
 - Add file tests

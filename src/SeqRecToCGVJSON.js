@@ -14,18 +14,6 @@ import * as helpers from './Helpers.js';
 
 // LOGGING (including from sequence file)
 // - start with date and version (and options: skipTypes, includeQualifiers, skipComplexLocations)
-// - provide summary of CGView JSON (contigs, features, tracks, legends)
-// - total number of features skipped
-
-// TODO:
-// - FAIL if sequence type is protein
-// - better binary check see example proksee5.txt
-// - add name to CGView JSON summary
-// - add optional "title" caption from config
-// - Read over cgview_builder.rb script
-
-// - Have ability to return a results object with the JSON, summary, stats and log
-
 export default class SeqRecordsToCGVJSON {
 
   constructor(seqRecords, options = {}) {
@@ -97,13 +85,23 @@ export default class SeqRecordsToCGVJSON {
     // Complex Locations
     const complexFeatures = this._skippedComplexFeatures;
     const complexCount = complexFeatures.length;
+    // if (complexCount > 0) {
+    //   const exampleCount = Math.min(5, complexFeatures.length);
+    //   this.logger.info(`- Skipped features (${complexCount}) with complex locations:`);
+    //   complexFeatures.slice(0, exampleCount).forEach(f => this.logger.info(`  - ${f.type} '${f.name}': ${f.locationText}`));
+    //   if (complexCount > exampleCount) {
+    //     this.logger.info(`  - ${complexCount - exampleCount} more not shown (${complexCount.toLocaleString()} total)`);
+    //   }
+    // }
     if (complexCount > 0) {
-      const exampleCount = Math.min(5, complexFeatures.length);
+      // const exampleCount = Math.min(5, complexFeatures.length);
       this.logger.info(`- Skipped features (${complexCount}) with complex locations:`);
-      complexFeatures.slice(0, exampleCount).forEach(f => this.logger.info(`  - ${f.type} '${f.name}': ${f.locationText}`));
-      if (complexCount > exampleCount) {
-        this.logger.info(`  - ${complexCount - exampleCount} more not shown (${complexCount.toLocaleString()} total)`);
-      }
+      const messages = complexFeatures.map((f) => `  - ${f.type} '${f.name}': ${f.locationText}`);
+      this.logger.info(messages);
+      // complexFeatures.slice(0, exampleCount).forEach(f => this.logger.info(`  - ${f.type} '${f.name}': ${f.locationText}`));
+      // if (complexCount > exampleCount) {
+      //   this.logger.info(`  - ${complexCount - exampleCount} more not shown (${complexCount.toLocaleString()} total)`);
+      // }
     }
 
   }
@@ -144,10 +142,14 @@ export default class SeqRecordsToCGVJSON {
       // Log details
       this.logger.warn(`The following contig names (${changedNameIndexes.length}) were adjusted:`);
       this.logger.warn(`Reasons: DUP (duplicate), LONG (>34), REPLACE (nonstandard characters)`);
+      const messages = [];
       changedNameIndexes.forEach((i) => {
         const reason = reasons[i];
-        this.logger.warn(`- [${reason.index + 1}] ${reason.origName} -> ${reason.newName} (${reason.reason.join(', ')})`);
+        messages.push(`- [${reason.index + 1}] ${reason.origName} -> ${reason.newName} (${reason.reason.join(', ')})`);
+        // this.logger.warn(`- [${reason.index + 1}] ${reason.origName} -> ${reason.newName} (${reason.reason.join(', ')})`);
       });
+      this.logger.warn(messages);
+
     }
   }
 
@@ -206,6 +208,8 @@ export default class SeqRecordsToCGVJSON {
     console.log(names)
     const reasons = {};
     // Replace nonstandard characters
+    // Consider adding (.:#) here: https://www.ncbi.nlm.nih.gov/genbank/fastaformat/
+    // - do any of these break Crispr/Other tools
     let replacedNames = names.map((name) => name.replace(/[^a-zA-Z0-9\*\_\-]+/g, '_'));
     names.forEach((name, i) => {
       if (name !== replacedNames[i]) {

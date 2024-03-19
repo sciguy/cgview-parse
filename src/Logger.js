@@ -1,12 +1,17 @@
 // OPTIONS:
 // - logToConsole [Default: true]: log to console
 // - showTimestamps [Default: true]: Add time stamps
-// - howLevelIcons: Add level as icon: warn, info, etc (not implemented yet)
+// - showIcons: Add level as icon: warn, info, etc
+// - maxLogCount: Maximum number of similar log messages to keep (not implemented yet)
 // NOTE:
 // - logToConsole and showTimestamps can be overridden in each log call
 //   as well as the history
 // TODO:
 // - add groups to group logs together for formatting and filtering
+// Logging levels: log, info, warn, error
+// Log messages can be a simgle message or an array of messages
+// - When an array of messages is provided, if the cound is more than maxLogCount
+//   then only the first maxLogCount messages are shown.
 class Logger {
 
   constructor(options={}) {
@@ -14,6 +19,7 @@ class Logger {
     this.logToConsole = (options.logToConsole === undefined) ? true : options.logToConsole;
     this.showTimestamps = (options.showTimestamps === undefined) ? true : options.showTimestamps;
     this.showIcons = (options.showIcons === undefined) ? false : options.showIcons;
+    this.maxLogCount = (options.maxLogCount === undefined) ? false : options.maxLogCount;
     this.logs = [];
   }
 
@@ -21,20 +27,20 @@ class Logger {
     return this.logs.length;
   }
 
-  log(message, options={}) {
-    this._log(message, 'log', options);
+  log(messages, options={}) {
+    this._log(messages, 'log', options);
   }
 
-  info(message, options={}) {
-    this._log(message, 'info', options);
+  info(messages, options={}) {
+    this._log(messages, 'info', options);
   }
 
-  warn(message, options={}) {
-    this._log(message, 'warn', options);
+  warn(messages, options={}) {
+    this._log(messages, 'warn', options);
   }
 
-  error(message, options={}) {
-    this._log(message, 'error', options);
+  error(messages, options={}) {
+    this._log(messages, 'error', options);
   }
 
   break(divider="\n") {
@@ -59,11 +65,24 @@ class Logger {
   ///////////////////////////////////////////////////////////////////////////
 
   // level: warn, error, info, log
-  _log(message, level, options={}) {
+  _log(messages, level, options={}) {
     const timestamp = this._formatTime(new Date());
-    const logItem = { type: 'message', message, level, timestamp, icon: options.icon };
-    this.logs.push(logItem);
-    this._consoleMessage(logItem, options);
+    messages = (Array.isArray(messages)) ? messages : [messages];
+    const maxLogCount = this._optionFor('maxLogCount', options);
+    let messageLimitReached;
+    for (const [index, message] of messages.entries()) {
+      if (maxLogCount && index >= maxLogCount && index !== messages.length - 1) {
+        const padding = messages[0].match(/^\s*/)[0];
+        messageLimitReached = `${padding}- Only showing first ${maxLogCount}: ${messages.length - maxLogCount} more not shown (${messages.length.toLocaleString()} total)`;
+      }
+      const logItem = { type: 'message', message: (messageLimitReached || message), level, timestamp, icon: options.icon };
+      this.logs.push(logItem);
+      this._consoleMessage(logItem, options);
+      if (messageLimitReached) { break; }
+    }
+    // const logItem = { type: 'message', messages, level, timestamp, icon: options.icon };
+    // this.logs.push(logItem);
+    // this._consoleMessage(logItem, options);
   }
 
   _consoleMessage(logItem, options={} ) {

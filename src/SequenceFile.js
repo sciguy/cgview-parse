@@ -521,7 +521,7 @@ class SequenceFile {
 
   // Get an array of objects containing feature qualifier names and values from a feature string
   // NOTE: qualifiers without values will be set to true
-  // NOTE: we may want to only have arrays if there are multiple values
+  // NOTE: qualifiers values can be a single value or an array of values
   // e.g.
   //      gene            complement(<1..>172)
   //                      /locus_tag="ECPA2_RS30085"
@@ -546,31 +546,41 @@ class SequenceFile {
           value = true;
         }
         if (qualifiers[name]) {
-          qualifiers[name].push(value);
+          // qualifiers[name].push(value);
+          if (qualifiers[name] instanceof Array) {
+            qualifiers[name].push(value);
+          } else {
+            qualifiers[name] = [qualifiers[name], value];
+          }
         } else if (value === true) {
           qualifiers[name] = true;
         } else {
-          qualifiers[name] = [value];
+          // qualifiers[name] = [value];
+          qualifiers[name] = value;
         }
       });
     }
     return qualifiers;
   }
 
-  _getFeatureName(qualifiers) {
-    if (qualifiers?.gene) {
-      return qualifiers.gene[0];
-    } else if (qualifiers?.locus_tag) {
-      return qualifiers.locus_tag[0];
-    } else if (qualifiers?.product) {
-      return qualifiers.product[0];
-    } else if (qualifiers?.note) {
-      return qualifiers.note[0];
-    } else if (qualifiers?.db_xref) {
-      return qualifiers.db_xref[0];
-    } else {
-      return "";
+  // Return the value for a qualifer name/key from a qualifiers object
+  // If multiple values, return the first value
+  // Returns undefined if the qualifier does not exist
+  _getFirstQualifierValueForName(name, qualifiers) {
+    const value = qualifiers[name];
+    if (value instanceof Array) {
+      return value[0];
+    } else if (value !== undefined) {
+      return value
     }
+  }
+
+  _getFeatureName(qualifiers) {
+    // This is the order of preference for the name of a feature
+    // This could become a user-defined list (think tags that the user can rearrange or add/remove)
+    const keys = ['gene', 'locus_tag', 'product', 'note', 'db_xref'];
+    const foundKey = keys.find((key) => this._getFirstQualifierValueForName(key, qualifiers));
+    return foundKey ? this._getFirstQualifierValueForName(foundKey, qualifiers) : "";
   }
 
   // Optional
@@ -659,18 +669,22 @@ class SequenceFile {
     if (recordsDiffLengths.length > 0) {
       const count = recordsDiffLengths.length.toLocaleString();
       this._fail(`The following sequences (${count}) have mismatched lengths (length attribute vs sequence length):`);
-      for (const record of recordsDiffLengths) {
-        this.logger.error(`- ${record.name}: ${record.length.toLocaleString()} bp vs ${record.sequence.length.toLocaleString()} bp`);
-      }
+      // for (const record of recordsDiffLengths) {
+      //   this.logger.error(`- ${record.name}: ${record.length.toLocaleString()} bp vs ${record.sequence.length.toLocaleString()} bp`);
+      // }
+      const messages = recordsDiffLengths.map((r) => `- ${r.name}: ${r.length.toLocaleString()} bp vs ${r.sequence.length.toLocaleString()} bp`);
+      this.logger.error(messages);
     }
     // Sequence contains unexpected characters
     const recordsUnexpectedChars = records.filter((record) => record.hasUnexpectedCharacters);
     if (recordsUnexpectedChars.length > 0) {
       const count = recordsUnexpectedChars.length.toLocaleString();
       this._fail(`The following sequences (${count}) contain unexpected characters:`);
-      for (const record of recordsUnexpectedChars) {
-        this.logger.error(`- ${record.name}: ${record.hasUnexpectedCharacters}`);
-      }
+      // for (const record of recordsUnexpectedChars) {
+      //   this.logger.error(`- ${record.name}: ${record.hasUnexpectedCharacters}`);
+      // }
+      const messages = recordsUnexpectedChars.map((r) => `- ${r.name}: ${r.hasUnexpectedCharacters}`);
+      this.logger.error(messages);
     }
     // Features start or end/stop is greater than sequence length
     // Features end is less than start
@@ -681,22 +695,24 @@ class SequenceFile {
       for (const feature of record.features) {
         if (feature.start > record.length || feature.stop > record.length) {
           // featureStartEndErrors.push(`${record.name} [${record.length.toLocaleString()} bp]: ${feature.name} ${feature.start}..${feature.stop}`);
-          featureStartEndErrors.push(`${record.name} [${record.length.toLocaleString()} bp]: '${feature.name}' [${feature.start}..${feature.stop}]`);
+          featureStartEndErrors.push(`- ${record.name} [${record.length.toLocaleString()} bp]: '${feature.name}' [${feature.start}..${feature.stop}]`);
         }
         if (feature.start > feature.stop) {
-          featureStartGreaterThanEnd.push(`${record.name}: '${feature.name}' [${feature.start}..${feature.stop}]`);
+          featureStartGreaterThanEnd.push(`- ${record.name}: '${feature.name}' [${feature.start}..${feature.stop}]`);
         }
       }
     }
     if (featureStartEndErrors.length > 0) {
       const count = featureStartEndErrors.length.toLocaleString();
       this._fail(`The following features (${count}) have start or end greater than the sequence length:`);
-      featureStartEndErrors.forEach((error) => this.logger.error(`- ${error}`));
+      this.logger.error(featureStartEndErrors);
+      // featureStartEndErrors.forEach((error) => this.logger.error(`- ${error}`));
     }
     if (featureStartGreaterThanEnd.length > 0) {
       const count = featureStartGreaterThanEnd.length.toLocaleString();
       this._fail(`The following features (${count}) have a start greater than the end:`);
-      featureStartGreaterThanEnd.forEach((error) => this.logger.error(`- ${error}`));
+      this.logger.error(featureStartGreaterThanEnd);
+      // featureStartGreaterThanEnd.forEach((error) => this.logger.error(`- ${error}`));
     }
 
     if (this.success) {

@@ -1,12 +1,17 @@
 // OPTIONS:
 // - logToConsole [Default: true]: log to console
 // - showTimestamps [Default: true]: Add time stamps
-// - howLevelIcons: Add level as icon: warn, info, etc (not implemented yet)
+// - showIcons: Add level as icon: warn, info, etc
+// - maxLogCount: Maximum number of similar log messages to keep (not implemented yet)
 // NOTE:
 // - logToConsole and showTimestamps can be overridden in each log call
 //   as well as the history
 // TODO:
 // - add groups to group logs together for formatting and filtering
+// Logging levels: log, info, warn, error
+// Log messages can be a simgle message or an array of messages
+// - When an array of messages is provided, if the cound is more than maxLogCount
+//   then only the first maxLogCount messages are shown.
 class Logger {
 
   constructor(options={}) {
@@ -14,6 +19,7 @@ class Logger {
     this.logToConsole = (options.logToConsole === undefined) ? true : options.logToConsole;
     this.showTimestamps = (options.showTimestamps === undefined) ? true : options.showTimestamps;
     this.showIcons = (options.showIcons === undefined) ? false : options.showIcons;
+    this.maxLogCount = (options.maxLogCount === undefined) ? false : options.maxLogCount;
     this.logs = [];
   }
 
@@ -21,20 +27,20 @@ class Logger {
     return this.logs.length;
   }
 
-  log(message, options={}) {
-    this._log(message, 'log', options);
+  log(messages, options={}) {
+    this._log(messages, 'log', options);
   }
 
-  info(message, options={}) {
-    this._log(message, 'info', options);
+  info(messages, options={}) {
+    this._log(messages, 'info', options);
   }
 
-  warn(message, options={}) {
-    this._log(message, 'warn', options);
+  warn(messages, options={}) {
+    this._log(messages, 'warn', options);
   }
 
-  error(message, options={}) {
-    this._log(message, 'error', options);
+  error(messages, options={}) {
+    this._log(messages, 'error', options);
   }
 
   break(divider="\n") {
@@ -59,11 +65,24 @@ class Logger {
   ///////////////////////////////////////////////////////////////////////////
 
   // level: warn, error, info, log
-  _log(message, level, options={}) {
+  _log(messages, level, options={}) {
     const timestamp = this._formatTime(new Date());
-    const logItem = { type: 'message', message, level, timestamp, icon: options.icon };
-    this.logs.push(logItem);
-    this._consoleMessage(logItem, options);
+    messages = (Array.isArray(messages)) ? messages : [messages];
+    const maxLogCount = this._optionFor('maxLogCount', options);
+    let messageLimitReached;
+    for (const [index, message] of messages.entries()) {
+      if (maxLogCount && index >= maxLogCount && index !== messages.length - 1) {
+        const padding = messages[0].match(/^\s*/)[0];
+        messageLimitReached = `${padding}- Only showing first ${maxLogCount}: ${messages.length - maxLogCount} more not shown (${messages.length.toLocaleString()} total)`;
+      }
+      const logItem = { type: 'message', message: (messageLimitReached || message), level, timestamp, icon: options.icon };
+      this.logs.push(logItem);
+      this._consoleMessage(logItem, options);
+      if (messageLimitReached) { break; }
+    }
+    // const logItem = { type: 'message', messages, level, timestamp, icon: options.icon };
+    // this.logs.push(logItem);
+    // this._consoleMessage(logItem, options);
   }
 
   _consoleMessage(logItem, options={} ) {
@@ -313,18 +332,6 @@ function countCharactersInSequence(sequence, characters) {
 
 // LOGGING (including from sequence file)
 // - start with date and version (and options: skipTypes, includeQualifiers, skipComplexLocations)
-// - provide summary of CGView JSON (contigs, features, tracks, legends)
-// - total number of features skipped
-
-// TODO:
-// - FAIL if sequence type is protein
-// - better binary check see example proksee5.txt
-// - add name to CGView JSON summary
-// - add optional "title" caption from config
-// - Read over cgview_builder.rb script
-
-// - Have ability to return a results object with the JSON, summary, stats and log
-
 class SeqRecordsToCGVJSON {
 
   constructor(seqRecords, options = {}) {
@@ -396,13 +403,23 @@ class SeqRecordsToCGVJSON {
     // Complex Locations
     const complexFeatures = this._skippedComplexFeatures;
     const complexCount = complexFeatures.length;
+    // if (complexCount > 0) {
+    //   const exampleCount = Math.min(5, complexFeatures.length);
+    //   this.logger.info(`- Skipped features (${complexCount}) with complex locations:`);
+    //   complexFeatures.slice(0, exampleCount).forEach(f => this.logger.info(`  - ${f.type} '${f.name}': ${f.locationText}`));
+    //   if (complexCount > exampleCount) {
+    //     this.logger.info(`  - ${complexCount - exampleCount} more not shown (${complexCount.toLocaleString()} total)`);
+    //   }
+    // }
     if (complexCount > 0) {
-      const exampleCount = Math.min(5, complexFeatures.length);
+      // const exampleCount = Math.min(5, complexFeatures.length);
       this.logger.info(`- Skipped features (${complexCount}) with complex locations:`);
-      complexFeatures.slice(0, exampleCount).forEach(f => this.logger.info(`  - ${f.type} '${f.name}': ${f.locationText}`));
-      if (complexCount > exampleCount) {
-        this.logger.info(`  - ${complexCount - exampleCount} more not shown (${complexCount.toLocaleString()} total)`);
-      }
+      const messages = complexFeatures.map((f) => `  - ${f.type} '${f.name}': ${f.locationText}`);
+      this.logger.info(messages);
+      // complexFeatures.slice(0, exampleCount).forEach(f => this.logger.info(`  - ${f.type} '${f.name}': ${f.locationText}`));
+      // if (complexCount > exampleCount) {
+      //   this.logger.info(`  - ${complexCount - exampleCount} more not shown (${complexCount.toLocaleString()} total)`);
+      // }
     }
 
   }
@@ -443,10 +460,14 @@ class SeqRecordsToCGVJSON {
       // Log details
       this.logger.warn(`The following contig names (${changedNameIndexes.length}) were adjusted:`);
       this.logger.warn(`Reasons: DUP (duplicate), LONG (>34), REPLACE (nonstandard characters)`);
+      const messages = [];
       changedNameIndexes.forEach((i) => {
         const reason = reasons[i];
-        this.logger.warn(`- [${reason.index + 1}] ${reason.origName} -> ${reason.newName} (${reason.reason.join(', ')})`);
+        messages.push(`- [${reason.index + 1}] ${reason.origName} -> ${reason.newName} (${reason.reason.join(', ')})`);
+        // this.logger.warn(`- [${reason.index + 1}] ${reason.origName} -> ${reason.newName} (${reason.reason.join(', ')})`);
       });
+      this.logger.warn(messages);
+
     }
   }
 
@@ -505,6 +526,8 @@ class SeqRecordsToCGVJSON {
     console.log(names);
     const reasons = {};
     // Replace nonstandard characters
+    // Consider adding (.:#) here: https://www.ncbi.nlm.nih.gov/genbank/fastaformat/
+    // - do any of these break Crispr/Other tools
     let replacedNames = names.map((name) => name.replace(/[^a-zA-Z0-9\*\_\-]+/g, '_'));
     names.forEach((name, i) => {
       if (name !== replacedNames[i]) {
@@ -1146,7 +1169,7 @@ class SequenceFile {
 
   // Get an array of objects containing feature qualifier names and values from a feature string
   // NOTE: qualifiers without values will be set to true
-  // NOTE: we may want to only have arrays if there are multiple values
+  // NOTE: qualifiers values can be a single value or an array of values
   // e.g.
   //      gene            complement(<1..>172)
   //                      /locus_tag="ECPA2_RS30085"
@@ -1170,31 +1193,41 @@ class SequenceFile {
           value = true;
         }
         if (qualifiers[name]) {
-          qualifiers[name].push(value);
+          // qualifiers[name].push(value);
+          if (qualifiers[name] instanceof Array) {
+            qualifiers[name].push(value);
+          } else {
+            qualifiers[name] = [qualifiers[name], value];
+          }
         } else if (value === true) {
           qualifiers[name] = true;
         } else {
-          qualifiers[name] = [value];
+          // qualifiers[name] = [value];
+          qualifiers[name] = value;
         }
       });
     }
     return qualifiers;
   }
 
-  _getFeatureName(qualifiers) {
-    if (qualifiers?.gene) {
-      return qualifiers.gene[0];
-    } else if (qualifiers?.locus_tag) {
-      return qualifiers.locus_tag[0];
-    } else if (qualifiers?.product) {
-      return qualifiers.product[0];
-    } else if (qualifiers?.note) {
-      return qualifiers.note[0];
-    } else if (qualifiers?.db_xref) {
-      return qualifiers.db_xref[0];
-    } else {
-      return "";
+  // Return the value for a qualifer name/key from a qualifiers object
+  // If multiple values, return the first value
+  // Returns undefined if the qualifier does not exist
+  _getFirstQualifierValueForName(name, qualifiers) {
+    const value = qualifiers[name];
+    if (value instanceof Array) {
+      return value[0];
+    } else if (value !== undefined) {
+      return value
     }
+  }
+
+  _getFeatureName(qualifiers) {
+    // This is the order of preference for the name of a feature
+    // This could become a user-defined list (think tags that the user can rearrange or add/remove)
+    const keys = ['gene', 'locus_tag', 'product', 'note', 'db_xref'];
+    const foundKey = keys.find((key) => this._getFirstQualifierValueForName(key, qualifiers));
+    return foundKey ? this._getFirstQualifierValueForName(foundKey, qualifiers) : "";
   }
 
   // Optional
@@ -1283,18 +1316,22 @@ class SequenceFile {
     if (recordsDiffLengths.length > 0) {
       const count = recordsDiffLengths.length.toLocaleString();
       this._fail(`The following sequences (${count}) have mismatched lengths (length attribute vs sequence length):`);
-      for (const record of recordsDiffLengths) {
-        this.logger.error(`- ${record.name}: ${record.length.toLocaleString()} bp vs ${record.sequence.length.toLocaleString()} bp`);
-      }
+      // for (const record of recordsDiffLengths) {
+      //   this.logger.error(`- ${record.name}: ${record.length.toLocaleString()} bp vs ${record.sequence.length.toLocaleString()} bp`);
+      // }
+      const messages = recordsDiffLengths.map((r) => `- ${r.name}: ${r.length.toLocaleString()} bp vs ${r.sequence.length.toLocaleString()} bp`);
+      this.logger.error(messages);
     }
     // Sequence contains unexpected characters
     const recordsUnexpectedChars = records.filter((record) => record.hasUnexpectedCharacters);
     if (recordsUnexpectedChars.length > 0) {
       const count = recordsUnexpectedChars.length.toLocaleString();
       this._fail(`The following sequences (${count}) contain unexpected characters:`);
-      for (const record of recordsUnexpectedChars) {
-        this.logger.error(`- ${record.name}: ${record.hasUnexpectedCharacters}`);
-      }
+      // for (const record of recordsUnexpectedChars) {
+      //   this.logger.error(`- ${record.name}: ${record.hasUnexpectedCharacters}`);
+      // }
+      const messages = recordsUnexpectedChars.map((r) => `- ${r.name}: ${r.hasUnexpectedCharacters}`);
+      this.logger.error(messages);
     }
     // Features start or end/stop is greater than sequence length
     // Features end is less than start
@@ -1305,22 +1342,24 @@ class SequenceFile {
       for (const feature of record.features) {
         if (feature.start > record.length || feature.stop > record.length) {
           // featureStartEndErrors.push(`${record.name} [${record.length.toLocaleString()} bp]: ${feature.name} ${feature.start}..${feature.stop}`);
-          featureStartEndErrors.push(`${record.name} [${record.length.toLocaleString()} bp]: '${feature.name}' [${feature.start}..${feature.stop}]`);
+          featureStartEndErrors.push(`- ${record.name} [${record.length.toLocaleString()} bp]: '${feature.name}' [${feature.start}..${feature.stop}]`);
         }
         if (feature.start > feature.stop) {
-          featureStartGreaterThanEnd.push(`${record.name}: '${feature.name}' [${feature.start}..${feature.stop}]`);
+          featureStartGreaterThanEnd.push(`- ${record.name}: '${feature.name}' [${feature.start}..${feature.stop}]`);
         }
       }
     }
     if (featureStartEndErrors.length > 0) {
       const count = featureStartEndErrors.length.toLocaleString();
       this._fail(`The following features (${count}) have start or end greater than the sequence length:`);
-      featureStartEndErrors.forEach((error) => this.logger.error(`- ${error}`));
+      this.logger.error(featureStartEndErrors);
+      // featureStartEndErrors.forEach((error) => this.logger.error(`- ${error}`));
     }
     if (featureStartGreaterThanEnd.length > 0) {
       const count = featureStartGreaterThanEnd.length.toLocaleString();
       this._fail(`The following features (${count}) have a start greater than the end:`);
-      featureStartGreaterThanEnd.forEach((error) => this.logger.error(`- ${error}`));
+      this.logger.error(featureStartGreaterThanEnd);
+      // featureStartGreaterThanEnd.forEach((error) => this.logger.error(`- ${error}`));
     }
 
     if (this.success) {
