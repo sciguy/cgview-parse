@@ -2,7 +2,7 @@
 // - logToConsole [Default: true]: log to console
 // - showTimestamps [Default: true]: Add time stamps
 // - showIcons: Add level as icon: warn, info, etc
-// - maxLogCount: Maximum number of similar log messages to keep (not implemented yet)
+// - maxLogCount: Maximum number of similar log messages to keep
 // NOTE:
 // - logToConsole and showTimestamps can be overridden in each log call
 //   as well as the history
@@ -319,6 +319,8 @@ function countCharactersInSequence(sequence, characters) {
 //   return count;
 // }
 
+// INPUT:
+// - SequenceFile or string of sequence file (e.g. GenBank, FASTA) that can be converted to SequenceFile
 // OPTIONS:
 // - config: jsonConfig
 // - skipTypes: boolean (TEST) [Default: ['gene', 'source', 'exon']]
@@ -327,27 +329,58 @@ function countCharactersInSequence(sequence, characters) {
 //   - If true, include ALL qualifiers in the JSON
 //   - If array of strings, include only those qualifiers
 //   - If false, include NO qualifiers
+// - includeCaption: boolean [Defualt: true]
+//   - NOTE: captions could come from the config (like I did for cgview_builder.rb)
 // - skipComplexLocations: boolean (not implemented yet) [Defualt: true]
-// - maxLogCount: number (undefined means no limit) (not implemented yet) [Default: 5]
+//   - need to decide how to handle these
+// - maxLogCount: number (undefined means no limit) [Default: undefined]
 
 // LOGGING (including from sequence file)
 // - start with date and version (and options: skipTypes, includeQualifiers, skipComplexLocations)
-class SeqRecordsToCGVJSON {
+class CGViewBuilder {
 
-  // NOTE: consider passing in SequenceFile instead of seqRecords (gives us summary)
-  constructor(seqRecords, options = {}) {
+  constructor(input, options = {}) {
+    this.input = input;
     this.version = "1.6.0";
     this.options = options;
     this.logger = options.logger || new Logger();
-    this.seqRecords = seqRecords;
+    if (options.maxLogCount) {
+      this.logger.maxLogCount = options.maxLogCount;
+    }
+    this._success = true;
     this.includeQualifiers = options.includeQualifiers || false;
-    // This could come from SequenceFile summary
-    this.inputType = seqRecords && seqRecords[0]?.inputType;
-    this.sequenceType = seqRecords && seqRecords[0]?.type;
-
+    this.includeCaption = (options.includeCaption === undefined) ? true : options.includeCaption;
     this.defaultTypesToSkip = ['gene', 'source', 'exon'];
 
-    this.json = this._convert(seqRecords);
+    this.seqFile = this._parseInput(input);
+    this.inputType = this.seqFile.inputType;
+    this.sequenceType = this.seqFile.sequenceType;
+    if (this.seqFile.success === true) {
+      this.json = this._convert(this.seqFile.records);
+    } else {
+      this._fail('*** Cannot convert to CGView JSON because parsing sequence file failed ***');
+    }
+  }
+
+  get success() {
+    return this._success;
+  }
+
+  _fail(message) {
+    this.logger.error(message);
+    this._success = false;
+  }
+
+  _parseInput(input) {
+    console.log("Parse input");
+    if (typeof input === "string") {
+      return new SequenceFile$1(input, {logger: this.logger});
+    } else if (input instanceof SequenceFile$1) {
+      return input;
+    } else {
+      this._fail("Invalid input: must be a string (from GenBank, EMBL, FASTA, Raw) or SequenceFile object");
+      // throw new Error("Invalid input");
+    }
   }
 
   _convert(seqRecords) {
@@ -362,29 +395,43 @@ class SeqRecordsToCGVJSON {
     this.logger.info(`- Input Sequence Type: ${this.sequenceType || 'Unknown'}`);
     // Check for records and make sure they are DNA
     if (!seqRecords || seqRecords.length < 1) {
-      this.logger.error("Conversion Failed: No sequence records provided");
-      return {};
+      this._fail("Conversion Failed: No sequence records provided");
+      // return {};
     }
     if (this.sequenceType?.toLowerCase() !== 'dna') {
-      this.logger.error(`Conversion Failed: Input type is not DNA: '${this.sequenceType}'`);
-      return {};
+      this._fail(`Conversion Failed: Input type is not DNA: '${this.sequenceType}'`);
+      // return {};
     }
     // Here json refers to the CGView JSON
     let json = this._addConfigToJSON({}, this.options.config); 
     // Version: we should keep the version the same as the latest for CGView.js
     json.version = this.version;
     this._adjustContigNames(seqRecords);
-    json.settings.format = SeqRecordsToCGVJSON.determineFormat(seqRecords);
+    json.captions = this._getCaptions(json, seqRecords);
+    json.settings.format = CGViewBuilder.determineFormat(seqRecords);
     json = this._extractSequenceAndFeatures(json, seqRecords);
     this._summarizeSkippedFeatures();
     this._adjustFeatureGeneticCode(json);
     this._logQualifiers();
-    json.name = json.sequence?.contigs[0]?.name || "Untitled";
+    // json.name = json.sequence?.contigs[0]?.name || "Untitled";
+    json.name = seqRecords[0]?.definition || "Untitled";
     json = this._removeUnusedLegends(json);
     // Add track for features (if there are any)
     json.tracks = this._buildTracks(json, this.inputType);
     this._convertSummary(json);
     return { cgview: json };
+  }
+
+  _getCaptions(json, seqRecords) {
+    const captions = json.captions ? [...json.captions] : [];
+    console.log(this.includeCaption);
+    if (this.includeCaption) {
+      this.logger.info(`- Adding caption...`);
+      const captionText = seqRecords[0]?.definition || seqRecords[0].seqID || "Untitled";
+      const caption = {name: captionText, textAlignment: "center", font: "sans-serif,plain,24", fontColor: "darkblue", position: "bottom-center"};
+      captions.push(caption);
+    }
+    return captions;
   }
 
   _logQualifiers() {
@@ -406,15 +453,21 @@ class SeqRecordsToCGVJSON {
     const seqLength = contigs.map((contig) => contig.length).reduce((a, b) => a + b, 0);
     let skippedFeatures = Object.values(this._skippedFeaturesByType).reduce((a, b) => a + b, 0);
     skippedFeatures += this._skippedComplexFeatures.length;
-    this.logger.break('------------------------------------------\n');
+    this.logger.break('--------------------------------------------\n');
     this.logger.info('CGView JSON Summary:');
+    this.logger.info(`- Map Name: ${json.name.padStart(19)}`);
     this.logger.info(`- Contig Count: ${contigCount.toLocaleString().padStart(15)}`);
     this.logger.info('- Total Length (bp): ' + `${seqLength.toLocaleString()}`.padStart(10));
     this.logger.info(`- Track Count: ${trackCount.toLocaleString().padStart(16)}`);
     this.logger.info(`- Legend Count: ${legendCount.toLocaleString().padStart(15)}`);
     this.logger.info(`- Features Included: ${featureCount.toLocaleString().padStart(10)}`);
     this.logger.info(`- Features Skipped: ${skippedFeatures.toLocaleString().padStart(11)}`);
-    this.logger.break('------------------------------------------\n');
+    if (this.success) {
+      this.logger.info('- Status: ' + 'Success'.padStart(21), {icon: 'success'});
+    } else {
+      this.logger.error('- Status: ' + 'FAILED'.padStart(21), {icon: 'fail'});
+    }
+    this.logger.break('--------------------------------------------\n');
   }
 
   _summarizeSkippedFeatures() {
@@ -430,23 +483,10 @@ class SeqRecordsToCGVJSON {
     // Complex Locations
     const complexFeatures = this._skippedComplexFeatures;
     const complexCount = complexFeatures.length;
-    // if (complexCount > 0) {
-    //   const exampleCount = Math.min(5, complexFeatures.length);
-    //   this.logger.info(`- Skipped features (${complexCount}) with complex locations:`);
-    //   complexFeatures.slice(0, exampleCount).forEach(f => this.logger.info(`  - ${f.type} '${f.name}': ${f.locationText}`));
-    //   if (complexCount > exampleCount) {
-    //     this.logger.info(`  - ${complexCount - exampleCount} more not shown (${complexCount.toLocaleString()} total)`);
-    //   }
-    // }
     if (complexCount > 0) {
-      // const exampleCount = Math.min(5, complexFeatures.length);
       this.logger.info(`- Skipped features (${complexCount}) with complex locations:`);
       const messages = complexFeatures.map((f) => `  - ${f.type} '${f.name}': ${f.locationText}`);
       this.logger.info(messages);
-      // complexFeatures.slice(0, exampleCount).forEach(f => this.logger.info(`  - ${f.type} '${f.name}': ${f.locationText}`));
-      // if (complexCount > exampleCount) {
-      //   this.logger.info(`  - ${complexCount - exampleCount} more not shown (${complexCount.toLocaleString()} total)`);
-      // }
     }
 
   }
@@ -474,7 +514,7 @@ class SeqRecordsToCGVJSON {
   // - length of contig names should be less than 37 characters
   _adjustContigNames(seqRecords) {
     const names = seqRecords.map((seqRecord) => seqRecord.name);
-    const adjustedNameResults = SeqRecordsToCGVJSON.adjustContigNames(names);
+    const adjustedNameResults = CGViewBuilder.adjustContigNames(names);
     const adjustedNames = adjustedNameResults.names;
     const reasons = adjustedNameResults.reasons;
     this.logger.info('- Checking contig names...');
@@ -679,7 +719,7 @@ class SeqRecordsToCGVJSON {
         // The default genetic code for GenBank/EMBL is 1
         feature.geneticCode = geneticCode || 1;
       }
-      const qualifiers = SeqRecordsToCGVJSON.extractQualifiers(f.qualifiers, this.includeQualifiers);
+      const qualifiers = CGViewBuilder.extractQualifiers(f.qualifiers, this.includeQualifiers);
       if (qualifiers) {
         feature.qualifiers = qualifiers;
       }
@@ -707,26 +747,29 @@ class SeqRecordsToCGVJSON {
     }
   }
 
-
-
 }
 
-// Holds a sequence and feature from a sequence file: genbank, embl, fasta, raw
+// Holds a sequence and features from a sequence file: genbank, embl, fasta, raw
 // Parses text from sequence file
-// Holds seq records from our parser
+// Creates sequence records json that can be converted to CGView JSON
 // Array of sequence records containing array of features
+// TODO: Give examples of output (the record format)
 
 
 class SequenceFile {
 
+  // inputText: string from GenBank, EMBL, Fasta, or Raw [Required]
   // Options:
   // - addFeatureSequences: boolean [Default: false]. This can increase run time ~3x.
   // - logger: logger object
-  // - maxLogCount: number (undefined means no limit) (not implemented yet) [Default: 5]
+  // - maxLogCount: number (undefined means no limit) [Default: undefined]
   constructor(inputText, options={}) {
     this.inputText;
     this.logger = options.logger || new Logger();
     options.logger = this.logger;
+    if (options.maxLogCount) {
+      this.logger.maxLogCount = options.maxLogCount;
+    }
     this.logger.info(`Date: ${new Date().toUTCString()}`);
     this._success = true;
     this._records = [];
@@ -780,10 +823,10 @@ class SequenceFile {
   // EXPORTERS
   /////////////////////////////////////////////////////////////////////////////
 
-  toCGVJSON(options={}) {
+  toCGViewJSON(options={}) {
     if (this.success) {
       options.logger = options.logger || this.logger;
-      const parser = new SeqRecordsToCGVJSON(this.records, options);
+      const parser = new CGViewBuilder(this, options);
       return parser.json;
     } else {
       this.logger.error('*** Cannot convert to CGView JSON because parsing failed ***');
@@ -803,7 +846,7 @@ class SequenceFile {
     const features = records.map((record) => record.features).flat();
     const seqLength = records.map((record) => record.length).reduce((a, b) => a + b, 0);
 
-    this.logger.break('------------------------------------------\n');
+    this.logger.break('--------------------------------------------\n');
     this.logger.info('Parsing Summary:');
     this.logger.info(`- Input file type: ${this.inputType.padStart(12)}`);
     this.logger.info(`- Sequence Type: ${this.sequenceType.padStart(14)}`);
@@ -815,7 +858,7 @@ class SequenceFile {
     } else {
       this.logger.error('- Status: ' + 'FAILED'.padStart(21), {icon: 'fail'});
     }
-    this.logger.break('------------------------------------------\n');
+    this.logger.break('--------------------------------------------\n');
 
     this._summary = {
       inputType: this.inputType,
@@ -1419,16 +1462,20 @@ class SequenceFile {
 
 }
 
-// import CGVParse from "./CGVParse.js";
+var SequenceFile$1 = SequenceFile;
 
-// Teselagen:
+// import FeatureFile from "./FeatureFile.js";
+
+const CGParse = {};
+CGParse.Logger = Logger;
+CGParse.SequenceFile = SequenceFile$1;
+CGParse.CGViewBuilder = CGViewBuilder;
+
+// Teselagen (For development only; Useful for comparison):
 // This should be removed for production
 // import { genbankToJson as genbankToTeselagen} from "@teselagen/bio-parsers";
 // CGViewParse.genbankToTeselagen = genbankToTeselagen;
 // import { anyToJson as anyToTeselagen} from "@teselagen/bio-parsers";
 // CGVParse.anyToTeselagen = anyToTeselagen;
 
-const CGVParse = {};
-CGVParse.SequenceFile = SequenceFile;
-
-export { CGVParse as default };
+export { CGParse as default };

@@ -8,15 +8,15 @@ export default {
   // external: ['d3', 'svgcanvas'],
   output: [
     {
-      file: 'docs/dist/cgview-parsers.js',
+      file: 'docs/dist/CGParse.js',
       format: 'iife',
-      name: 'CGVParse',
+      name: 'CGParse',
       // globals: {d3: 'd3', svgcanvas: 'svgcanvas'},
     },
     {
-      file: 'docs/dist/cgview-parsers.min.js',
+      file: 'docs/dist/CGParse.min.js',
       format: 'iife',
-      name: 'CGVParse',
+      name: 'CGParse',
       // globals: {d3: 'd3', svgcanvas: 'svgcanvas'},
       plugins: [terser()],
     },
@@ -27,7 +27,7 @@ export default {
     //   plugins: [terser()],
     // },
     {
-      file: 'docs/dist/cgview-parsers.esm.js',
+      file: 'docs/dist/CGParse.esm.js',
       // globals: {d3: 'd3', svgcanvas: 'svgcanvas'},
       format: 'es',
     },

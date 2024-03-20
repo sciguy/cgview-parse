@@ -2,7 +2,7 @@
 // - logToConsole [Default: true]: log to console
 // - showTimestamps [Default: true]: Add time stamps
 // - showIcons: Add level as icon: warn, info, etc
-// - maxLogCount: Maximum number of similar log messages to keep (not implemented yet)
+// - maxLogCount: Maximum number of similar log messages to keep
 // NOTE:
 // - logToConsole and showTimestamps can be overridden in each log call
 //   as well as the history

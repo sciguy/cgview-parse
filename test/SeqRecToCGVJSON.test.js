@@ -1,4 +1,4 @@
-import SeqRecToCGVJSON from '../src/SeqRecToCGVJSON.js';
+import SeqRecToCGVJSON from '../src/CGViewBuilder.js';
 
 describe('SeqRecToCGVJSON', () => {
 

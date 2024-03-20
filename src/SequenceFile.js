@@ -1,7 +1,8 @@
-// Holds a sequence and feature from a sequence file: genbank, embl, fasta, raw
+// Holds a sequence and features from a sequence file: genbank, embl, fasta, raw
 // Parses text from sequence file
-// Holds seq records from our parser
+// Creates sequence records json that can be converted to CGView JSON
 // Array of sequence records containing array of features
+// TODO: Give examples of output (the record format)
 
 // NOTES:
 // - This code is heavily based on Paul's seq_to_json.py script with some exceptions.
@@ -12,24 +13,26 @@
 //   remove the features when submitting. 
 // TODO:
 // - Test start_codon
-// - Give examples of output (the record format)
-// - Go over the cgview_builder.rb script
 // - consider changing type to molType
 // - consider changing inputType to fileType
 import Logger from './Logger.js';
-import SeqRecordsToCGVJSON from './SeqRecToCGVJSON.js';
+import CGViewBuilder from './CGViewBuilder.js';
 import * as helpers from './Helpers.js';
 
 class SequenceFile {
 
+  // inputText: string from GenBank, EMBL, Fasta, or Raw [Required]
   // Options:
   // - addFeatureSequences: boolean [Default: false]. This can increase run time ~3x.
   // - logger: logger object
-  // - maxLogCount: number (undefined means no limit) (not implemented yet) [Default: 5]
+  // - maxLogCount: number (undefined means no limit) [Default: undefined]
   constructor(inputText, options={}) {
     this.inputText;
     this.logger = options.logger || new Logger();
     options.logger = this.logger;
+    if (options.maxLogCount) {
+      this.logger.maxLogCount = options.maxLogCount;
+    }
     this.logger.info(`Date: ${new Date().toUTCString()}`);
     this._success = true
     this._records = [];
@@ -83,10 +86,10 @@ class SequenceFile {
   // EXPORTERS
   /////////////////////////////////////////////////////////////////////////////
 
-  toCGVJSON(options={}) {
+  toCGViewJSON(options={}) {
     if (this.success) {
       options.logger = options.logger || this.logger
-      const parser = new SeqRecordsToCGVJSON(this.records, options);
+      const parser = new CGViewBuilder(this, options);
       return parser.json;
     } else {
       this.logger.error('*** Cannot convert to CGView JSON because parsing failed ***');
@@ -106,7 +109,7 @@ class SequenceFile {
     const features = records.map((record) => record.features).flat();
     const seqLength = records.map((record) => record.length).reduce((a, b) => a + b, 0);
 
-    this.logger.break('------------------------------------------\n')
+    this.logger.break('--------------------------------------------\n')
     this.logger.info('Parsing Summary:');
     this.logger.info(`- Input file type: ${this.inputType.padStart(12)}`);
     this.logger.info(`- Sequence Type: ${this.sequenceType.padStart(14)}`);
@@ -118,7 +121,7 @@ class SequenceFile {
     } else {
       this.logger.error('- Status: ' + 'FAILED'.padStart(21), {icon: 'fail'});
     }
-    this.logger.break('------------------------------------------\n')
+    this.logger.break('--------------------------------------------\n')
 
     this._summary = {
       inputType: this.inputType,

@@ -210,10 +210,11 @@ async function runParse() {
 
   // Parse to seqJson
   const seqJsonStartTime = new Date().getTime();
-  // const seqJSON = CGVParse.seqToSeqJSON(inputText, {config: jsonConfig});
-  // const seqFile = new CGVParse.SequenceFile(inputText, {addFeatureSequences: true});
-  const seqFile = new CGVParse.SequenceFile(inputText);
+  // const seqJSON = CGParse.seqToSeqJSON(inputText, {config: jsonConfig});
+  // const seqFile = new CGParse.SequenceFile(inputText, {addFeatureSequences: true});
+  const seqFile = new CGParse.SequenceFile(inputText, {maxLogCount: 1});
   const seqJSON = seqFile.records;
+  json.seqFile = seqFile; // For debugging
   console.log(seqJSON)
   const seqJsonRunTime = elapsedTime(seqJsonStartTime);
   updateTime('time-seq-json', seqJsonRunTime);
@@ -233,7 +234,7 @@ async function runParse() {
   // Parse to teselagen JSON
   if (showTesJsonCheckbox.checked) {
     const tesJsonStartTime = new Date().getTime();
-    const tesJSON = await CGVParse.anyToTeselagen(inputText, {inclusive1BasedStart: true, inclusive1BasedEnd: true});
+    const tesJSON = await CGParse.anyToTeselagen(inputText, {inclusive1BasedStart: true, inclusive1BasedEnd: true});
     const tesJsonRunTime = elapsedTime(tesJsonStartTime);
     updateTime('time-tes-json', tesJsonRunTime);
     // Convert to string (and pretty print with 2 spaces)
@@ -246,16 +247,21 @@ async function runParse() {
     window.json.tes = tesJSON; // For debugging
   }
 
+
   // Parse to CGView JSON
   let cgvJSON;
+  let builder;
   if (showCgvJsonCheckbox.checked) {
     const cgvJsonStartTime = new Date().getTime();
-    // cgvJSON = CGVParse.seqJSONToCgvJSON(seqJSON, {config: jsonConfig});
-    cgvJSON = seqFile.toCGVJSON({config: jsonConfig, includeQualifiers: true});
+    // cgvJSON = CGParse.seqJSONToCgvJSON(seqJSON, {config: jsonConfig});
+    builder = new CGParse.CGViewBuilder(seqFile, {logger: seqFile.logger, config: jsonConfig, includeQualifiers: true, maxLogCount: 2});
+    // cgvJSON = seqFile.toCGViewJSON({config: jsonConfig, includeQualifiers: true, maxLogCount: 2});
+    cgvJSON = builder.json;
+
     const cgvJsonRunTime = elapsedTime(cgvJsonStartTime);
     updateTime('time-cgv-json', cgvJsonRunTime);
     // Convert to string (and pretty print with 2 spaces)
-    if (cgvJSON) {
+    if (builder.success && cgvJSON) {
       let cgvString = JSON.stringify(cgvJSON, null, 2);
       if (filterSeqMode) {
         cgvString = cgvString.replace(/"seq": ".*"/g, '"seq": "..."');
@@ -273,7 +279,8 @@ async function runParse() {
   // });
   const logDiv = document.getElementById('log-text');
   // const messages = seqFile.logger.history({showTimestamps: false});
-  const messages = seqFile.logger.history({showIcons: true});
+  // const messages = seqFile.logger.history({showIcons: true});
+  const messages = builder.logger.history({showIcons: true});
   // const messages = seqFile.logger.history();
   console.log(messages)
   logDiv.innerHTML = messages;
@@ -428,5 +435,5 @@ function openInProksee(cgv, origin, open=false) {
 // Add openInProksee to a button with id of 'open-in-proksee-btn'
 const openInProkseeBtn = document.getElementById('open-in-proksee-btn');
 openInProkseeBtn.addEventListener('click', (e) => {
-  openInProksee(cgv, 'CGVParse', true)
+  openInProksee(cgv, 'CGParse', true)
 });
