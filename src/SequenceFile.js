@@ -35,6 +35,7 @@ class SequenceFile {
     }
     this.logger.info(`Date: ${new Date().toUTCString()}`);
     this._success = true
+    this._status = 'success'
     this._records = [];
     this._errorCodes = new Set();
     if (!inputText || inputText === '') {
@@ -59,8 +60,12 @@ class SequenceFile {
   // Properties
   /////////////////////////////////////////////////////////////////////////////
 
+  get status() {
+    return this._status;
+  }
+
   get success() {
-    return this._success;
+    return this.status == 'success';
   }
 
   get inputType() {
@@ -89,8 +94,8 @@ class SequenceFile {
   toCGViewJSON(options={}) {
     if (this.success) {
       options.logger = options.logger || this.logger
-      const parser = new CGViewBuilder(this, options);
-      return parser.json;
+      const builder = new CGViewBuilder(this, options);
+      return builder.toJSON();
     } else {
       this.logger.error('*** Cannot convert to CGView JSON because parsing failed ***');
     }
@@ -129,6 +134,7 @@ class SequenceFile {
       sequenceCount: records.length,
       featureCount: features.length,
       totalLength: seqLength,
+      status: this.status,
       success: this.success
     };
   }
@@ -281,7 +287,7 @@ class SequenceFile {
   // in EMBL look for e.g.:
   // DE   Reclinomonas americana mitochondrion, complete genome.
   _getSeqDefinition(seqRecordText) {
-    const match = seqRecordText.match(/^\s*(?:DEFINITION|DE)\s*(.+)$/m);
+    const match = seqRecordText.match(/^\s*(?:DEFINITION|DE)\s+(.+)$/m);
     if (match) {
       let definition = match[1];
       return definition
@@ -634,7 +640,8 @@ class SequenceFile {
 
   _fail(message, errorCode='unknown') {
     this.logger.error(message);
-    this._success = false;
+    // this._success = false;
+    this._status = 'failed';
     this._errorCodes.add(errorCode);
   }
 

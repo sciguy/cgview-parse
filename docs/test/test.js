@@ -256,7 +256,7 @@ async function runParse() {
     // cgvJSON = CGParse.seqJSONToCgvJSON(seqJSON, {config: jsonConfig});
     builder = new CGParse.CGViewBuilder(seqFile, {logger: seqFile.logger, config: jsonConfig, includeQualifiers: true, maxLogCount: 2});
     // cgvJSON = seqFile.toCGViewJSON({config: jsonConfig, includeQualifiers: true, maxLogCount: 2});
-    cgvJSON = builder.json;
+    cgvJSON = builder.toJSON();
 
     const cgvJsonRunTime = elapsedTime(cgvJsonStartTime);
     updateTime('time-cgv-json', cgvJsonRunTime);

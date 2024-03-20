@@ -31,6 +31,7 @@ export default class CGViewBuilder {
       this.logger.maxLogCount = options.maxLogCount;
     }
     this._success = true;
+    this._status = 'success';
     this.includeQualifiers = options.includeQualifiers || false;
     this.includeCaption = (options.includeCaption === undefined) ? true : options.includeCaption;
     this.defaultTypesToSkip = ['gene', 'source', 'exon'];
@@ -39,19 +40,31 @@ export default class CGViewBuilder {
     this.inputType = this.seqFile.inputType
     this.sequenceType = this.seqFile.sequenceType
     if (this.seqFile.success === true) {
-      this.json = this._convert(this.seqFile.records);
+      this._json = this._convert(this.seqFile.records);
     } else {
       this._fail('*** Cannot convert to CGView JSON because parsing sequence file failed ***');
     }
   }
 
+  // Should be one of: 'success', 'warnings', 'fail'
   get success() {
-    return this._success;
+    // return this._success;
+    return this.status === 'success';
+  }
+
+  get status() {
+    return this._status;
   }
 
   _fail(message) {
     this.logger.error(message);
-    this._success = false;
+    // this._success = false;
+    this._status = 'fail';
+  }
+
+  _warn(message) {
+    this.logger.warn(message);
+    this._status = 'warnings';
   }
 
   _parseInput(input) {
@@ -79,11 +92,11 @@ export default class CGViewBuilder {
     // Check for records and make sure they are DNA
     if (!seqRecords || seqRecords.length < 1) {
       this._fail("Conversion Failed: No sequence records provided");
-      // return {};
+      return;
     }
     if (this.sequenceType?.toLowerCase() !== 'dna') {
       this._fail(`Conversion Failed: Input type is not DNA: '${this.sequenceType}'`);
-      // return {};
+      return;
     }
     // Here json refers to the CGView JSON
     let json = this._addConfigToJSON({}, this.options.config); 
@@ -147,6 +160,8 @@ export default class CGViewBuilder {
     this.logger.info(`- Features Skipped: ${skippedFeatures.toLocaleString().padStart(11)}`);
     if (this.success) {
       this.logger.info('- Status: ' + 'Success'.padStart(21), {icon: 'success'});
+    } else if (this.status === 'warnings') {
+      this.logger.warn('- Status: ' + 'Warnings'.padStart(21), {icon: 'warn'});
     } else {
       this.logger.error('- Status: ' + 'FAILED'.padStart(21), {icon: 'fail'});
     }
@@ -208,15 +223,15 @@ export default class CGViewBuilder {
         seqRecord.name = adjustedNames[i];
       });
       // Log details
-      this.logger.warn(`The following contig names (${changedNameIndexes.length}) were adjusted:`);
-      this.logger.warn(`Reasons: DUP (duplicate), LONG (>34), REPLACE (nonstandard characters)`);
+      this._warn(`The following contig names (${changedNameIndexes.length}) were adjusted:`);
+      this._warn(`Reasons: DUP (duplicate), LONG (>34), REPLACE (nonstandard characters)`);
       const messages = [];
       changedNameIndexes.forEach((i) => {
         const reason = reasons[i];
         messages.push(`- [${reason.index + 1}] ${reason.origName} -> ${reason.newName} (${reason.reason.join(', ')})`);
         // this.logger.warn(`- [${reason.index + 1}] ${reason.origName} -> ${reason.newName} (${reason.reason.join(', ')})`);
       });
-      this.logger.warn(messages);
+      this._warn(messages);
 
     }
   }
@@ -238,7 +253,7 @@ export default class CGViewBuilder {
     let maxCode = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
     this.logger.info(`- Most common genetic code (transl_table): ${maxCode} (Count: ${counts[maxCode]}/${cdsFeatures.length} CDS features}`);
     if (Object.keys(counts).length > 1) {
-      this.logger.warn(`- Additional genetic codes found: ${Object.keys(counts).join(', ')}`);
+      this._warn(`- Additional genetic codes found: ${Object.keys(counts).join(', ')}`);
     }
     // Set the JSON genetic code to the most common one
     json.settings.geneticCode = parseInt(maxCode);
@@ -429,6 +444,11 @@ export default class CGViewBuilder {
     if (Object.keys(qualifiersOut).length > 0) {
       return qualifiersOut;
     }
+  }
+
+  toJSON() {
+    return this._json;
+    json
   }
 
 }

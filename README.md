@@ -32,9 +32,7 @@ Parser for converting sequence files to CGView JSON via our own intermediate Seq
   - locus_tag, start_codon
 - Need status/success of cgview conversion
 - Sort Errors vs Warnings
-- add options (SeqFile and ToJson) to logger output 
 - Have ability to return a results object with the JSON, summary, stats and log
-- Rename CGVParse to CGParse (eventually we could have CGData)
 
 # Tests
 - Add file tests
