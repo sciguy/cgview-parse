@@ -388,7 +388,7 @@ var CGParse = (function () {
     }
 
     _parseInput(input) {
-      console.log("Parse input");
+      // console.log("Parse input")
       if (typeof input === "string") {
         return new SequenceFile$1(input, {logger: this.logger});
       } else if (input instanceof SequenceFile$1) {
@@ -430,7 +430,7 @@ var CGParse = (function () {
       this._adjustFeatureGeneticCode(json);
       this._logQualifiers();
       // json.name = json.sequence?.contigs[0]?.name || "Untitled";
-      json.name = seqRecords[0]?.definition || "Untitled";
+      json.name = seqRecords[0]?.definition || seqRecords[0]?.name || seqRecords[0]?.seqID || "Untitled";
       json = this._removeUnusedLegends(json);
       // Add track for features (if there are any)
       json.tracks = this._buildTracks(json, this.inputType);
@@ -440,7 +440,7 @@ var CGParse = (function () {
 
     _getCaptions(json, seqRecords) {
       const captions = json.captions ? [...json.captions] : [];
-      console.log(this.includeCaption);
+      // console.log(this.includeCaption)
       if (this.includeCaption) {
         this.logger.info(`- Adding caption...`);
         const captionText = seqRecords[0]?.definition || seqRecords[0].seqID || "Untitled";
@@ -564,6 +564,7 @@ var CGParse = (function () {
       const features = json.features;
       if (!features || features.length < 1) { return; }
       const cdsFeatures = features.filter((f) => f.type === 'CDS');
+      if (!cdsFeatures || cdsFeatures.length < 1) { return; }
       const geneticCodes = cdsFeatures.map((f) => f.geneticCode);
       const counts = {};
       geneticCodes.forEach((code) => {
@@ -608,7 +609,7 @@ var CGParse = (function () {
     //     (e.g. "duplicate", "too long", "nonstandard characters")
     //     (e.g. "DUP", "LONG", "REPLACE")
     static adjustContigNames(names=[]) {
-      console.log(names);
+      // console.log(names)
       const reasons = {};
       // Replace nonstandard characters
       // Consider adding (.:#) here: https://www.ncbi.nlm.nih.gov/genbank/fastaformat/
@@ -769,6 +770,14 @@ var CGParse = (function () {
       return this._json;
     }
 
+    static fromSequenceText(text, options) {
+      const logger = new Logger({logToConsole: false, showIcons: true});
+      const builder = new CGViewBuilder(text, {logger: logger, ...options});
+      return {json: builder.toJSON(), log: builder.logger.history()};
+    }
+
+
+
   }
 
   // Holds a sequence and features from a sequence file: genbank, embl, fasta, raw
@@ -779,6 +788,12 @@ var CGParse = (function () {
 
 
   class SequenceFile {
+
+    static toCGViewJSON(inputText, options={}) {
+      const logger = new Logger({logToConsole: false});
+      const seqFile = new SequenceFile(inputText, {logger: logger, ...options});
+      return seqFile.toCGViewJSON();
+    }
 
     // inputText: string from GenBank, EMBL, Fasta, or Raw [Required]
     // Options:
@@ -948,7 +963,7 @@ var CGParse = (function () {
     }
 
     _parseFasta(seqText, options={}) {
-      console.log("Parsing FASTA...");
+      // console.log("Parsing FASTA...")
       const records = [];
       seqText.split(/^\s*>/m).filter(this._isSeqRecord).forEach((seqRecord) => {
         const record = {inputType: 'fasta', name: '', length: 0, sequence: ''};

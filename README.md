@@ -12,7 +12,7 @@ This package consists of 3 main components:
 
 ## SequenceFile
 ```js
-// inputText: text from a GenBank, EMBL, FASATA, or RAW file
+// inputText: text from a GenBank, EMBL, FASTA, or RAW file
 // Options:
 // - addFeatureSequences: boolean [Default: false]. This can increase run time ~3x.
 // - logger: logger object (undefined uses a new logger) [Default: undefined]

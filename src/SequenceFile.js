@@ -21,6 +21,12 @@ import * as helpers from './Helpers.js';
 
 class SequenceFile {
 
+  static toCGViewJSON(inputText, options={}) {
+    const logger = new Logger({logToConsole: false});
+    const seqFile = new SequenceFile(inputText, {logger: logger, ...options});
+    return seqFile.toCGViewJSON();
+  }
+
   // inputText: string from GenBank, EMBL, Fasta, or Raw [Required]
   // Options:
   // - addFeatureSequences: boolean [Default: false]. This can increase run time ~3x.
@@ -189,7 +195,7 @@ class SequenceFile {
   }
 
   _parseFasta(seqText, options={}) {
-    console.log("Parsing FASTA...")
+    // console.log("Parsing FASTA...")
     const records = [];
     seqText.split(/^\s*>/m).filter(this._isSeqRecord).forEach((seqRecord) => {
       const record = {inputType: 'fasta', name: '', length: 0, sequence: ''};
