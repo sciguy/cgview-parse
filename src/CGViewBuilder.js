@@ -23,7 +23,7 @@ import * as helpers from './Helpers.js';
 export default class CGViewBuilder {
 
   constructor(input, options = {}) {
-    this.input = input;
+    // this.input = input;
     this.version = "1.6.0";
     this.options = options;
     this.logger = options.logger || new Logger();
@@ -52,6 +52,10 @@ export default class CGViewBuilder {
     return this.status === 'success';
   }
 
+  get passed() {
+    return this.status === 'success' || this.status === 'warnings';
+  }
+
   get status() {
     return this._status;
   }
@@ -64,7 +68,9 @@ export default class CGViewBuilder {
 
   _warn(message) {
     this.logger.warn(message);
-    this._status = 'warnings';
+    if (this.status !== 'fail') {
+      this._status = 'warnings';
+    }
   }
 
   _parseInput(input) {
@@ -83,6 +89,7 @@ export default class CGViewBuilder {
     // this.logger.info(`Converting ${seqRecord.length} sequence record(s) to CGView JSON (version ${this.version})`);
     this._skippedFeaturesByType = {};
     this._skippedComplexFeatures = [];
+    this._skippedLocationlessFeatures = [];
     this.logger.info(`Date: ${new Date().toUTCString()}`);
     this.logger.info(`Converting to CGView JSON...`);
     this.logger.info(`- CGView JSON version ${this.version}`);
@@ -149,6 +156,7 @@ export default class CGViewBuilder {
     const seqLength = contigs.map((contig) => contig.length).reduce((a, b) => a + b, 0);
     let skippedFeatures = Object.values(this._skippedFeaturesByType).reduce((a, b) => a + b, 0);
     skippedFeatures += this._skippedComplexFeatures.length;
+    skippedFeatures += this._skippedLocationlessFeatures.length;
     this.logger.break('--------------------------------------------\n')
     this.logger.info('CGView JSON Summary:');
     this.logger.info(`- Map Name: ${json.name.padStart(19)}`);
@@ -186,7 +194,14 @@ export default class CGViewBuilder {
       const messages = complexFeatures.map((f) => `  - ${f.type} '${f.name}': ${f.locationText}`);
       this.logger.info(messages);
     }
-
+    // Missing Locations
+    const locationlessFeatures = this._skippedLocationlessFeatures;
+    const locationlessCount = locationlessFeatures.length;
+    if (locationlessCount > 0) {
+      this._warn(`- Skipped features (${locationlessCount}) with missing locations:`);
+      const messages = locationlessFeatures.map((f) => `  - ${f.type} '${f.name}': ${f.locationText}`);
+      this._warn(messages);
+    }
   }
 
   // Add config to JSON. Note that no validation of the config is done.
@@ -224,7 +239,7 @@ export default class CGViewBuilder {
       });
       // Log details
       this._warn(`The following contig names (${changedNameIndexes.length}) were adjusted:`);
-      this._warn(`Reasons: DUP (duplicate), LONG (>34), REPLACE (nonstandard characters)`);
+      this._warn(`Reasons: DUP (duplicate), LONG (>34), REPLACE (nonstandard characters), BLANK (empty)`);
       const messages = [];
       changedNameIndexes.forEach((i) => {
         const reason = reasons[i];
@@ -286,8 +301,8 @@ export default class CGViewBuilder {
   //   - origName: the original name
   //   - newName: the corrected name
   //   - reason: the reason for the correction
-  //     (e.g. "duplicate", "too long", "nonstandard characters")
-  //     (e.g. "DUP", "LONG", "REPLACE")
+  //     (e.g. "duplicate", "too long", "nonstandard characters", "blank")
+  //     (e.g. "DUP", "LONG", "REPLACE", "BLANK"
   static adjustContigNames(names=[]) {
     // console.log(names)
     const reasons = {};
@@ -298,6 +313,16 @@ export default class CGViewBuilder {
     names.forEach((name, i) => {
       if (name !== replacedNames[i]) {
         reasons[i] = {index: i, origName: name, newName: replacedNames[i], reason: ["REPLACE"]};
+      }
+    });
+    // Blank names
+    // NOTE: Blank names should not have been changed by above (they would have been replaced with '_')
+    // - So we don't need to push to reasons, we can just set he reason here
+    replacedNames.forEach((name, i) => {
+      const newName = 'Unknown';
+      if (name === '') {
+        replacedNames[i] = newName;
+        reasons[i] = {index: i, origName: name, newName: newName, reason: ["BLANK"]};
       }
     });
     // Shorten names
@@ -396,6 +421,10 @@ export default class CGViewBuilder {
       }
       if (f.locations.length > 1) {
         this._skippedComplexFeatures.push(f);
+        continue;
+      }
+      if (f.locations.length < 1) {
+        this._skippedLocationlessFeatures.push(f);
         continue;
       }
       const feature = {

@@ -153,6 +153,11 @@ var CGParse = (function () {
     return string.replace(/\d+/g, "");
   }
 
+  function convertLineEndingsToLF(text) {
+    // Replace CRLF and CR with LF
+    return text.replace(/\r\n?/g, '\n');
+  }
+
   /**
    * Returns a string id using the _name_ and _start_ while
    * making sure the id is not in _currentIds_.
@@ -207,9 +212,52 @@ var CGParse = (function () {
     return reversed;
   }
 
-  function isASCII(text) {
-    return /^[\x00-\x7F]*$/.test(text);
+  // export function isASCII(text) {
+  //   // const isBinary = !/^[\x00-\x7F]*$/.test(text);
+  //   const isBinary = /[\x00-\x08\x0E-\x1F\x7F]/.test(text); 
+  //   console.log("IS BINARY? ", isBinary)
+  //   return !isBinary;
+  //   // return /^[\x00-\x7F]*$/.test(text);
+  //   // return !/^[\x00-\x08\x0E-\x1F\x7F]*$/.test(text);
+  //   // return /^[\x00]*$/.test(text);
+  // }
+
+  // ChatGPT special
+  function isBinary(text) {
+    const CHUNK_SIZE = 512; // Number of bytes to read
+    let isBinary = false;
+    const data = text.slice(0, CHUNK_SIZE);
+    let printableCharacterCount = 0;
+    let controlCharacterCount = 0;
+    let totalCharacterCount = 0;
+
+     // Check for BOM (Byte Order Mark)
+     if (data.length >= 3 && data.charCodeAt(0) === 0xEF && data.charCodeAt(1) === 0xBB && data.charCodeAt(2) === 0xBF) {
+      isBinary = false;
+    } else {
+      for (let i = 0; i < data.length; i++) {
+        const charCode = data.charCodeAt(i);
+
+        // Check for printable characters
+        if ((charCode >= 0x20 && charCode <= 0x7E) || charCode === 0x09 || charCode === 0x0A || charCode === 0x0D) {
+          printableCharacterCount++;
+        } else if (charCode < 0x20 && charCode !== 0x09 && charCode !== 0x0A && charCode !== 0x0D) {
+          controlCharacterCount++;
+        }
+      }
+
+      // Heuristic to determine binary vs text
+      const printableRatio = printableCharacterCount / totalCharacterCount;
+      const controlRatio = controlCharacterCount / totalCharacterCount;
+
+      console.log("IS BINARY: ", printableRatio, controlRatio);
+      if (printableRatio < 0.8 || controlRatio > 0.1) {
+        isBinary = true;
+      }
+    }
+    return isBinary;
   }
+
 
   // May not be very fast
   // https://medium.com/@marco.amato/playing-with-javascript-performances-and-dna-cb0270ad37c1
@@ -343,7 +391,7 @@ var CGParse = (function () {
   class CGViewBuilder {
 
     constructor(input, options = {}) {
-      this.input = input;
+      // this.input = input;
       this.version = "1.6.0";
       this.options = options;
       this.logger = options.logger || new Logger();
@@ -372,6 +420,10 @@ var CGParse = (function () {
       return this.status === 'success';
     }
 
+    get passed() {
+      return this.status === 'success' || this.status === 'warnings';
+    }
+
     get status() {
       return this._status;
     }
@@ -384,7 +436,9 @@ var CGParse = (function () {
 
     _warn(message) {
       this.logger.warn(message);
-      this._status = 'warnings';
+      if (this.status !== 'fail') {
+        this._status = 'warnings';
+      }
     }
 
     _parseInput(input) {
@@ -403,6 +457,7 @@ var CGParse = (function () {
       // this.logger.info(`Converting ${seqRecord.length} sequence record(s) to CGView JSON (version ${this.version})`);
       this._skippedFeaturesByType = {};
       this._skippedComplexFeatures = [];
+      this._skippedLocationlessFeatures = [];
       this.logger.info(`Date: ${new Date().toUTCString()}`);
       this.logger.info(`Converting to CGView JSON...`);
       this.logger.info(`- CGView JSON version ${this.version}`);
@@ -469,6 +524,7 @@ var CGParse = (function () {
       const seqLength = contigs.map((contig) => contig.length).reduce((a, b) => a + b, 0);
       let skippedFeatures = Object.values(this._skippedFeaturesByType).reduce((a, b) => a + b, 0);
       skippedFeatures += this._skippedComplexFeatures.length;
+      skippedFeatures += this._skippedLocationlessFeatures.length;
       this.logger.break('--------------------------------------------\n');
       this.logger.info('CGView JSON Summary:');
       this.logger.info(`- Map Name: ${json.name.padStart(19)}`);
@@ -506,7 +562,14 @@ var CGParse = (function () {
         const messages = complexFeatures.map((f) => `  - ${f.type} '${f.name}': ${f.locationText}`);
         this.logger.info(messages);
       }
-
+      // Missing Locations
+      const locationlessFeatures = this._skippedLocationlessFeatures;
+      const locationlessCount = locationlessFeatures.length;
+      if (locationlessCount > 0) {
+        this._warn(`- Skipped features (${locationlessCount}) with missing locations:`);
+        const messages = locationlessFeatures.map((f) => `  - ${f.type} '${f.name}': ${f.locationText}`);
+        this._warn(messages);
+      }
     }
 
     // Add config to JSON. Note that no validation of the config is done.
@@ -544,7 +607,7 @@ var CGParse = (function () {
         });
         // Log details
         this._warn(`The following contig names (${changedNameIndexes.length}) were adjusted:`);
-        this._warn(`Reasons: DUP (duplicate), LONG (>34), REPLACE (nonstandard characters)`);
+        this._warn(`Reasons: DUP (duplicate), LONG (>34), REPLACE (nonstandard characters), BLANK (empty)`);
         const messages = [];
         changedNameIndexes.forEach((i) => {
           const reason = reasons[i];
@@ -606,8 +669,8 @@ var CGParse = (function () {
     //   - origName: the original name
     //   - newName: the corrected name
     //   - reason: the reason for the correction
-    //     (e.g. "duplicate", "too long", "nonstandard characters")
-    //     (e.g. "DUP", "LONG", "REPLACE")
+    //     (e.g. "duplicate", "too long", "nonstandard characters", "blank")
+    //     (e.g. "DUP", "LONG", "REPLACE", "BLANK"
     static adjustContigNames(names=[]) {
       // console.log(names)
       const reasons = {};
@@ -618,6 +681,16 @@ var CGParse = (function () {
       names.forEach((name, i) => {
         if (name !== replacedNames[i]) {
           reasons[i] = {index: i, origName: name, newName: replacedNames[i], reason: ["REPLACE"]};
+        }
+      });
+      // Blank names
+      // NOTE: Blank names should not have been changed by above (they would have been replaced with '_')
+      // - So we don't need to push to reasons, we can just set he reason here
+      replacedNames.forEach((name, i) => {
+        const newName = 'Unknown';
+        if (name === '') {
+          replacedNames[i] = newName;
+          reasons[i] = {index: i, origName: name, newName: newName, reason: ["BLANK"]};
         }
       });
       // Shorten names
@@ -718,6 +791,10 @@ var CGParse = (function () {
           this._skippedComplexFeatures.push(f);
           continue;
         }
+        if (f.locations.length < 1) {
+          this._skippedLocationlessFeatures.push(f);
+          continue;
+        }
         const feature = {
           start: f.start,
           stop: f.stop,
@@ -798,10 +875,17 @@ var CGParse = (function () {
     // inputText: string from GenBank, EMBL, Fasta, or Raw [Required]
     // Options:
     // - addFeatureSequences: boolean [Default: false]. This can increase run time ~3x.
+    // - nameKeys: The order of preference for the name of a feature
+    //   - array of strings [Default: ['gene', 'locus_tag', 'product', 'note', 'db_xref']]
     // - logger: logger object
     // - maxLogCount: number (undefined means no limit) [Default: undefined]
     constructor(inputText, options={}) {
-      this.inputText;
+      // this.inputText;
+      // console.log("THIS IS THE NEW STUFF$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$4")
+      // console.log(/\r\n/.test(inputText));
+      const convertedText = convertLineEndingsToLF(inputText);
+      // console.log(/\r\n/.test(convertedText));
+      // const convertedText = inputText;
       this.logger = options.logger || new Logger();
       options.logger = this.logger;
       if (options.maxLogCount) {
@@ -812,12 +896,16 @@ var CGParse = (function () {
       this._status = 'success';
       this._records = [];
       this._errorCodes = new Set();
-      if (!inputText || inputText === '') {
+
+      this.nameKeys = options.nameKeys || ['gene', 'locus_tag', 'product', 'note', 'db_xref'];
+
+      if (!convertedText || convertedText === '') {
         this._fail('Parsing Failed: No input text provided.', 'empty');
-      } else if (!isASCII(inputText)) {
+      // } else if (!helpers.isASCII(convertedText)) {
+      } else if (isBinary(convertedText)) {
         this._fail('Parsing Failed: Input contains non-text characters. Is this binary data?', 'binary');
       } else {
-        this._records = this._parse(inputText, options);
+        this._records = this._parse(convertedText, options);
         if (options.addFeatureSequences) {
           this._addFeatureSequence(this._records);
         }
@@ -939,6 +1027,7 @@ var CGParse = (function () {
     _parseGenbankOrEmbl(seqText, options={}) {
       const records = [];
       this.logger.info("- attempting as GenBank or EMBL...");
+      this.logger.info("- name keys: " + this.nameKeys.join(', '));
       seqText.split(/^\/\//m).filter(this._isSeqRecord).forEach((seqRecord) => {
         const record = {inputType: 'unknown'};
         if (/^\s*LOCUS|^\s*FEATURES/m.test(seqRecord)) {
@@ -967,17 +1056,20 @@ var CGParse = (function () {
       const records = [];
       seqText.split(/^\s*>/m).filter(this._isSeqRecord).forEach((seqRecord) => {
         const record = {inputType: 'fasta', name: '', length: 0, sequence: ''};
-        const match = seqRecord.match(/^\s*([^\n\r]+)(.*)/s);
+        // const match = seqRecord.match(/^\s*([^\n\r]+)(.*)/s);
+        const match = seqRecord.match(/^([^\n\r]*)(.*)/s);
         if (match) {
-          record.name = match[1];
+          record.name = match[1].trim();
           record.sequence = removeWhiteSpace(removeDigits(match[2]));
           record.length = record.sequence.length;
           record.features = [];
-          // Parse defintion line
-          const matchDef = record.name.match(/^(\S+)\s*(.*)/);
-          if (matchDef) {
-            record.seqID = matchDef[1];
-            record.definition = matchDef[2];
+          // Parse defintion line if name is not empty
+          if (record.name !== '') {
+            const matchDef = record.name.match(/^(\S+)\s*(.*)/);
+            if (matchDef) {
+              record.seqID = matchDef[1];
+              record.definition = matchDef[2];
+            }
           }
         }
         records.push(record);
@@ -1359,7 +1451,8 @@ var CGParse = (function () {
     _getFeatureName(qualifiers) {
       // This is the order of preference for the name of a feature
       // This could become a user-defined list (think tags that the user can rearrange or add/remove)
-      const keys = ['gene', 'locus_tag', 'product', 'note', 'db_xref'];
+      // const keys = ['gene', 'locus_tag', 'product', 'note', 'db_xref'];
+      const keys = this.nameKeys;
       const foundKey = keys.find((key) => this._getFirstQualifierValueForName(key, qualifiers));
       return foundKey ? this._getFirstQualifierValueForName(foundKey, qualifiers) : "";
     }
@@ -1468,6 +1561,10 @@ var CGParse = (function () {
         const messages = recordsUnexpectedChars.map((r) => `- ${r.name}: ${r.hasUnexpectedCharacters}`);
         this.logger.error(messages);
       }
+
+      // Feature locations are empty
+
+
       // Features start or end/stop is greater than sequence length
       // Features end is less than start
       // - NOTE: we may want to allow features that wrap around the sequence

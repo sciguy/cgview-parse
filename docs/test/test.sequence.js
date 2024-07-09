@@ -15,7 +15,7 @@ const showInput = true;
 const showSeqJson = true;
 const showTesJson = false;
 const showCgvJson = true;
-const showMap = false;
+const showMap = true;
 const showAllText = false; // or only the first 1000 lines
 const filterSequence = true;
 
@@ -200,6 +200,10 @@ async function runParse() {
   const outputSeqJsonDiv = document.getElementById('output-seq-json');
   const outputTesJsonDiv = document.getElementById('output-tes-json');
   const outputCgvJsonDiv = document.getElementById('output-cgv-json');
+  // Clear outputs
+  outputSeqJsonDiv.innerHTML = "Loading...";
+  outputTesJsonDiv.innerHTML = "Loading...";
+  outputCgvJsonDiv.innerHTML = "Loading...";
   // Using prism can be slow for large files
   const prismMode = prettyPrintCheckbox.checked;
   const filterSeqMode = filterSeqCheckbox.checked;
@@ -261,7 +265,7 @@ async function runParse() {
     const cgvJsonRunTime = elapsedTime(cgvJsonStartTime);
     updateTime('time-cgv-json', cgvJsonRunTime);
     // Convert to string (and pretty print with 2 spaces)
-    if (builder.success && cgvJSON) {
+    if (builder.passed && cgvJSON) {
       let cgvString = JSON.stringify(cgvJSON, null, 2);
       if (filterSeqMode) {
         cgvString = cgvString.replace(/"seq": ".*"/g, '"seq": "..."');

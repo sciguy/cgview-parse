@@ -10,6 +10,11 @@ export function removeNewlines(string) {
   return string.replace(/[\n\r]+/g, "");
 }
 
+export function convertLineEndingsToLF(text) {
+  // Replace CRLF and CR with LF
+  return text.replace(/\r\n?/g, '\n');
+}
+
 /**
  * Returns a string id using the _name_ and _start_ while
  * making sure the id is not in _currentIds_.
@@ -66,9 +71,52 @@ export function reverse(string) {
   return reversed;
 }
 
-export function isASCII(text) {
-  return /^[\x00-\x7F]*$/.test(text);
+// export function isASCII(text) {
+//   // const isBinary = !/^[\x00-\x7F]*$/.test(text);
+//   const isBinary = /[\x00-\x08\x0E-\x1F\x7F]/.test(text); 
+//   console.log("IS BINARY? ", isBinary)
+//   return !isBinary;
+//   // return /^[\x00-\x7F]*$/.test(text);
+//   // return !/^[\x00-\x08\x0E-\x1F\x7F]*$/.test(text);
+//   // return /^[\x00]*$/.test(text);
+// }
+
+// ChatGPT special
+export function isBinary(text) {
+  const CHUNK_SIZE = 512; // Number of bytes to read
+  let isBinary = false;
+  const data = text.slice(0, CHUNK_SIZE);
+  let printableCharacterCount = 0;
+  let controlCharacterCount = 0;
+  let totalCharacterCount = 0;
+
+   // Check for BOM (Byte Order Mark)
+   if (data.length >= 3 && data.charCodeAt(0) === 0xEF && data.charCodeAt(1) === 0xBB && data.charCodeAt(2) === 0xBF) {
+    isBinary = false;
+  } else {
+    for (let i = 0; i < data.length; i++) {
+      const charCode = data.charCodeAt(i);
+
+      // Check for printable characters
+      if ((charCode >= 0x20 && charCode <= 0x7E) || charCode === 0x09 || charCode === 0x0A || charCode === 0x0D) {
+        printableCharacterCount++;
+      } else if (charCode < 0x20 && charCode !== 0x09 && charCode !== 0x0A && charCode !== 0x0D) {
+        controlCharacterCount++;
+      }
+    }
+
+    // Heuristic to determine binary vs text
+    const printableRatio = printableCharacterCount / totalCharacterCount;
+    const controlRatio = controlCharacterCount / totalCharacterCount;
+
+    console.log("IS BINARY: ", printableRatio, controlRatio)
+    if (printableRatio < 0.8 || controlRatio > 0.1) {
+      isBinary = true;
+    }
+  }
+  return isBinary;
 }
+
 
 // May not be very fast
 // https://medium.com/@marco.amato/playing-with-javascript-performances-and-dna-cb0270ad37c1

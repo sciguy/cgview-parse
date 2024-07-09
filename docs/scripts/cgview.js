@@ -4254,6 +4254,11 @@ var CGV = (function (exports, d3) {
     start(interval) {
       // return interval.start || interval.interval.start;
       // return interval.start || interval.interval[this.startProperty];
+      if (!interval[this.startProperty]) {
+        if (!interval.interval) {
+          console.log(interval);
+        }
+      }
       return interval[this.startProperty] || interval.interval[this.startProperty];
     }
 

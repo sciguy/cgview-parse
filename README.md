@@ -10,6 +10,10 @@ This package consists of 3 main components:
 
 # Usage
 
+# Notes:
+- feature keys: ~53
+- qualifiers: ~103
+
 ## SequenceFile
 ```js
 // inputText: text from a GenBank, EMBL, FASTA, or RAW file
@@ -174,6 +178,18 @@ The testing html page can open predefined sequence files as well as use a file c
   - use fs.readFileSync to read in a file
   - use CGViewBuilder to convert the file
   - see if they pass or fail
+
+# Features TODO (Next)
+- Like SequenceFile, we will have FeatureFile to parse different file types into a common one
+- FeatureFile should be able to do the conversion easy enough to CGView features JSON
+- For the input types, we should have a delegate import type for each file type:
+  - Simple CSV/TSV format (like the current Proksee feature tool format)
+  - BED
+  - GFF3
+  - GTF
+  - GFF?? (Version 2)
+  - VCF?
+- We should allow location arrays for the features (even though they don't work yet)
 
 # Resources
 - Paul's Python Sequence Parser

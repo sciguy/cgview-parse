@@ -15,6 +15,8 @@
 // - Test start_codon
 // - consider changing type to molType
 // - consider changing inputType to fileType
+// - Note, feature locations that can't be parsed are not handled here. They are
+//   handled in the CGViewBuilder as warnings.
 import Logger from './Logger.js';
 import CGViewBuilder from './CGViewBuilder.js';
 import * as helpers from './Helpers.js';
@@ -30,10 +32,17 @@ class SequenceFile {
   // inputText: string from GenBank, EMBL, Fasta, or Raw [Required]
   // Options:
   // - addFeatureSequences: boolean [Default: false]. This can increase run time ~3x.
+  // - nameKeys: The order of preference for the name of a feature
+  //   - array of strings [Default: ['gene', 'locus_tag', 'product', 'note', 'db_xref']]
   // - logger: logger object
   // - maxLogCount: number (undefined means no limit) [Default: undefined]
   constructor(inputText, options={}) {
-    this.inputText;
+    // this.inputText;
+    // console.log("THIS IS THE NEW STUFF$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$4")
+    // console.log(/\r\n/.test(inputText));
+    const convertedText = helpers.convertLineEndingsToLF(inputText);
+    // console.log(/\r\n/.test(convertedText));
+    // const convertedText = inputText;
     this.logger = options.logger || new Logger();
     options.logger = this.logger;
     if (options.maxLogCount) {
@@ -44,12 +53,16 @@ class SequenceFile {
     this._status = 'success'
     this._records = [];
     this._errorCodes = new Set();
-    if (!inputText || inputText === '') {
+
+    this.nameKeys = options.nameKeys || ['gene', 'locus_tag', 'product', 'note', 'db_xref'];
+
+    if (!convertedText || convertedText === '') {
       this._fail('Parsing Failed: No input text provided.', 'empty')
-    } else if (!helpers.isASCII(inputText)) {
+    // } else if (!helpers.isASCII(convertedText)) {
+    } else if (helpers.isBinary(convertedText)) {
       this._fail('Parsing Failed: Input contains non-text characters. Is this binary data?', 'binary');
     } else {
-      this._records = this._parse(inputText, options);
+      this._records = this._parse(convertedText, options);
       if (options.addFeatureSequences) {
         this._addFeatureSequence(this._records)
       }
@@ -171,6 +184,7 @@ class SequenceFile {
   _parseGenbankOrEmbl(seqText, options={}) {
     const records = [];
     this.logger.info("- attempting as GenBank or EMBL...");
+    this.logger.info("- name keys: " + this.nameKeys.join(', '));
     seqText.split(/^\/\//m).filter(this._isSeqRecord).forEach((seqRecord) => {
       const record = {inputType: 'unknown'};
       if (/^\s*LOCUS|^\s*FEATURES/m.test(seqRecord)) {
@@ -199,17 +213,20 @@ class SequenceFile {
     const records = [];
     seqText.split(/^\s*>/m).filter(this._isSeqRecord).forEach((seqRecord) => {
       const record = {inputType: 'fasta', name: '', length: 0, sequence: ''};
-      const match = seqRecord.match(/^\s*([^\n\r]+)(.*)/s);
+      // const match = seqRecord.match(/^\s*([^\n\r]+)(.*)/s);
+      const match = seqRecord.match(/^([^\n\r]*)(.*)/s);
       if (match) {
-        record.name = match[1];
+        record.name = match[1].trim();
         record.sequence = helpers.removeWhiteSpace(helpers.removeDigits(match[2]));
         record.length = record.sequence.length;
         record.features = [];
-        // Parse defintion line
-        const matchDef = record.name.match(/^(\S+)\s*(.*)/);
-        if (matchDef) {
-          record.seqID = matchDef[1];
-          record.definition = matchDef[2];
+        // Parse defintion line if name is not empty
+        if (record.name !== '') {
+          const matchDef = record.name.match(/^(\S+)\s*(.*)/);
+          if (matchDef) {
+            record.seqID = matchDef[1];
+            record.definition = matchDef[2];
+          }
         }
       }
       records.push(record);
@@ -595,7 +612,8 @@ class SequenceFile {
   _getFeatureName(qualifiers) {
     // This is the order of preference for the name of a feature
     // This could become a user-defined list (think tags that the user can rearrange or add/remove)
-    const keys = ['gene', 'locus_tag', 'product', 'note', 'db_xref'];
+    // const keys = ['gene', 'locus_tag', 'product', 'note', 'db_xref'];
+    const keys = this.nameKeys;
     const foundKey = keys.find((key) => this._getFirstQualifierValueForName(key, qualifiers));
     return foundKey ? this._getFirstQualifierValueForName(foundKey, qualifiers) : "";
   }
@@ -704,6 +722,10 @@ class SequenceFile {
       const messages = recordsUnexpectedChars.map((r) => `- ${r.name}: ${r.hasUnexpectedCharacters}`);
       this.logger.error(messages);
     }
+
+    // Feature locations are empty
+
+
     // Features start or end/stop is greater than sequence length
     // Features end is less than start
     // - NOTE: we may want to allow features that wrap around the sequence
