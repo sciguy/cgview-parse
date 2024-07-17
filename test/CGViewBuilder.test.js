@@ -79,6 +79,14 @@ describe('CGViewBuilder', () => {
       expect(qualifiersOut).toEqual({string: "test", single: true, multiple: ['one', 'two']});
     });
 
+    test('- true: but excluding ["single"]', () => {
+      const qualifiersIn = {number: 3, string: "test", single: true, multiple: ['one', 'two']};
+      const includeQualifiers = true;
+      const excludeQualifiers = ['single']
+      const qualifiersOut = CGViewBuilder.extractQualifiers(qualifiersIn, includeQualifiers, excludeQualifiers);
+      expect(qualifiersOut).toEqual({number: 3, string: "test", multiple: ['one', 'two']});
+    });
+
   });
 
 

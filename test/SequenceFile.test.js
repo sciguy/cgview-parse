@@ -1,7 +1,7 @@
 import SequenceFile from '../src/SequenceFile.js';
 
 describe('SequenceFile', () => {
-  let seqFile = new SequenceFile();
+  let seqFile = new SequenceFile("");
 
   /////////////////////////////////////////////////
   // SEQUENCE

@@ -6,12 +6,22 @@ import * as helpers from './Helpers.js';
 // - SequenceFile or string of sequence file (e.g. GenBank, FASTA) that can be converted to SequenceFile
 // OPTIONS:
 // - config: jsonConfig
-// - skipTypes: boolean (TEST) [Default: ['gene', 'source', 'exon']]
+// - FIXME: CHANGE TO includ/excludeFeatures skipTypes: boolean (TEST) [Default: ['gene', 'source', 'exon']]
 //   - If false, include ALL feature types in the JSON
+// - includeFeatures: boolean [Defualt: true]
+//   - If true, include ALL feature types in the JSON
+//   - If array of strings, include only those feature type
+//   - If false, include NO features
+// - excludeFeatures: array of string [Defualt: undefined]
+//   - include all feature types except for these
+//   - ignored unless includeFeatures is true
 // - includeQualifiers: boolean [Defualt: false]
 //   - If true, include ALL qualifiers in the JSON
 //   - If array of strings, include only those qualifiers
 //   - If false, include NO qualifiers
+// - excludeQualifiers: array of string [Defualt: undefined]
+//   - include all qualifiers except for these
+//   - ignored unless includeQualifiers is true
 // - includeCaption: boolean [Defualt: true]
 //   - NOTE: captions could come from the config (like I did for cgview_builder.rb)
 // - skipComplexLocations: boolean (not implemented yet) [Defualt: true]
@@ -19,7 +29,7 @@ import * as helpers from './Helpers.js';
 // - maxLogCount: number (undefined means no limit) [Default: undefined]
 
 // LOGGING (including from sequence file)
-// - start with date and version (and options: skipTypes, includeQualifiers, skipComplexLocations)
+// - start with date and version (and options: skipTypes, includeQualifiers, excludeQulifiers, skipComplexLocations)
 export default class CGViewBuilder {
 
   constructor(input, options = {}) {
@@ -32,9 +42,13 @@ export default class CGViewBuilder {
     }
     this._success = true;
     this._status = 'success';
+    // this.includeFeatures = options.includeFeatures || true;
+    this.includeFeatures = (options.includeFeatures === undefined) ? true : options.includeFeatures;
+    this.excludeFeatures = options.excludeFeatures || ['gene', 'source', 'exon'];
     this.includeQualifiers = options.includeQualifiers || false;
+    this.excludeQualifiers = options.excludeQualifiers || [];
     this.includeCaption = (options.includeCaption === undefined) ? true : options.includeCaption;
-    this.defaultTypesToSkip = ['gene', 'source', 'exon'];
+    // this.defaultTypesToSkip = ['gene', 'source', 'exon'];
 
     this.seqFile = this._parseInput(input);
     this.inputType = this.seqFile.inputType
@@ -115,7 +129,7 @@ export default class CGViewBuilder {
     json = this._extractSequenceAndFeatures(json, seqRecords);
     this._summarizeSkippedFeatures()
     this._adjustFeatureGeneticCode(json)
-    this._logQualifiers();
+    this._qualifiersSetup();
     // json.name = json.sequence?.contigs[0]?.name || "Untitled";
     json.name = seqRecords[0]?.definition || seqRecords[0]?.name || seqRecords[0]?.seqID || "Untitled";
     json = this._removeUnusedLegends(json);
@@ -135,16 +149,6 @@ export default class CGViewBuilder {
       captions.push(caption);
     }
     return captions;
-  }
-
-  _logQualifiers() {
-    let qualifiersToInclude = "none";
-    if (this.includeQualifiers === true) {
-      qualifiersToInclude = "all";
-    } else if (Array.isArray(this.includeQualifiers)) {
-      qualifiersToInclude = this.includeQualifiers.join(', ');
-    }
-    this.logger.info(`- Extracted Qualifiers: ${qualifiersToInclude} `);
   }
 
   _convertSummary(json) {
@@ -359,7 +363,7 @@ export default class CGViewBuilder {
   _extractSequenceAndFeatures(json, seqJson) {
     const contigs = [];
     const features = [];
-    this._skippedTypesSetup();
+    this._featureTypesSetup();
     seqJson.forEach((seqRecord) => {
       contigs.push({name: seqRecord.name, length: seqRecord.sequence.length, seq: seqRecord.sequence});
       const contigFeatures = this._extractFeatures(seqRecord, seqRecord.name, seqRecord.inputType);
@@ -370,18 +374,99 @@ export default class CGViewBuilder {
     return json;
   }
 
-  _skippedTypesSetup() {
-    const options = this.options;
-    if (options.skipTypes === false) {
-      this.featuresToSkip = [];
-    } else if (Array.isArray(options.skipTypes)) {
-      this.featuresToSkip = options.skipTypes;
-    } else {
-      this.featuresToSkip = this.defaultTypesToSkip;
-    }
-    const skipTypes = this.featuresToSkip.length === 0 ? "none" : this.featuresToSkip.join(', ');
-    this.logger.info(`- Feature types to skip: ${skipTypes}`);
+  // _skippedTypesSetupOLD() {
+  //   const options = this.options;
+  //   if (options.skipTypes === false) {
+  //     this.featuresToSkip = [];
+  //   } else if (Array.isArray(options.skipTypes)) {
+  //     this.featuresToSkip = options.skipTypes;
+  //   } else {
+  //     this.featuresToSkip = this.defaultTypesToSkip;
+  //   }
+  //   const skipTypes = this.featuresToSkip.length === 0 ? "none" : this.featuresToSkip.join(', ');
+  //   this.logger.info(`- Feature types to skip: ${skipTypes}`);
+  // }
+    // this.featuresToExclude
+    // this.includeFeatures
+    // this.excludeFeatures
+    // this.featuresToExclude
+  _featureTypesSetup() {
+    const inExclude = this._setupInExcludeItems('Feature types', this.includeFeatures, this.excludeFeatures);
+    this.featuresToInclude = inExclude.itemsToInclude;
+    this.featuresToExclude = inExclude.itemsToExclude;
+    // this.featuresToExclude = [];
+    // if (this.includeFeatures === true) {
+    //   this.featuresToInclude = true;
+    //   if (Array.isArray(this.excludeFeatures)) {
+    //     this.featuresToExclude = this.excludeFeatures;
+    //     if (this.featuresToExclude.length > 0) {
+    //       this.logger.info(`- Feature types to exclude: ${this.featuresToExclude.join(', ')}`);
+    //     } else {
+    //       this.logger.info(`- Feature types to include: All`);
+    //     }
+    //   } else {
+    //       this.logger.info(`- Feature types to include: All`);
+    //   }
+    // } else if (Array.isArray(this.includeFeatures)) {
+    //   this.featuresToInclude = this.includeFeatures;
+    //   if (this.featuresToInclude.length > 0) {
+    //     this.logger.info(`- Feature types to include: ${this.featuresToInclude.join(', ')}`);
+    //   } else {
+    //     this.logger.info(`- Feature types to include: None`);
+    //   }
+    // } else {
+    //   // false, or aything but true or an array
+    //   this.featuresToInclude = [];
+    //   this.logger.info(`- Feature types to include: None`);
+    // }
   }
+
+  _qualifiersSetup() {
+    const inExclude = this._setupInExcludeItems('Qualifier', this.includeQualifiers, this.excludeQualifiers);
+    this.includeQualifiers = inExclude.itemsToInclude;
+    this.excludeQualifiers = inExclude.itemsToExclude;
+    // let qualifiersToInclude = "none";
+    // if (this.includeQualifiers === true) {
+    //   qualifiersToInclude = "all";
+    // } else if (Array.isArray(this.includeQualifiers)) {
+    //   qualifiersToInclude = this.includeQualifiers.join(', ');
+    // }
+    // this.logger.info(`- Extracted Qualifiers: ${qualifiersToInclude} `);
+  }
+
+  // name: string to dislplay in log messages
+  // includeItems: true, false, or array of strings
+  // excludeItems: array of strings
+  _setupInExcludeItems(name, includeItems, excludeItems) {
+    let itemsToInclude = [];
+    let itemsToExclude = [];
+    if (includeItems === true) {
+      itemsToInclude = true;
+      if (Array.isArray(excludeItems)) {
+        itemsToExclude = excludeItems;
+        if (itemsToExclude.length > 0) {
+          this.logger.info(`- ${name} to exclude: ${itemsToExclude.join(', ')}`);
+        } else {
+          this.logger.info(`- ${name} to include: All`);
+        }
+      } else {
+          this.logger.info(`- ${name} to include: All`);
+      }
+    } else if (Array.isArray(includeItems)) {
+      itemsToInclude = includeItems;
+      if (itemsToInclude.length > 0) {
+        this.logger.info(`- ${name} to include: ${itemsToInclude.join(', ')}`);
+      } else {
+        this.logger.info(`- ${name} to include: None`);
+      }
+    } else {
+      // false, or aything but true or an array
+      itemsToInclude = [];
+      this.logger.info(`- ${name} to include: None`);
+    }
+    return {itemsToInclude, itemsToExclude};
+  }
+
 
   // Onlys adds a Features track if there are features
   // Other tracks may come from the config (in which case they are already added to the JSON)
@@ -415,7 +500,11 @@ export default class CGViewBuilder {
     const features = [];
     const source = inputType ? `${inputType}-features` : "features";
     for (const f of seqContig.features) {
-      if (this.featuresToSkip.includes(f.type)) {
+      if (this.featuresToExclude.includes(f.type)) {
+        this._skippedFeaturesByType[f.type] = this._skippedFeaturesByType[f.type] ? this._skippedFeaturesByType[f.type] + 1 : 1;
+        continue;
+      }
+      if (Array.isArray(this.featuresToInclude) && !this.featuresToInclude.includes(f.type)) {
         this._skippedFeaturesByType[f.type] = this._skippedFeaturesByType[f.type] ? this._skippedFeaturesByType[f.type] + 1 : 1;
         continue;
       }
@@ -447,7 +536,7 @@ export default class CGViewBuilder {
         // The default genetic code for GenBank/EMBL is 1
         feature.geneticCode = geneticCode || 1;
       }
-      const qualifiers = CGViewBuilder.extractQualifiers(f.qualifiers, this.includeQualifiers);
+      const qualifiers = CGViewBuilder.extractQualifiers(f.qualifiers, this.includeQualifiers, this.excludeQualifiers);
       if (qualifiers) {
         feature.qualifiers = qualifiers;
       }
@@ -458,11 +547,19 @@ export default class CGViewBuilder {
     return features;
   }
 
-  static extractQualifiers(qualifiersIn, includeQualifiers) {
+  static extractQualifiers(qualifiersIn, includeQualifiers, excludeQualifiers) {
     let qualifiersOut = {};
 
     if (includeQualifiers === true && qualifiersIn) {
-      qualifiersOut = qualifiersIn;
+      if (Array.isArray(excludeQualifiers) && excludeQualifiers.length > 0) {
+        const qualifiersInCopy = {...qualifiersIn};
+          excludeQualifiers.forEach((q) => {
+            delete qualifiersInCopy[q];
+          });
+        qualifiersOut = qualifiersInCopy;
+      } else {
+        qualifiersOut = qualifiersIn;
+      }
     } else if (Array.isArray(includeQualifiers)) {
       includeQualifiers.forEach((q) => {
         if (qualifiersIn[q] !== undefined) {

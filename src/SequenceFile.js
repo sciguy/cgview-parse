@@ -48,13 +48,12 @@ class SequenceFile {
     if (options.maxLogCount) {
       this.logger.maxLogCount = options.maxLogCount;
     }
+    this.nameKeys = options.nameKeys || ['gene', 'locus_tag', 'product', 'note', 'db_xref'];
     this.logger.info(`Date: ${new Date().toUTCString()}`);
     this._success = true
     this._status = 'success'
     this._records = [];
     this._errorCodes = new Set();
-
-    this.nameKeys = options.nameKeys || ['gene', 'locus_tag', 'product', 'note', 'db_xref'];
 
     if (!convertedText || convertedText === '') {
       this._fail('Parsing Failed: No input text provided.', 'empty')
@@ -184,7 +183,7 @@ class SequenceFile {
   _parseGenbankOrEmbl(seqText, options={}) {
     const records = [];
     this.logger.info("- attempting as GenBank or EMBL...");
-    this.logger.info("- name keys: " + this.nameKeys.join(', '));
+    this.logger.info("- name extraction keys: " + this.nameKeys.join(', '));
     seqText.split(/^\/\//m).filter(this._isSeqRecord).forEach((seqRecord) => {
       const record = {inputType: 'unknown'};
       if (/^\s*LOCUS|^\s*FEATURES/m.test(seqRecord)) {
