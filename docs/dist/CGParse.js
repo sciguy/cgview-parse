@@ -742,64 +742,16 @@ var CGParse = (function () {
       return json;
     }
 
-    // _skippedTypesSetupOLD() {
-    //   const options = this.options;
-    //   if (options.skipTypes === false) {
-    //     this.featuresToSkip = [];
-    //   } else if (Array.isArray(options.skipTypes)) {
-    //     this.featuresToSkip = options.skipTypes;
-    //   } else {
-    //     this.featuresToSkip = this.defaultTypesToSkip;
-    //   }
-    //   const skipTypes = this.featuresToSkip.length === 0 ? "none" : this.featuresToSkip.join(', ');
-    //   this.logger.info(`- Feature types to skip: ${skipTypes}`);
-    // }
-      // this.featuresToExclude
-      // this.includeFeatures
-      // this.excludeFeatures
-      // this.featuresToExclude
     _featureTypesSetup() {
       const inExclude = this._setupInExcludeItems('Feature types', this.includeFeatures, this.excludeFeatures);
       this.featuresToInclude = inExclude.itemsToInclude;
       this.featuresToExclude = inExclude.itemsToExclude;
-      // this.featuresToExclude = [];
-      // if (this.includeFeatures === true) {
-      //   this.featuresToInclude = true;
-      //   if (Array.isArray(this.excludeFeatures)) {
-      //     this.featuresToExclude = this.excludeFeatures;
-      //     if (this.featuresToExclude.length > 0) {
-      //       this.logger.info(`- Feature types to exclude: ${this.featuresToExclude.join(', ')}`);
-      //     } else {
-      //       this.logger.info(`- Feature types to include: All`);
-      //     }
-      //   } else {
-      //       this.logger.info(`- Feature types to include: All`);
-      //   }
-      // } else if (Array.isArray(this.includeFeatures)) {
-      //   this.featuresToInclude = this.includeFeatures;
-      //   if (this.featuresToInclude.length > 0) {
-      //     this.logger.info(`- Feature types to include: ${this.featuresToInclude.join(', ')}`);
-      //   } else {
-      //     this.logger.info(`- Feature types to include: None`);
-      //   }
-      // } else {
-      //   // false, or aything but true or an array
-      //   this.featuresToInclude = [];
-      //   this.logger.info(`- Feature types to include: None`);
-      // }
     }
 
     _qualifiersSetup() {
       const inExclude = this._setupInExcludeItems('Qualifier', this.includeQualifiers, this.excludeQualifiers);
       this.includeQualifiers = inExclude.itemsToInclude;
       this.excludeQualifiers = inExclude.itemsToExclude;
-      // let qualifiersToInclude = "none";
-      // if (this.includeQualifiers === true) {
-      //   qualifiersToInclude = "all";
-      // } else if (Array.isArray(this.includeQualifiers)) {
-      //   qualifiersToInclude = this.includeQualifiers.join(', ');
-      // }
-      // this.logger.info(`- Extracted Qualifiers: ${qualifiersToInclude} `);
     }
 
     // name: string to dislplay in log messages
