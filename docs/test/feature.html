@@ -27,12 +27,11 @@
 
     <!-- Dev Page -->
     <link rel="stylesheet" href="test.css" />
-    <!-- Test Map Data -->
-    <!-- <script src='maps.js'></script> -->
-    <script src='inputs.js'></script>
+    <!-- Test Feature Files -->
+    <script src='inputs.features.js'></script>
 
     <!-- Plausible Analytics -->
-    <script defer data-domain="js.cgview.ca" src="https://stats.stothardresearch.ca/js/plausible.outbound-links.js"></script>
+    <!-- <script defer data-domain="js.cgview.ca" src="https://stats.stothardresearch.ca/js/plausible.outbound-links.js"></script> -->
 
     <title>CGVParse</title>
   </head>
@@ -73,23 +72,16 @@
       </div>
 
       <!-- OUTPUT SEQUENCE JSON -->
-      <div class='section-column section-seq-json'>
+      <div class='section-column section-feature-json'>
         <div id='time-seq-json' class='section-time' title="Runtime of actual conversion">n/a</div>
-        <div class='section-heading'>Sequence JSON</div>
+        <div class='section-heading'>Features JSON</div>
         <pre><code id='output-seq-json' class='language-json'></code></pre>
       </div>
 
-      <!-- OUTPUT TESELAGEN JSON -->
-      <div class='section-column section-tes-json'>
-        <div id='time-tes-json' class='section-time' title="Runtime of actual conversion">n/a</div>
-        <div class='section-heading'>Teselagen JSON</div>
-        <pre><code id='output-tes-json' class='language-json'></code></pre>
-      </div>
-
-      <!-- OUTPUT CGVIEW JSON -->
+      <!-- OUTPUT CGVIEW FEATURES JSON -->
       <div class='section-column section-cgv-json'>
         <div id='time-cgv-json' class='section-time' title="Runtime of actual conversion">n/a</div>
-        <div class='section-heading'>CGView JSON</div>
+        <div class='section-heading'>CGView Features JSON</div>
         <pre><code id='output-cgv-json' class='language-json'></code></pre>
       </div>
 
@@ -120,11 +112,10 @@
               <div><input id='option-prism' type='checkbox' checked /> Pretty Print <span class='muted'>(r)</span></div>
               <div><input id='option-show-map' type='checkbox' checked /> Show Map</div>
               <div><input id='option-show-input' type='checkbox' checked /> Show Input</div>
-              <div><input id='option-show-all-text' type='checkbox' checked /> Show All Text <span class='muted'>(seq, tes)</span></div>
+              <div><input id='option-show-all-text' type='checkbox' checked /> Show All Text <span class='muted'>(seq)</span></div>
             </div>
             <div>
               <div><input id='option-show-seq-json' type='checkbox' checked /> Show Sequence JSON</div>
-              <div><input id='option-show-tes-json' type='checkbox' checked /> Show Teselagen JSON</div>
               <div><input id='option-show-cgv-json' type='checkbox' checked /> Show CGView JSON</div>
               <div><input id='option-filter-seq' type='checkbox' checked /> Filter Sequence <span class='muted'>(r)</span></div>
             </div>
@@ -149,7 +140,7 @@
     <script src="../scripts/bootstrap.min.js"></script>
 
     <script src="../scripts/prism.js"></script>
-    <script src='test.js'></script>
+    <script src='test.features.js'></script>
     <script src='../scripts/controls.js'></script>
 
   </body>

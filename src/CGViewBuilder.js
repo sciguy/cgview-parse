@@ -102,7 +102,8 @@ export default class CGViewBuilder {
   _convert(seqRecords) {
     // this.logger.info(`Converting ${seqRecord.length} sequence record(s) to CGView JSON (version ${this.version})`);
     this._skippedFeaturesByType = {};
-    this._skippedComplexFeatures = [];
+    this._skippedComplexFeatures = []; // not skipped anymore
+    this._complexFeatures = [];
     this._skippedLocationlessFeatures = [];
     this.logger.info(`Date: ${new Date().toUTCString()}`);
     this.logger.info(`Converting to CGView JSON...`);
@@ -130,6 +131,9 @@ export default class CGViewBuilder {
     this._summarizeSkippedFeatures()
     this._adjustFeatureGeneticCode(json)
     this._qualifiersSetup();
+    if (this._complexFeatures.length > 0) {
+      this.logger.info(`- Complex Features Found: ${this._complexFeatures.length.toLocaleString()}`);
+    }
     // json.name = json.sequence?.contigs[0]?.name || "Untitled";
     json.name = seqRecords[0]?.definition || seqRecords[0]?.name || seqRecords[0]?.seqID || "Untitled";
     json = this._removeUnusedLegends(json);
@@ -460,10 +464,10 @@ export default class CGViewBuilder {
         this._skippedFeaturesByType[f.type] = this._skippedFeaturesByType[f.type] ? this._skippedFeaturesByType[f.type] + 1 : 1;
         continue;
       }
-      if (f.locations.length > 1) {
-        this._skippedComplexFeatures.push(f);
-        continue;
-      }
+      // if (f.locations.length > 1) {
+      //   this._skippedComplexFeatures.push(f);
+      //   continue;
+      // }
       if (f.locations.length < 1) {
         this._skippedLocationlessFeatures.push(f);
         continue;
@@ -478,6 +482,11 @@ export default class CGViewBuilder {
         source,
         legend: f.type,
       };
+      if (f.locations.length > 1) {
+        feature.locations = f.locations;
+        this._complexFeatures.push(f);
+        // continue;
+      }
       // codonStart (from codon_start)
       if (f.qualifiers && f.qualifiers.codon_start && parseInt(f.qualifiers.codon_start[0]) !== 1) {
         feature.codonStart = parseInt(f.qualifiers.codon_start[0]);

@@ -4254,11 +4254,6 @@ var CGV = (function (exports, d3) {
     start(interval) {
       // return interval.start || interval.interval.start;
       // return interval.start || interval.interval[this.startProperty];
-      if (!interval[this.startProperty]) {
-        if (!interval.interval) {
-          console.log(interval);
-        }
-      }
       return interval[this.startProperty] || interval.interval[this.startProperty];
     }
 
@@ -4896,7 +4891,8 @@ var CGV = (function (exports, d3) {
       //   this.refresh();
       // }
 
-      this._visibleRange = this.canvas.visibleRangeForCenterOffset(outerCenterOffset);
+      // this._visibleRange = this.canvas.visibleRangeForCenterOffset(outerCenterOffset);
+      this._visibleRange = this.canvas.visibleRangeForCenterOffset(outerCenterOffset, { float: true, margin: 100 });
 
       this._innerCenterOffset = innerCenterOffset;
       this._outerCenterOffset = outerCenterOffset;
@@ -5256,7 +5252,8 @@ var CGV = (function (exports, d3) {
     }
 
     draw() {
-      this._visibleRange = this.canvas.visibleRangeForCenterOffset( this.adjustedCenterOffset, 100);
+      // this._visibleRange = this.canvas.visibleRangeForCenterOffset( this.adjustedCenterOffset, 100);
+      this._visibleRange = this.canvas.visibleRangeForCenterOffset( this.adjustedCenterOffset, { margin: 100 });
       if (this.visibleRange && this.visible) {
         this.refreshThickness();
 
@@ -5903,8 +5900,8 @@ var CGV = (function (exports, d3) {
    * ------------------|---------------
    * background        | for drawing behind the map
    * map               | main layer, where the map is drawn
-   * foreground         | for drawing in front of the map (e.g. map based captions)
-   * canvas            | layer for traning static components (e.g. canvas based captions and legend)
+   * foreground        | for drawing in front of the map (e.g. map-based captions/legend, centerLine)
+   * canvas            | layer for drawing static components (e.g. canvas-based captions/legend)
    * debug             | layer to draw debug information
    * ui                | layer for capturing interactions
    */
@@ -6316,15 +6313,17 @@ var CGV = (function (exports, d3) {
 
     /**
      * Draw a line radiating from the map at a particular basepair position.
+     * // TODO: change arguments to an object {}
      * @param {String} layer - Name of layer to draw the path on
      * @param {Number} bp - Basepair position of the line
-     * @param {Number} centerOffset - Distance form center of map to start the line
+     * @param {Number} centerOffset - Distance from center of map to start the line
      * @param {Number} length - Length of line
      * @param {Color} color - A string describing the color. {@link Color} for details.
      * @param {String} cap - The stroke linecap for the starting and ending points for the line. Values: 'butt', 'square', 'round'
+     * @param {Array} dashes - The dash pattern for the line [Default: []]
      * @private
      */
-    radiantLine(layer, bp, centerOffset, length, lineWidth = 1, color = 'black', cap = 'butt') {
+    radiantLine(layer, bp, centerOffset, length, lineWidth = 1, color = 'black', cap = 'butt', dashes = []) {
       const innerPt = this.pointForBp(bp, centerOffset);
       const outerPt = this.pointForBp(bp, centerOffset + length);
       const ctx = this.context(layer);
@@ -6335,6 +6334,7 @@ var CGV = (function (exports, d3) {
       ctx.strokeStyle = color;
 
       ctx.lineCap = cap;
+      ctx.setLineDash(dashes);
 
       ctx.lineWidth = lineWidth;
       ctx.stroke();
@@ -6366,17 +6366,19 @@ var CGV = (function (exports, d3) {
      * Returns the bp for the center of the canvas.
      * @private
      */
-    bpForCanvasCenter() {
-      return this.bpForPoint({x: this.width / 2, y: this.height / 2});
+    bpForCanvasCenter(options={}) {
+      return this.bpForPoint({x: this.width / 2, y: this.height / 2}, options);
     }
 
     /**
      * Alias for Layout [bpForPoint](Layout.html#bpForPoint)
-     * FIXME: this should be removed and everywhere should call layout method
+     * FIXME: this should be removed and everywhere should call layout method OR not
+     * @param {Point} - Point object with x and y properties
+     * @param {Object} options - Options for the bpForPoint method (use float: true to get fractional bp)
      * @private
      */
-    bpForPoint(point) {
-      return this.layout.bpForPoint(point);
+    bpForPoint(point, options={}) {
+      return this.layout.bpForPoint(point, options);
     }
 
 
@@ -6384,8 +6386,10 @@ var CGV = (function (exports, d3) {
      * Alias for Layout [visibleRangeForCenterOffset](Layout.html#visibleRangeForCenterOffset)
      * @private
      */
-    visibleRangeForCenterOffset(centerOffset, margin = 0) {
-      return this.layout.visibleRangeForCenterOffset(centerOffset, margin);
+    // visibleRangeForCenterOffset(centerOffset, margin = 0) {
+    visibleRangeForCenterOffset(centerOffset, options = {}) {
+      // return this.layout.visibleRangeForCenterOffset(centerOffset, margin);
+      return this.layout.visibleRangeForCenterOffset(centerOffset, options);
     }
 
     /**
@@ -6648,7 +6652,7 @@ var CGV = (function (exports, d3) {
     set backgroundColor(color) {
       // this._backgroundColor.color = color;
       if (color === undefined) {
-        this._backgroundColor = this.viewer.settings.backgroundColor;
+        this._backgroundColor = new Color(this.viewer.settings.backgroundColor);
       } else if (color.toString() === 'Color') {
         this._backgroundColor = color;
       } else {
@@ -6908,6 +6912,170 @@ var CGV = (function (exports, d3) {
         json.visible = this.visible;
       }
       return json;
+    }
+
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // CenterLine
+  //////////////////////////////////////////////////////////////////////////////
+
+
+  /**
+   * The center line points to the center of the viewer (i.e. the current base pair).
+   *
+   * CenterLine settings are not saved with the map. They are only used for display purposes.
+   *
+   * If either track or slot has their mirror set to true, then both dividers will be treated as the same.
+   * In addition, if only settings for one of the dividers is provided on Viewer creation, then it will be mirrored.
+   *
+   * ### Action and Events
+   *
+   * Action                                  | Viewer Method                    | Divider Method      | Event
+   * ----------------------------------------|----------------------------------|---------------------|-----
+   * [Update](../docs.html#updating-records) | -                                | [update()](#update) | centerLine-update
+   *
+   * <a name="attributes"></a>
+   * ### Attributes
+   *
+   * Attribute                        | Type      | Description
+   * ---------------------------------|-----------|------------
+   * [color](#color)                  | String    | A string describing the color [Default: 'black']. See {@link Color} for details.
+   * [thickness](#thickness)          | Number    | Thickness of center line [Default: 1]
+   * [dashes](#dashes)                | Array     | An array of numbers describing the dash pattern [Default: [1, 2]]
+   * [visible](CGObject.html#visible) | Boolean   | Center line is visible [Default: true]
+   * [meta](CGObject.html#meta)       | Object    | [Meta data](../tutorials/details-meta-data.html) for center line
+   *
+   * ### Examples
+   * ```js
+   * // Turn on the center line
+   * cgv.centerLine.visible = true;
+   * 
+   * // Turn off the center line
+   * cgv.centerLine.visible = false;
+   *
+   * // Change the color of the center line
+   * cgv.centerLine.update({color: 'red'});
+   * ```
+   * 
+   * @extends CGObject
+   */
+  class CenterLine extends CGObject {
+
+    /**
+     * Create the center line
+     * @param {Viewer} viewer - The viewer
+     * @param {Object} options - [Attributes](#attributes) used to create the center line
+     * @param {Object} [meta] - User-defined [Meta data](../tutorials/details-meta-data.html) to add to the center line
+     */
+    constructor(viewer, options = {}, meta = {}) {
+      super(viewer, options, meta);
+      this.color = utils.defaultFor(options.color, 'grey');
+      this._thickness = utils.defaultFor(options.thickness, 1);
+      this._dashes = utils.defaultFor(options.dashes, [1,2]);
+      this.viewer.trigger('centerLine-update', { centerLine: this, attributes: this.toJSON({includeDefaults: true}) });
+    }
+
+    /**
+     * Return the class name as a string.
+     * @return {String} - 'CenterLine'
+     */
+    toString() {
+      return 'CenterLine';
+    }
+
+    /**
+     * @member {Boolean} - Get or Set the visibility of this object.
+     */
+    get visible() {
+      return this._visible;
+    }
+
+    set visible(value) {
+      this._visible = value;
+    }
+
+    /**
+     * @member {Color} - Get or set the center line color. When setting the color, a string representing the color or a {@link Color} object can be used. For details see {@link Color}.
+     */
+    get color() {
+      return this._color;
+    }
+
+    set color(value) {
+      if (value.toString() === 'Color') {
+        this._color = value;
+      } else {
+        this._color = new Color(value);
+      }
+    }
+
+    /**
+     * @member {Number} - Set or get the center line thickness. This is the unzoomed thickness.
+     */
+    set thickness(value) {
+      if (value !== undefined) {
+        this._thickness = value;
+      }
+    }
+
+    get thickness() {
+      return this._thickness;
+    }
+
+    /**
+     * @member {Array} - Set or get the center line dash pattern. Falsy values will result in a solid line. Any other non array values will result in the default dash pattern.
+     */
+    set dashes(value) {
+      if (Array.isArray(value)) {
+        // NOTE: we could filter out non-numeric values here
+        // newValue = value.map( v => parseInt(v) ).filter( v => !isNaN(v) );
+        this._dashes = value;
+      } else if (!value) {
+        this._dashes = [];
+      } else {
+        // Default dash pattern
+        this._dashes = [1, 2];
+      }
+    }
+
+    get dashes() {
+      return this._dashes;
+    }
+
+    /**
+     * Invert colors of the centerLine
+     */
+    invertColors() {
+      this.update({ color: this.color.invert().rgbaString });
+    }
+
+    /**
+     * Update CenterLine [attributes](#attributes).
+     * See [updating records](../docs.html#s.updating-records) for details.
+     * @param {Object} attributes - Object describing the properties to change
+     */
+    update(attributes) {
+      const { records: centerLine, updates } = this.viewer.updateRecords(this, attributes, {
+        recordClass: 'CenterLine',
+        validKeys: ['visible', 'color', 'thickness', 'dashes']
+      });
+      this.viewer.trigger('centerLine-update', { centerLine: this, attributes, updates });
+    }
+
+    draw() {
+      if (this.visible) {
+        this.layout.drawCenterLine();
+      }
+    }
+
+    toJSON() {
+      return {
+        visible: this.visible,
+        color: this.color.rgbaString,
+        thickness: this.thickness,
+        dashes: this.dashes
+      };
     }
 
   }
@@ -11162,7 +11330,8 @@ var CGV = (function (exports, d3) {
         const bbOffset = this._bbOffsets[i];
         if (!this[bbOffset.type].visible) { continue; } 
         const centerOffset = backboneOffset + bbOffset.distance;
-        const visibleRange = canvas.visibleRangeForCenterOffset(centerOffset, 100);
+        // const visibleRange = canvas.visibleRangeForCenterOffset(centerOffset, 100);
+        const visibleRange = canvas.visibleRangeForCenterOffset(centerOffset, { margin: 100 });
         if (visibleRange) {
           canvas.drawElement('map', visibleRange.start, visibleRange.stop, centerOffset, this[bbOffset.type].color.rgbaString, this[bbOffset.type].adjustedThickness);
         }
@@ -11411,12 +11580,13 @@ var CGV = (function (exports, d3) {
       // Check for feature or plot
       if (!elementType && slot) {
         // If mulitple features are returned, go with the smallest one
+        // We use fullLength (to ignore sub locations) here because we want to get the smallest feature
         const features = slot.findFeaturesForBp(bp);
         let feature;
         for (let i = 0, len = features.length; i < len; i++) {
           const currentFeature = features[i];
           if (currentFeature.visible) {
-            if (!feature || (currentFeature.length < feature.length)) {
+            if (!feature || (currentFeature.fullLength < feature.fullLength)) {
               feature = currentFeature;
             }
           }
@@ -11758,15 +11928,17 @@ var CGV = (function (exports, d3) {
    * [source](#source)                | String   | Source of the feature
    * [tags](#tags)                    | String\|Array | A single string or an array of strings associated with the feature as tags
    * [contig](#contig)                | String\|Contig | Name of contig or the contig itself
-   * [start](#start)<sup>rc</sup>     | Number   | Start base pair on the contig
-   * [stop](#stop)<sup>rc</sup>       | Number   | Stop base pair on the contig
-   * [mapStart](#mapStart)<sup>ic</sup> | Number   | Start base pair on the map (converted to contig position)
-   * [mapStop](#mapStop)<sup>ic</sup> | Number   | Stop base pair on the map (converted to contig position)
+   * [start](#start)<sup>rc</sup>     | Number   | Start base pair on the contig. Ignored if locations are present.
+   * [stop](#stop)<sup>rc</sup>       | Number   | Stop base pair on the contig. Ignored if locations are present.
+   * [locations](#locations)          | Array    | Array of locations (start, stop) on the contig (e.g. [[1, 100], [200, 300]]).
+   * [mapStart](#mapStart)<sup>ic</sup> | Number   | Start base pair on the map (converted to contig position). Ignored if locations are present.
+   * [mapStop](#mapStop)<sup>ic</sup> | Number   | Stop base pair on the map (converted to contig position). Ignored if locations are present.
    * [strand](#strand)                | String   | Strand the features is on [Default: 1]
    * [score](#score)                  | Number   | Score associated with the feature
    * [favorite](#favorite)            | Boolean  | Feature is a favorite [Default: false]
    * [visible](CGObject.html#visible) | Boolean  | Feature is visible [Default: true]
    * [meta](CGObject.html#meta)       | Object   | [Meta data](../tutorials/details-meta-data.html) for Feature
+   * [qualifiers](#qualifiers)        | Object   | Qualifiers associated with the feature (from GenBank/EMBL) [Default: {}]
    * 
    * <sup>rc</sup> Required on Feature creation
    * <sup>ic</sup> Ignored on Record creation
@@ -11802,12 +11974,19 @@ var CGV = (function (exports, d3) {
       // this.contig = data.contig || viewer.sequence.mapContig;
       this.contig = data.contig;
       // this.range = new CGV.CGRange(this.viewer.sequence, Number(data.start), Number(data.stop));
-      this.updateRanges(data.start, data.stop);
+      // this.updateRanges(data.start, data.stop);
       this.strand = utils.defaultFor(data.strand, 1);
       this.score = utils.defaultFor(data.score, 1);
+      if (Array.isArray(data.locations)) {
+        this.locations = data.locations;
+      } else {
+        this.updateRanges(data.start, data.stop);
+      }
       this.codonStart = data.codonStart;
       this.geneticCode = data.geneticCode;
       this.label = new Label(this, {name: data.name} );
+      this.qualifiers = {};
+      this.qualifiers = data.qualifiers;
       this._centerOffsetAdjustment = Number(data.centerOffsetAdjustment) || 0;
       this._proportionOfThickness = Number(data.proportionOfThickness) || 1;
 
@@ -11858,6 +12037,19 @@ var CGV = (function (exports, d3) {
         this.label.name = value;
       } else {
         this.label = new Label(this, {name: value} );
+      }
+    }
+
+    /**
+     * @member {qualifiers} - Get or set the *qualifiers*
+     */
+    get qualifiers() {
+      return this._qualifiers;
+    }
+
+    set qualifiers(value) {
+      if (typeof value === 'object' && value !== null) {
+        this._qualifiers = value;
       }
     }
 
@@ -11964,57 +12156,155 @@ var CGV = (function (exports, d3) {
      * @member {Number} - Get or set the start position of the feature in basepair (bp).
      *   All start and stop positions are assumed to be going in a clockwise direction.
      *   This position is relative to the contig the feature is on. If there is only one
-     *   contig, this value will be the same as mapStart.
+     *   contig, this value will be the same as mapStart. Setting the start position does
+     *   not work if the feature has multiple locations (use [locations](#locations) instead).
      */
     get start() {
       return this.range.start;
     }
 
     set start(value) {
-      this.range.start = value;
+      if (!this.hasLocations) {
+        this.range.start = value;
+      } else {
+        console.error('Feature has multiple locations. Use locations to set start position');
+      }
     }
 
     /**
      * @member {Number} - Get or set the stop position of the feature in basepair (bp).
      *   All start and stop positions are assumed to be going in a clockwise direction.
      *   This position is relative to the contig the feature is on. If there is only one
-     *   contig, this value will be the same as mapStop.
+     *   contig, this value will be the same as mapStop. Setting the stop position does
+     *   not work if the feature has multiple locations (use [locations](#locations) instead).
      */
     get stop() {
       return this.range.stop;
     }
 
     set stop(value) {
-      this.range.stop = value;
+      if (!this.hasLocations) {
+        this.range.stop = value;
+      } else {
+        console.error('Feature has multiple locations. Use locations to set start position');
+      }
     }
 
     /**
      * @member {Number} - Get or set the start position of the feature in basepair (bp).
      *   All start and stop positions are assumed to be going in a clockwise direction.
+     *   Setting the mapStart position does not work if the feature has multiple locations.
      */
     get mapStart() {
       return this.range.mapStart;
     }
 
     set mapStart(value) {
-      this.range.mapStart = value;
+      // this.range.mapStart = value;
+      if (!this.hasLocations) {
+        this.range.mapStart = value;
+      } else {
+        console.error('Feature has multiple locations.');
+      }
     }
 
     /**
      * @member {Number} - Get or set the stop position of the feature in basepair (bp).
      *   All start and stop positions are assumed to be going in a clockwise direction.
+     *   Setting the mapStop position does not work if the feature has multiple locations.
      */
     get mapStop() {
       return this.range.mapStop;
     }
 
     set mapStop(value) {
-      this.range.mapStop = value;
+      // this.range.mapStop = value;
+      if (!this.hasLocations) {
+        this.range.mapStop = value;
+      } else {
+        console.error('Feature has multiple locations.');
+      }
     }
 
+    /**
+     * @member {Number} - Get or set the locations of the feature in basepair (bp).
+     *   An array of arrays where each sub-array contains the start and stop positions
+     *   (e.g. [[1, 100], [200, 300]]).
+     *   All start and stop positions are assumed to be going in a clockwise direction.
+     *   Locations shouldn't overlap the origin but can overlap each other (e.g. due to ribosomal slippage).
+     *   Locations are ignored unless there is more than one location.
+     *   - Validations:
+     *     - that each array has 2 numbers
+     *     - start must be less than stop
+     *   TODO:
+     *     - order of locations should be checked
+     *   - DOES THIS WORK WITH MAP CONTIGS?
+     */
+    get locations() {
+      return this._locations || [[this.start, this.stop]];
+    }
+
+    set locations(value) {
+      let locs = [];
+      if (Array.isArray(value)) {
+        for (const location of value) {
+          if (Array.isArray(location) && !isNaN(location[0]) && !isNaN(location[1])) {
+            if (location[0] <= location[1]) {
+              locs.push([location[0], location[1]]);
+            } else {
+              console.error('Feature location start must be less than stop: ', value);
+              return;
+            }
+          } else {
+            console.error('Feature locations must be an array of arrays of 2 numbers: ', value);
+            return;
+          }
+        }
+      } else {
+        console.error('Feature locations must be an array of arrays of numbers: ', value);
+        return;
+      }
+      this.updateRanges(locs[0][0], locs[locs.length - 1][1]);
+      this._locations = locs;
+    }
+
+    /**
+     * @member {Number} - Return true if the feature has multiple locations (i.e more than one).
+     */
+    get hasLocations() {
+      return this.locations?.length > 1;
+    }
+
+    /**
+     * @member {Number} - Get the length of the feature in basepair (bp).
+     * If the feature has locations, the length is calculated as the sum of the length of each location.
+     * Otherwise, the length is the same as the range (i.e. stop - start + 1).
+     * To get the full length of the feature on the map, use [fullLength](#fullLength).
+     */
     get length() {
+      let length = 0;
+      if (this.hasLocations) {
+        for (const location of this.locations) {
+          // NOTE: locations should never overlap origin so we can probably simplify this without ranges
+          let range = new CGRange(this.contig, location[0], location[1]);
+          length += range.length;
+        }
+      } else {
+        // No locations or only one location
+        length = this.fullLength;
+      }
+      return length
+    }
+
+    /**
+     * @member {Number} - Get the length of the feature in basepair (bp) using only the
+     * start and stop positions. This is the same as the range length.
+     * To get the length of the feature based on sub locations, use [length](#length).
+     */
+    get fullLength() {
       return this.range.length;
     }
+
 
     /**
      * @member {String} - Get or set the feature label.
@@ -12208,15 +12498,73 @@ var CGV = (function (exports, d3) {
       this.range = new CGRange(contig, start, stop);
     }
 
+    // Draw the feature on the map either as a single range or as multiple locations
+    // Multiple locations are drawn as separate ranges with connectors between them
+    // Currently all the connectors will be drawn if the feature is visible in any slot
+    // TODO: Only draw connectors if attached to a visible location
     draw(layer, slotCenterOffset, slotThickness, visibleRange, options = {}) {
       if (!this.visible) { return; }
-      if (this.mapRange.overlapsMapRange(visibleRange)) {
+      const canvas = this.canvas;
+      if (this.hasLocations) {
+        const connectors = [];
+        // Draw each location
+        // for (const location of this.locations) {
+        for (let i = 0; i < this.locations.length; i++) {
+          const location = this.locations[i];
+          const range = new CGRange(this.contig, location[0], location[1]);
+          const newOptions = {...options};
+          if (this.decoration === 'arrow') {
+            if (this.isDirect() && i !== this.locations.length - 1) {
+              newOptions.directionalDecoration = 'arc';
+            } else if (this.isReverse() && i !== 0) {
+              newOptions.directionalDecoration = 'arc';
+            }
+          }
+          this.drawRange(range, layer, slotCenterOffset, slotThickness, visibleRange, newOptions);
+        }
+        for (let i = 0; i < this.locations.length - 1; i++) {
+          const location = this.locations[i];
+          const nextLocation = this.locations[i + 1];
+          if (nextLocation) {
+            // Skip connectors if the locations overlap
+            if ((location[1] <= nextLocation[1]) && (location[1] >= nextLocation[0])) {
+              continue;
+            }
+            connectors.push([location[1]+1, nextLocation[0]-1]);
+          }
+        }
+        // Draw connectors
+        // Connector width is 5% of the feature thickness
+        const connectorWidth = this.adjustedWidth(slotThickness) * 0.05;
+        const color = options.color || this.color;
+        const showShading = options.showShading;
+        const minArcLength = this.legendItem.minArcLength;
+        for (const connector of connectors) {
+          const start = connector[0] + this.contig.lengthOffset;
+          const stop = connector[1] + this.contig.lengthOffset;
+          canvas.drawElement(layer, start, stop,
+            this.adjustedCenterOffset(slotCenterOffset, slotThickness),
+            color.rgbaString, connectorWidth, 'arc', showShading, minArcLength);
+        }
+      } else {
+        this.drawRange(this.mapRange, layer, slotCenterOffset, slotThickness, visibleRange, options);
+      }
+    }
+
+    // drawRange(layer, slotCenterOffset, slotThickness, visibleRange, options = {}) {
+    drawRange(range, layer, slotCenterOffset, slotThickness, visibleRange, options = {}) {
+      // if (!this.visible) { return; }
+      // if (this.mapRange.overlapsMapRange(visibleRange)) {
+      if (range.overlapsMapRange(visibleRange)) {
         const canvas = this.canvas;
-        let start = this.mapStart;
-        let stop = this.mapStop;
+        // let start = this.mapStart;
+        // let stop = this.mapStop;
+        let start = range.mapStart;
+        let stop = range.mapStop;
         const containsStart = visibleRange.containsMapBp(start);
         const containsStop = visibleRange.containsMapBp(stop);
         const color = options.color || this.color;
+        const directionalDecoration = options.directionalDecoration || this.directionalDecoration;
         const showShading = options.showShading;
         const minArcLength = this.legendItem.minArcLength;
         if (!containsStart) {
@@ -12232,24 +12580,26 @@ var CGV = (function (exports, d3) {
         // in the visible range, the feature should be drawn as 2 arcs. Using overHalfMapLength() instead of isWrapped()
         // should catch features that wrap around the map but not the Origin (ie. almost fulll circle features)
         // const zoomedSplitFeature = containsStart && containsStop && (this.viewer.zoomFactor > 1000) && this.range.isWrapped();
-        const zoomedSplitFeature = containsStart && containsStop && (this.viewer.zoomFactor > 1000) && this.range.overHalfMapLength();
+        // const zoomedSplitFeature = containsStart && containsStop && (this.viewer.zoomFactor > 1000) && this.range.overHalfMapLength();
+        const zoomedSplitFeature = containsStart && containsStop && (this.viewer.zoomFactor > 1000) && range.overHalfMapLength();
         //  When the feature wraps the origin on a linear map and both the start and stop
         //  can be seen, draw as 2 elements.
-        const unzoomedSplitLinearFeature = containsStart && containsStop && this.range.isWrapped() && (this.viewer.format === 'linear');
+        // const unzoomedSplitLinearFeature = containsStart && containsStop && this.range.isWrapped() && (this.viewer.format === 'linear');
+        const unzoomedSplitLinearFeature = containsStart && containsStop && range.isWrapped() && (this.viewer.format === 'linear');
 
         if (zoomedSplitFeature || unzoomedSplitLinearFeature) {
           const visibleStart = Math.max((visibleRange.start - 100), 1); // Do not draw off the edge of linear maps
           const visibleStop = Math.min((visibleRange.stop + 100), this.sequence.length); // Do not draw off the edge of linear maps
           canvas.drawElement(layer, visibleStart, stop,
             this.adjustedCenterOffset(slotCenterOffset, slotThickness),
-            color.rgbaString, this.adjustedWidth(slotThickness), this.directionalDecoration, showShading, minArcLength);
+            color.rgbaString, this.adjustedWidth(slotThickness), directionalDecoration, showShading, minArcLength);
           canvas.drawElement(layer, start, visibleStop,
             this.adjustedCenterOffset(slotCenterOffset, slotThickness),
-            color.rgbaString, this.adjustedWidth(slotThickness), this.directionalDecoration, showShading, minArcLength);
+            color.rgbaString, this.adjustedWidth(slotThickness), directionalDecoration, showShading, minArcLength);
         } else {
           canvas.drawElement(layer, start, stop,
             this.adjustedCenterOffset(slotCenterOffset, slotThickness),
-            color.rgbaString, this.adjustedWidth(slotThickness), this.directionalDecoration, showShading, minArcLength);
+            color.rgbaString, this.adjustedWidth(slotThickness), directionalDecoration, showShading, minArcLength);
         }
       }
     }
@@ -12397,10 +12747,33 @@ var CGV = (function (exports, d3) {
 
     /**
      * Returns the DNA sequence for the feature.
-     *
+     * If the feature has multiple locations, the sequence will be concatenated.
+     * In some cases (e.g. ribosomal slippage) the locations may overlap.
+     * Example: [[1, 100], [100, 200]] will return a sequence of 201 bp.
+     * To get the sequence of the feature's fullLenth ignoring sub locations, use [fullSeq](#fullSeq).
      * @return {String} - DNA sequence of feature.
      */
     get seq() {
+      let seq = '';
+      if (this.hasLocations) {
+        for (const location of this.locations) {
+          // NOTE: locations should never overlap origin so we can probably simplify this without ranges
+          let range = new CGRange(this.contig, location[0], location[1]);
+          seq += this.contig.forRange(range, this.isReverse());
+        }
+      } else {
+        // No locations or only one location
+        seq = this.contig.forRange(this.range, this.isReverse());
+      }
+      return seq
+    }
+
+    /**
+     * @member {Number} - Get the sequence of the feature using only the
+     * start and stop positions (ignores locations).
+     * To get sequence of the feature based on sub locations, use [seq](#seq).
+     */
+    get fullSeq() {
       return this.contig.forRange(this.range, this.isReverse());
     }
 
@@ -12427,6 +12800,10 @@ var CGV = (function (exports, d3) {
         // json.contig = this.contig.id;
         json.contig = this.contig.name;
       }
+      // Locations
+      if (this.hasLocations) {
+        json.locations = this.locations;
+      }
       // Tags
       if (this.tags !== undefined) {
         json.tags = (this.tags.length === 1) ? this.tags[0] : [...this.tags];
@@ -12447,6 +12824,10 @@ var CGV = (function (exports, d3) {
       // Meta Data (TODO: add an option to exclude this)
       if (Object.keys(this.meta).length > 0) {
         json.meta = this.meta;
+      }
+      // Qualifiers Data (TODO: maybe add an option to exclude this)
+      if (Object.keys(this.qualifiers).length > 0) {
+        json.qualifiers = this.qualifiers;
       }
       return json;
     }
@@ -12599,20 +12980,27 @@ var CGV = (function (exports, d3) {
       return div;
     }
 
+    getMetaDivs(metaData) {
+      if (!metaData) { return ''; }
+      let metaDivs = '';
+      const keys = Object.keys(metaData);
+      if (this.showMetaData && keys.length > 0) {
+        metaDivs = keys.map( k => `<div class='meta-data'><span class='meta-data-key'>${k}</span>: <span class='meta-data-value'>${metaData[k]}</span></div>`).join('');
+        metaDivs = `<div class='meta-data-container'>${metaDivs}</div>`;
+      }
+      return metaDivs;
+    }
+
     featurePopoverContentsDefault(e) {
       const feature = e.element;
       // return `<div style='margin: 0 5px; font-size: 14px'>${feature.type}: ${feature.name}</div>`;
-      const keys = Object.keys(feature.meta);
-      let metaDivs = '';
-      if (this.showMetaData && keys.length > 0) {
-        metaDivs = keys.map( k => `<div class='meta-data'><span class='meta-data-key'>${k}</span>: <span class='meta-data-value'>${feature.meta[k]}</span></div>`).join('');
-        metaDivs = `<div class='meta-data-container'>${metaDivs}</div>`;
-      }
+      const fullLength = feature.length !== feature.fullLength ? `(${utils.commaNumber(feature.fullLength)} bp)` : '';
       return (`
       <div style='margin: 0 5px; font-size: 14px'>
         <div>${feature.type}: ${feature.name}<div>
-        <div class='track-data'>Length: ${utils.commaNumber(feature.length)} bp</div>
-        ${metaDivs}
+        <div class='track-data'>Length: ${utils.commaNumber(feature.length)} bp ${fullLength}</div>
+        ${this.getMetaDivs(feature.qualifiers)}
+        ${this.getMetaDivs(feature.meta)}
         ${this.getTrackDiv(e)}
       </div>
     `);
@@ -12631,11 +13019,15 @@ var CGV = (function (exports, d3) {
 
     backbonePopoverContentsDefault(e) {
       const length = utils.commaNumber(this.sequence.length);
+      const contig = this.sequence.contigs()[0];
+      const contigMeta = contig.meta || {};
       // return `<div style='margin: 0 5px; font-size: 14px'>Backbone: ${length} bp</div>`;
       return (`
       <div style='margin: 0 5px; font-size: 14px'>
-        <div>Backbone: ${length} bp</div>
+        <div>Backbone [${length} bp]: ${contig?.name}</div>
         ${this.getPositionDiv(e)}
+        ${this.getMetaDivs(this.viewer.backbone.meta)}
+        ${this.getMetaDivs(contigMeta)}
       </div>
     `);
     }
@@ -12648,6 +13040,7 @@ var CGV = (function (exports, d3) {
       <div style='margin: 0 5px; font-size: 14px'>
         <div>Contig ${contig.index}/${this.sequence.contigs().length} [${length} bp]: ${contig.name}</div>
         ${this.getPositionDiv(e)}
+        ${this.getMetaDivs(contig.meta)}
       </div>
     `);
     }
@@ -13152,6 +13545,9 @@ var CGV = (function (exports, d3) {
       } else if (tickStep <= 50e6) {
         tickPrecision = d3__namespace.precisionPrefix(tickStep, 1e6);
         tickFormat = d3__namespace.formatPrefix(`.${tickPrecision}`, 1e6);
+      } else if (tickStep <= 50e9) {
+        tickPrecision = d3__namespace.precisionPrefix(tickStep, 1e9);
+        tickFormat = d3__namespace.formatPrefix(`.${tickPrecision}`, 1e9);
       }
       return tickFormat;
     }
@@ -13258,6 +13654,7 @@ var CGV = (function (exports, d3) {
     }
 
     draw(innerCenterOffset, outerCenterOffset) {
+      // console.log(innerCenterOffset, outerCenterOffset);
       if (this.visible) {
         innerCenterOffset -= this.spacing;
         outerCenterOffset += this.spacing;
@@ -14608,7 +15005,7 @@ var CGV = (function (exports, d3) {
           updated: this.formatDate(new Date()),
           id: v.id,
           name: v.name,
-          format: v.format,
+          // format: v.format,
           // geneticCode: v.geneticCode,
           settings: v.settings.toJSON(options),
           backbone: v.backbone.toJSON(options),
@@ -14722,6 +15119,9 @@ var CGV = (function (exports, d3) {
 
       // Load Sequence
       viewer._sequence = new Sequence(viewer, data.sequence);
+      // Format (This format will be overridden by the format in setting if it exists.)
+      // This lets us set the format from 2 places (settings and JSON)
+      viewer.format = utils.defaultFor(data.format, 'circular');
       // Load Settings
       // const settings = data.settings || {};
       // General Settings
@@ -14758,6 +15158,10 @@ var CGV = (function (exports, d3) {
 
       // Load Legend
       viewer._legend = new Legend(viewer, data.legend);
+      // FIXME: This is a quick way to clear the previous legend box
+      // - but we should probably do this directly in the Legend constructor
+      viewer.clear('canvas');
+      viewer.legend.refresh();
 
       // Create features
       if (data.features) {
@@ -14790,7 +15194,7 @@ var CGV = (function (exports, d3) {
 
       // Load Layout
       // viewer._layout = new Layout(viewer, data.layout);
-      viewer.format = utils.defaultFor(data.format, 'circular');
+      viewer.layout._adjustProportions();
       viewer.zoomTo(0, 1, {duration: 0});
     }
 
@@ -15231,10 +15635,13 @@ var CGV = (function (exports, d3) {
       return {x: x, y: y};
     }
 
-    bpForPoint(point) {
+    // Options: float - return bp as a float (default is rounded)
+    bpForPoint(point, options = {}) {
       const mapX = this.scale.x.invert(point.x);
       const mapY = this.scale.y.invert(point.y);
-      return Math.round( this.scale.bp.invert( utils.angleFromPosition(mapX, mapY) ) );
+      const bpFloat = this.scale.bp.invert( utils.angleFromPosition(mapX, mapY) );
+      return options.float ? bpFloat : Math.round(bpFloat);
+      // return Math.round( this.scale.bp.invert( utils.angleFromPosition(mapX, mapY) ) );
     }
 
 
@@ -15282,8 +15689,11 @@ var CGV = (function (exports, d3) {
 
 
     // TODO if undefined, see if centerOffset is visible
-    visibleRangeForCenterOffset(centerOffset, margin = 0) {
-      const ranges = this._visibleRangesForRadius(centerOffset, margin);
+    // visibleRangeForCenterOffset(centerOffset, margin = 0) {
+    visibleRangeForCenterOffset(centerOffset, options = {}) {
+      // const ranges = this._visibleRangesForRadius(centerOffset, margin);
+      const margin = options.margin || 0;
+      const ranges = this._visibleRangesForRadius(centerOffset, options);
       if (ranges.length === 2) {
         return new CGRange(this.sequence.mapContig, ranges[0], ranges[1]);
       } else if (ranges.length > 2) {
@@ -15398,6 +15808,44 @@ var CGV = (function (exports, d3) {
       return this.pointForBp(0, 0);
     }
 
+    drawCenterLine() {
+      const viewer = this.viewer;
+      const canvas = this.canvas;
+      const ruler = this.viewer.ruler;
+      const centerLine = viewer.centerLine;
+
+      // Setup
+      const color = centerLine.color.rgbaString;
+      const centerPt = this.pointForBp(0, 0);
+      const ctx = canvas.context('foreground');
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = centerLine.thickness;
+      // ctx.lineCap = 'round'
+      ctx.setLineDash(centerLine.dashes);
+
+      // Center point
+      if (viewer.zoomFactor < 4 && centerLine.color.opacity == 1) {
+        ctx.beginPath();
+        ctx.arc(centerPt.x, centerPt.y, centerLine.thickness, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+
+      // Center line (Radiant)
+      let lineLength, centerOffset;
+      if (viewer.zoomFactor < 4) {
+        centerOffset = 0;
+        lineLength =  this.layout.centerOutsideOffset + ruler.spacing;
+      } else {
+        const maxLength = viewer.maxDimension * 2;
+        const fullLength =  this.layout.centerOutsideOffset + ruler.spacing;
+        lineLength = Math.min(fullLength, maxLength);
+        centerOffset = Math.max(fullLength - lineLength, 0);
+        // console.log(centerOffset, fullLength, lineLength)
+      }
+      canvas.radiantLine('foreground', viewer.bpFloat, centerOffset, lineLength, centerLine.thickness, centerLine.color.rgbaString, 'butt', centerLine.dashes);
+    }
+
     //////////////////////////////////////////////////////////////////////////
     // Helper Methods
     //////////////////////////////////////////////////////////////////////////
@@ -15453,14 +15901,20 @@ var CGV = (function (exports, d3) {
       }
     }
 
-    _visibleRangesForRadius(radius, margin = 0) {
+    // _visibleRangesForRadius(radius, margin = 0) {
+    _visibleRangesForRadius(radius, options = {}) {
+      const margin = options.margin || 0;
       const angles = utils.circleAnglesFromIntersectingRect(radius,
         this.scale.x.invert(0 - margin),
         this.scale.y.invert(0 - margin),
         this.width + (margin * 2),
         this.height + (margin * 2)
       );
-      return angles.map( a => Math.round(this.scale.bp.invert(a)) );
+      if (options.float) {
+        return angles.map( a => this.scale.bp.invert(a) );
+      } else {
+        return angles.map( a => Math.round(this.scale.bp.invert(a)) );
+      }
     }
 
   }
@@ -15512,9 +15966,12 @@ var CGV = (function (exports, d3) {
     }
 
     // NOTE: only the X coordinate of the point is required
-    bpForPoint(point) {
+    // Options: float - return bp as a float (default is rounded)
+    bpForPoint(point, options = {}) {
       const mapX = this.scale.x.invert(point.x);
-      return Math.round( this.scale.bp.invert( mapX) );
+      const bpFloat = this.scale.bp.invert(mapX);
+      return options.float ? bpFloat : Math.round(bpFloat);
+      // return Math.round( this.scale.bp.invert( mapX) );
     }
 
     centerOffsetForPoint(point) {
@@ -15553,10 +16010,18 @@ var CGV = (function (exports, d3) {
     }
 
     // TODO if undefined, see if centerOffset is visible
-    visibleRangeForCenterOffset(centerOffset, margin = 0) {
+    // visibleRangeForCenterOffset(centerOffset, margin = 0) {
+    visibleRangeForCenterOffset(centerOffset, options = {} ) {
+      const margin = options.margin || 0;
       const domainX = this.scale.x.domain();
-      const start = Math.floor(this.scale.bp.invert(domainX[0] - margin));
-      const end = Math.ceil(this.scale.bp.invert(domainX[1] + margin));
+      const startFloat = this.scale.bp.invert(domainX[0] - margin);
+      const endFloat = this.scale.bp.invert(domainX[1] + margin);
+      const start = (options.float) ? startFloat : Math.floor(startFloat);
+      const end = (options.float) ? endFloat : Math.ceil(endFloat);
+      // const start = Math.floor(this.scale.bp.invert(domainX[0] - margin));
+      // const end = Math.ceil(this.scale.bp.invert(domainX[1] + margin));
+      // const start = this.scale.bp.invert(domainX[0] - margin);
+      // const end = this.scale.bp.invert(domainX[1] + margin);
       return new CGRange(this.sequence.mapContig,
         Math.max(start, 1),
         Math.min(end, this.sequence.length));
@@ -15619,6 +16084,36 @@ var CGV = (function (exports, d3) {
       const bp = this.sequence.length / 2;
       // FIXME: this should be calculated based on the thickness of the slots
       return this.pointForBp(bp , -200);
+    }
+
+    drawCenterLine() {
+      const viewer = this.viewer;
+      const canvas = this.canvas;
+      const ruler = this.viewer.ruler;
+      const centerLine = viewer.centerLine;
+      // Setup
+      const color = centerLine.color.rgbaString;
+      const ctx = canvas.context('foreground');
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = centerLine.thickness;
+      // ctx.lineCap = 'round'
+      ctx.setLineDash(centerLine.dashes);
+
+      // Center line (using bpFloat)
+      const bp = utils.constrain(viewer.bpFloat, 1, this.sequence.length);
+      // const x = this.scale.x(this.scale.bp(viewer.bp));
+      const x = this.scale.x(this.scale.bp(bp));
+      ctx.beginPath();
+      // ctx.moveTo(x, 0);
+      // ctx.lineTo(x, viewer.height);
+      ctx.moveTo(x, viewer.height);
+      const lineLength =  this.layout.centerOutsideOffset + ruler.spacing;
+      const endPt = this.pointForBp(bp, lineLength);
+      // ctx.lineTo(endPt.x, endPt.y);
+      ctx.lineTo(x, endPt.y);
+
+      ctx.stroke();
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -15893,13 +16388,17 @@ var CGV = (function (exports, d3) {
      * The *margin* is a distance in pixels added on to the Canvas size when
      * calculating the CGRange.
      * @param {Number} centerOffset - The distance from the center of them map.
-     * @param {Number} margin - An amount (in pixels) added to the Canvas in all dimensions.
+     * @param {Number} OLDmargin - An amount (in pixels) added to the Canvas in all dimensions.
+     * @param {Object} options - margin: An amount (in pixels) added to the Canvas in all dimensions (Default: 0)
+     *                         - float:  Return the range basepairs as a floats (default: false)
      *
      * @returns {CGRange} - the visible range.
      */
     // visibleRangeForCenterOffset(offset, margin = 0) {
-    visibleRangeForCenterOffset(...args) {
-      return this.delegate.visibleRangeForCenterOffset(...args);
+    // visibleRangeForCenterOffset(...args) {
+    visibleRangeForCenterOffset(centerOffset, options = {}) {
+      const defaultOptions = { margin: 0, float: false };
+      return this.delegate.visibleRangeForCenterOffset(centerOffset, {...defaultOptions, ...options});
     }
 
     /**
@@ -16001,6 +16500,13 @@ var CGV = (function (exports, d3) {
       return this.delegate.centerCaptionPoint();
     }
 
+    // TODO: docs
+    /**
+     * Draw the center line.
+     */
+    drawCenterLine() {
+      this.delegate.drawCenterLine();
+    }
 
     //////////////////////////////////////////////////////////////////////////
     // Common methods for current layouts: linear, circular
@@ -16243,7 +16749,7 @@ var CGV = (function (exports, d3) {
       this.updateLayout(true);
       // Recenter map
       if (viewer.zoomFactor > 2) {
-        viewer.moveTo(undefined, undefined, {duration: 0});
+        viewer.moveTo(undefined, undefined, {duration: 500});
       }
     }
     // NOTE:
@@ -16436,7 +16942,7 @@ var CGV = (function (exports, d3) {
       this._adjustProportions();
     }
 
-    // Draw everything but the slots and thier features.
+    // Draw everything but the slots and their features.
     // e.g. draws backbone, dividers, ruler, labels, progress
     drawMapWithoutSlots(fast) {
       const viewer = this.viewer;
@@ -16445,8 +16951,8 @@ var CGV = (function (exports, d3) {
       // let startTime = new Date().getTime();
 
       viewer.clear('map');
-      viewer.clear('foreground');
       viewer.clear('ui');
+      // Note: we clear the foreground in the drawForeground method
 
       if (viewer.messenger.visible) {
         viewer.messenger.close();
@@ -16472,15 +16978,8 @@ var CGV = (function (exports, d3) {
         viewer.annotation.draw(this.centerInsideOffset, this.centerOutsideOffset, fast);
       }
 
-      // Captions on the Map layer
-      for (let i = 0, len = viewer._captions.length; i < len; i++) {
-        if (viewer._captions[i].onMap) {
-          viewer._captions[i].draw();
-        }
-      }
-      if (viewer.legend.position.onMap) {
-        viewer.legend.draw();
-      }
+      // Draw foreground layer (centerLine, captions/legend on map)
+      this.drawForeground();
 
       // Progess
       this.drawProgress();
@@ -16526,6 +17025,24 @@ var CGV = (function (exports, d3) {
 
     draw(fast) {
       fast ? this.drawFast() : this.drawFull();
+    }
+
+    // Draw foreground layer (centerLine, map-based captions/legend)
+    drawForeground() {
+      const viewer = this.viewer;
+      viewer.clear('foreground');
+      // Draw center line for current bp
+      viewer.centerLine.draw();
+      // Captions positioned on the Map
+      for (let i = 0, len = viewer._captions.length; i < len; i++) {
+        if (viewer._captions[i].onMap) {
+          viewer._captions[i].draw();
+        }
+      }
+      // Legend positioned on the Map
+      if (viewer.legend.position.onMap) {
+        viewer.legend.draw();
+      }
     }
 
     drawAllSlots(fast) {
@@ -17788,7 +18305,8 @@ var CGV = (function (exports, d3) {
     draw(canvas, fast) {
       const slotCenterOffset = this.centerOffset;
       const slotThickness = this.thickness;
-      const range = canvas.visibleRangeForCenterOffset(slotCenterOffset, slotThickness);
+      // const range = canvas.visibleRangeForCenterOffset(slotCenterOffset, slotThickness);
+      const range = canvas.visibleRangeForCenterOffset(slotCenterOffset, { margin: slotThickness });
       this._visibleRange = range;
       if (range) {
         const start = range.start;
@@ -17904,7 +18422,7 @@ var CGV = (function (exports, d3) {
    * [dataMethod](#dataMethod)         | String    | Methods used to extract/connect to features or a plot: sequence, source, type, tag [Default: source]
    * [dataKeys](#dataKeys)             | String\|Array | Values used by dataMethod to extract features or a plot.
    * [position](#position)             | String    | Position relative to backbone: inside, outside, or both [Default: both]
-   * [separateFeaturesBy](#separateFeaturesBy) | String    | How features should be separated: none, strand, or readingFrame [Default: strand]
+   * [separateFeaturesBy](#separateFeaturesBy) | String    | How features should be separated: none, strand, readingFrame, type, legend [Default: strand]
    * [thicknessRatio](#thicknessRatio) | Number    | Thickness of track compared to other tracks [Default: 1]
    * [loadProgress](#loadProgress)     | Number    | Number between 0 and 100 indicating progress of track loading. Used internally by workers.
    * [drawOrder](#loadProgress)        | String    | Order to draw features in: position, score [Default: position]
@@ -18077,14 +18595,14 @@ var CGV = (function (exports, d3) {
 
 
     /**
-     * @member {String} - Get or set separateFeaturesBy. Possible values are 'none', 'strand', or 'readingFrame'.
+     * @member {String} - Get or set separateFeaturesBy. Possible values are 'none', 'strand', 'readingFrame', 'type', or 'legend'.
      */
     get separateFeaturesBy() {
       return this._separateFeaturesBy;
     }
 
     set separateFeaturesBy(value) {
-      if ( utils.validate(value, ['none', 'strand', 'readingFrame']) ) {
+      if ( utils.validate(value, ['none', 'strand', 'readingFrame', 'type', 'legend']) ) {
         this._separateFeaturesBy = value;
         this.updateSlots();
       }
@@ -18301,7 +18819,16 @@ var CGV = (function (exports, d3) {
 
     updateFeatureSlots() {
       this._slots = new CGArray();
-      if (this.separateFeaturesBy === 'readingFrame') {
+      if (['type', 'legend'].includes(this.separateFeaturesBy)) {
+        const features = this.featuresBy(this.separateFeaturesBy);
+        const types = Object.keys(features);
+        // Sort by number of features
+        types.sort((a, b) => features[b].length - features[a].length);
+        for (const type of types) {
+          const slot = new Slot(this, {strand: 'direct'});
+          slot.replaceFeatures(features[type]);
+        }
+      } else if (this.separateFeaturesBy === 'readingFrame') {
         const features = this.sequence.featuresByReadingFrame(this.features());
         // Direct Reading Frames
         for (const rf of [1, 2, 3]) {
@@ -18349,6 +18876,44 @@ var CGV = (function (exports, d3) {
       });
       return features;
     }
+
+    // Returns an object with keys as the type of feature (e.g. types or legend names) and values as an array of features
+    // by: 'type' or 'legend'
+    featuresBy(by='type') {
+      const features = {};
+      this.features().each( (i, feature) => {
+        const key = (by === 'legend') ? feature.legend.name : feature[by];
+        if (features[key] === undefined) {
+          features[key] = new CGArray();
+        }
+        features[key].push(feature);
+      });
+      return features;
+    }
+
+    // featuresByType() {
+    //   const features = {};
+    //   this.features().each( (i, feature) => {
+    //     const type = feature.type;
+    //     if (features[type] === undefined) {
+    //       features[type] = new CGArray();
+    //     }
+    //     features[type].push(feature);
+    //   });
+    //   return features;
+    // }
+
+    // featuresByLegend() {
+    //   const features = {};
+    //   this.features().each( (i, feature) => {
+    //     const legend = feature.legend.name;
+    //     if (features[legend] === undefined) {
+    //       features[legend] = new CGArray();
+    //     }
+    //     features[legend].push(feature);
+    //   });
+    //   return features;
+    // }
 
     updatePlotSlot() {
       this._slots = new CGArray();
@@ -18523,6 +19088,7 @@ var CGV = (function (exports, d3) {
    * [layout](#layout)<sup>iu</sup>        | Object | [Layout](Layout.html) options
    * [ruler](#ruler)<sup>iu</sup>          | Object | [Ruler](Ruler.html) options
    * [dividers](#dividers)<sup>iu</sup>    | Object | [Dividers](Dividers.html) options
+   * [centerLine](#centerLine)<sup>iu</sup> | Object | [CenterLine](CenterLine.html) options
    * [annotation](#annotation)<sup>iu</sup> | Object | [Annotation](Annotation.html) options
    * [highlighter](#highlighter)<sup>iu</sup> | Object | [Highlighter](Highlighter.html) options
    * 
@@ -18615,6 +19181,8 @@ var CGV = (function (exports, d3) {
       this._legend = new Legend(this, options.legend);
       // Initialize Slot Divider
       this._dividers = new Dividers(this, options.dividers);
+      // Initialize Center Line
+      this._centerLine = new CenterLine(this, options.centerLine);
       // Initialize Annotation
       this._annotation = new Annotation(this, options.annotation);
       // Initialize Ruler
@@ -18655,6 +19223,8 @@ var CGV = (function (exports, d3) {
       });
 
       this._loading = false;
+      // Call resize before loading fixes a bug where the map is not drawn!!!!!!!
+      this.resize();
       this.draw();
     }
 
@@ -18726,6 +19296,13 @@ var CGV = (function (exports, d3) {
      */
     get dividers() {
       return this._dividers;
+    }
+
+    /**
+     * @member {CenterLine} - Get the map [centerLine](CenterLine.html) object
+     */
+    get centerLine() {
+      return this._centerLine;
     }
 
     /**
@@ -18842,9 +19419,18 @@ var CGV = (function (exports, d3) {
 
     /**
      * @member {Number} - Get the bp for the center of the canvas. Alias for Canvas.bpForCanvasCenter().
+     * The returned bp is always a positive integer.
      */
     get bp() {
       return this.canvas.bpForCanvasCenter();
+    }
+
+    /**
+     * @member {Number} - Get the bp for the center of the canvas. Alias for Canvas.bpForCanvasCenter({float: true}).
+     * The returned bp is always a positive floating-point number.
+     */
+    get bpFloat() {
+      return this.canvas.bpForCanvasCenter({float: true});
     }
 
     /**
@@ -19662,9 +20248,9 @@ var CGV = (function (exports, d3) {
 
     refreshCanvasLayer() {
       for (let i = 0, len = this._captions.length; i < len; i++) {
-        if (this._captions[i].visible) {
+        // if (this._captions[i].visible) {
           this._captions[i].refresh();
-        }
+        // }
       }
       this.legend && this.legend.refresh();
     }
@@ -20048,6 +20634,7 @@ var CGV = (function (exports, d3) {
       this.refreshCanvasLayer();
       this.ruler.invertColors();
       this.dividers.invertColors();
+      this.centerLine.invertColors();
       this.backbone.invertColors();
       this.sequence.invertColors();
       this.annotation.invertColors();
@@ -20074,7 +20661,7 @@ var CGV = (function (exports, d3) {
     trigger(event, object) {
       this.events.trigger(event, object);
       // Almost all events will results in data changing with the following exceptions
-      const eventsToIgnoreForDataChange = ['viewer-update', 'cgv-json-load', 'bookmarks-shortcut', 'zoom-start', 'zoom', 'zoom-end'];
+      const eventsToIgnoreForDataChange = ['viewer-update', 'cgv-json-load', 'bookmarks-shortcut', 'zoom-start', 'zoom', 'zoom-end', 'centerLine-update'];
       if (!this.loading && !eventsToIgnoreForDataChange.includes(event)) {
         // console.log(event, object)
         // Also need to ignore track-update with loadProgress
@@ -20128,6 +20715,7 @@ var CGV = (function (exports, d3) {
   exports.CGRange = CGRange;
   exports.Canvas = Canvas;
   exports.Caption = Caption;
+  exports.CenterLine = CenterLine;
   exports.CodonTable = CodonTable;
   exports.CodonTables = CodonTables;
   exports.Color = Color;

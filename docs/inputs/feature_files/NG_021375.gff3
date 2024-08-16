@@ -1,0 +1,670 @@
+##gff-version 3
+#!gff-spec-version 1.21
+#!processor NCBI annotwriter
+##sequence-region NG_021375.2 1 2180524
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606
+NG_021375.2	RefSeq	region	1	2180524	.	+	.	ID=NG_021375.2:1..2180524;Dbxref=taxon:9606;Name=11;chromosome=11;gbkey=Src;genome=genomic;map=11q14.1;mol_type=genomic DNA
+NG_021375.2	RefSeq	gene	1	4963	.	-	.	ID=gene-TMEM126B;Dbxref=GeneID:55863,HGNC:HGNC:30883,MIM:615533;Name=TMEM126B;description=transmembrane protein 126B;gbkey=Gene;gene=TMEM126B;gene_biotype=protein_coding;gene_synonym=HT007,MC1DN29;partial=true;start_range=.,1
+NG_021375.2	RefSeq	transcript	1728	4963	.	-	.	ID=rna-NR_146646.1;Parent=gene-TMEM126B;Dbxref=GeneID:55863,GenBank:NR_146646.1,HGNC:HGNC:30883,MIM:615533;Name=NR_146646.1;exception=annotated by transcript or proteomic data;gbkey=misc_RNA;gene=TMEM126B;inference=similar to RNA sequence (same species):RefSeq:NR_146646.1;partial=true;product=transmembrane protein 126B%2C transcript variant 11;start_range=.,1728;transcript_id=NR_146646.1
+NG_021375.2	RefSeq	exon	4848	4963	.	-	.	ID=exon-NR_146646.1-1;Parent=rna-NR_146646.1;Dbxref=GeneID:55863,GenBank:NR_146646.1,HGNC:HGNC:30883,MIM:615533;exception=annotated by transcript or proteomic data;gbkey=misc_RNA;gene=TMEM126B;inference=similar to RNA sequence (same species):RefSeq:NR_146646.1;partial=true;product=transmembrane protein 126B%2C transcript variant 11;transcript_id=NR_146646.1
+NG_021375.2	RefSeq	exon	1728	1849	.	-	.	ID=exon-NR_146646.1-2;Parent=rna-NR_146646.1;Dbxref=GeneID:55863,GenBank:NR_146646.1,HGNC:HGNC:30883,MIM:615533;exception=annotated by transcript or proteomic data;gbkey=misc_RNA;gene=TMEM126B;inference=similar to RNA sequence (same species):RefSeq:NR_146646.1;partial=true;product=transmembrane protein 126B%2C transcript variant 11;start_range=.,1728;transcript_id=NR_146646.1
+NG_021375.2	RefSeq	transcript	1728	4963	.	-	.	ID=rna-NR_146645.1;Parent=gene-TMEM126B;Dbxref=GeneID:55863,GenBank:NR_146645.1,HGNC:HGNC:30883,MIM:615533;Name=NR_146645.1;exception=annotated by transcript or proteomic data;gbkey=misc_RNA;gene=TMEM126B;inference=similar to RNA sequence (same species):RefSeq:NR_146645.1;partial=true;product=transmembrane protein 126B%2C transcript variant 10;start_range=.,1728;transcript_id=NR_146645.1
+NG_021375.2	RefSeq	exon	4848	4963	.	-	.	ID=exon-NR_146645.1-1;Parent=rna-NR_146645.1;Dbxref=GeneID:55863,GenBank:NR_146645.1,HGNC:HGNC:30883,MIM:615533;exception=annotated by transcript or proteomic data;gbkey=misc_RNA;gene=TMEM126B;inference=similar to RNA sequence (same species):RefSeq:NR_146645.1;partial=true;product=transmembrane protein 126B%2C transcript variant 10;transcript_id=NR_146645.1
+NG_021375.2	RefSeq	exon	2220	2391	.	-	.	ID=exon-NR_146645.1-2;Parent=rna-NR_146645.1;Dbxref=GeneID:55863,GenBank:NR_146645.1,HGNC:HGNC:30883,MIM:615533;exception=annotated by transcript or proteomic data;gbkey=misc_RNA;gene=TMEM126B;inference=similar to RNA sequence (same species):RefSeq:NR_146645.1;partial=true;product=transmembrane protein 126B%2C transcript variant 10;transcript_id=NR_146645.1
+NG_021375.2	RefSeq	exon	1728	1849	.	-	.	ID=exon-NR_146645.1-3;Parent=rna-NR_146645.1;Dbxref=GeneID:55863,GenBank:NR_146645.1,HGNC:HGNC:30883,MIM:615533;exception=annotated by transcript or proteomic data;gbkey=misc_RNA;gene=TMEM126B;inference=similar to RNA sequence (same species):RefSeq:NR_146645.1;partial=true;product=transmembrane protein 126B%2C transcript variant 10;start_range=.,1728;transcript_id=NR_146645.1
+NG_021375.2	RefSeq	mRNA	1728	4963	.	-	.	ID=rna-NM_001193538.3;Parent=gene-TMEM126B;Dbxref=GeneID:55863,GenBank:NM_001193538.3,HGNC:HGNC:30883,MIM:615533;Name=NM_001193538.3;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=TMEM126B;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001193538.3;partial=true;product=transmembrane protein 126B%2C transcript variant 3;start_range=.,1728;transcript_id=NM_001193538.3
+NG_021375.2	RefSeq	exon	4848	4963	.	-	.	ID=exon-NM_001193538.3-1;Parent=rna-NM_001193538.3;Dbxref=GeneID:55863,GenBank:NM_001193538.3,HGNC:HGNC:30883,MIM:615533;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=TMEM126B;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001193538.3;partial=true;product=transmembrane protein 126B%2C transcript variant 3;transcript_id=NM_001193538.3
+NG_021375.2	RefSeq	exon	2220	2391	.	-	.	ID=exon-NM_001193538.3-2;Parent=rna-NM_001193538.3;Dbxref=GeneID:55863,GenBank:NM_001193538.3,HGNC:HGNC:30883,MIM:615533;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=TMEM126B;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001193538.3;partial=true;product=transmembrane protein 126B%2C transcript variant 3;transcript_id=NM_001193538.3
+NG_021375.2	RefSeq	exon	1728	1849	.	-	.	ID=exon-NM_001193538.3-3;Parent=rna-NM_001193538.3;Dbxref=GeneID:55863,GenBank:NM_001193538.3,HGNC:HGNC:30883,MIM:615533;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=TMEM126B;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001193538.3;partial=true;product=transmembrane protein 126B%2C transcript variant 3;start_range=.,1728;transcript_id=NM_001193538.3
+NG_021375.2	RefSeq	CDS	1728	1840	.	-	0	ID=cds-NP_001180467.1;Parent=rna-NM_001193538.3;Dbxref=CCDS:CCDS53686.1,GeneID:55863,GenBank:NP_001180467.1,HGNC:HGNC:30883,MIM:615533;Name=NP_001180467.1;Note=isoform c is encoded by transcript variant 3;exception=annotated by transcript or proteomic data;gbkey=CDS;gene=TMEM126B;inference=similar to AA sequence (same species):RefSeq:NP_001180467.1;partial=true;product=complex I assembly factor TMEM126B%2C mitochondrial isoform c;protein_id=NP_001180467.1;start_range=.,1728
+NG_021375.2	RefSeq	mRNA	1728	4963	.	-	.	ID=rna-NM_001256546.2;Parent=gene-TMEM126B;Dbxref=GeneID:55863,GenBank:NM_001256546.2,HGNC:HGNC:30883,MIM:615533;Name=NM_001256546.2;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=TMEM126B;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001256546.2;partial=true;product=transmembrane protein 126B%2C transcript variant 5;start_range=.,1728;transcript_id=NM_001256546.2
+NG_021375.2	RefSeq	exon	4848	4963	.	-	.	ID=exon-NM_001256546.2-1;Parent=rna-NM_001256546.2;Dbxref=GeneID:55863,GenBank:NM_001256546.2,HGNC:HGNC:30883,MIM:615533;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=TMEM126B;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001256546.2;partial=true;product=transmembrane protein 126B%2C transcript variant 5;transcript_id=NM_001256546.2
+NG_021375.2	RefSeq	exon	4333	4404	.	-	.	ID=exon-NM_001256546.2-2;Parent=rna-NM_001256546.2;Dbxref=GeneID:55863,GenBank:NM_001256546.2,HGNC:HGNC:30883,MIM:615533;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=TMEM126B;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001256546.2;partial=true;product=transmembrane protein 126B%2C transcript variant 5;transcript_id=NM_001256546.2
+NG_021375.2	RefSeq	exon	1728	1849	.	-	.	ID=exon-NM_001256546.2-3;Parent=rna-NM_001256546.2;Dbxref=GeneID:55863,GenBank:NM_001256546.2,HGNC:HGNC:30883,MIM:615533;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=TMEM126B;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001256546.2;partial=true;product=transmembrane protein 126B%2C transcript variant 5;start_range=.,1728;transcript_id=NM_001256546.2
+NG_021375.2	RefSeq	CDS	1728	1840	.	-	0	ID=cds-NP_001243475.1;Parent=rna-NM_001256546.2;Dbxref=CCDS:CCDS53686.1,GeneID:55863,GenBank:NP_001243475.1,HGNC:HGNC:30883,MIM:615533;Name=NP_001243475.1;Note=isoform c is encoded by transcript variant 5;exception=annotated by transcript or proteomic data;gbkey=CDS;gene=TMEM126B;inference=similar to AA sequence (same species):RefSeq:NP_001243475.1;partial=true;product=complex I assembly factor TMEM126B%2C mitochondrial isoform c;protein_id=NP_001243475.1;start_range=.,1728
+NG_021375.2	RefSeq	mRNA	1728	4963	.	-	.	ID=rna-NM_001193537.3;Parent=gene-TMEM126B;Dbxref=GeneID:55863,GenBank:NM_001193537.3,HGNC:HGNC:30883,MIM:615533;Name=NM_001193537.3;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=TMEM126B;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001193537.3;partial=true;product=transmembrane protein 126B%2C transcript variant 2;start_range=.,1728;transcript_id=NM_001193537.3
+NG_021375.2	RefSeq	exon	4848	4963	.	-	.	ID=exon-NM_001193537.3-1;Parent=rna-NM_001193537.3;Dbxref=GeneID:55863,GenBank:NM_001193537.3,HGNC:HGNC:30883,MIM:615533;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=TMEM126B;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001193537.3;partial=true;product=transmembrane protein 126B%2C transcript variant 2;transcript_id=NM_001193537.3
+NG_021375.2	RefSeq	exon	4274	4404	.	-	.	ID=exon-NM_001193537.3-2;Parent=rna-NM_001193537.3;Dbxref=GeneID:55863,GenBank:NM_001193537.3,HGNC:HGNC:30883,MIM:615533;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=TMEM126B;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001193537.3;partial=true;product=transmembrane protein 126B%2C transcript variant 2;transcript_id=NM_001193537.3
+NG_021375.2	RefSeq	exon	1728	1849	.	-	.	ID=exon-NM_001193537.3-3;Parent=rna-NM_001193537.3;Dbxref=GeneID:55863,GenBank:NM_001193537.3,HGNC:HGNC:30883,MIM:615533;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=TMEM126B;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001193537.3;partial=true;product=transmembrane protein 126B%2C transcript variant 2;start_range=.,1728;transcript_id=NM_001193537.3
+NG_021375.2	RefSeq	CDS	4274	4294	.	-	0	ID=cds-NP_001180466.1;Parent=rna-NM_001193537.3;Dbxref=GeneID:55863,GenBank:NP_001180466.1,HGNC:HGNC:30883,MIM:615533;Name=NP_001180466.1;Note=isoform b is encoded by transcript variant 2;exception=annotated by transcript or proteomic data;gbkey=CDS;gene=TMEM126B;inference=similar to AA sequence (same species):RefSeq:NP_001180466.1;partial=true;product=complex I assembly factor TMEM126B%2C mitochondrial isoform b;protein_id=NP_001180466.1
+NG_021375.2	RefSeq	CDS	1728	1849	.	-	0	ID=cds-NP_001180466.1;Parent=rna-NM_001193537.3;Dbxref=GeneID:55863,GenBank:NP_001180466.1,HGNC:HGNC:30883,MIM:615533;Name=NP_001180466.1;Note=isoform b is encoded by transcript variant 2;exception=annotated by transcript or proteomic data;gbkey=CDS;gene=TMEM126B;inference=similar to AA sequence (same species):RefSeq:NP_001180466.1;partial=true;product=complex I assembly factor TMEM126B%2C mitochondrial isoform b;protein_id=NP_001180466.1;start_range=.,1728
+NG_021375.2	RefSeq	mRNA	1728	4943	.	-	.	ID=rna-NM_018480.7;Parent=gene-TMEM126B;Dbxref=GeneID:55863,GenBank:NM_018480.7,HGNC:HGNC:30883,MIM:615533;Name=NM_018480.7;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=TMEM126B;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_018480.7;partial=true;product=transmembrane protein 126B%2C transcript variant 1;start_range=.,1728;transcript_id=NM_018480.7
+NG_021375.2	RefSeq	exon	4848	4943	.	-	.	ID=exon-NM_018480.7-1;Parent=rna-NM_018480.7;Dbxref=GeneID:55863,GenBank:NM_018480.7,HGNC:HGNC:30883,MIM:615533;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=TMEM126B;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_018480.7;partial=true;product=transmembrane protein 126B%2C transcript variant 1;transcript_id=NM_018480.7
+NG_021375.2	RefSeq	exon	1728	1849	.	-	.	ID=exon-NM_018480.7-2;Parent=rna-NM_018480.7;Dbxref=GeneID:55863,GenBank:NM_018480.7,HGNC:HGNC:30883,MIM:615533;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=TMEM126B;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_018480.7;partial=true;product=transmembrane protein 126B%2C transcript variant 1;start_range=.,1728;transcript_id=NM_018480.7
+NG_021375.2	RefSeq	CDS	4848	4928	.	-	0	ID=cds-NP_060950.3;Parent=rna-NM_018480.7;Dbxref=CCDS:CCDS8267.2,GeneID:55863,GenBank:NP_060950.3,HGNC:HGNC:30883,MIM:615533;Name=NP_060950.3;Note=isoform a is encoded by transcript variant 1;exception=annotated by transcript or proteomic data;gbkey=CDS;gene=TMEM126B;inference=similar to AA sequence (same species):RefSeq:NP_060950.3;partial=true;product=complex I assembly factor TMEM126B%2C mitochondrial isoform a;protein_id=NP_060950.3
+NG_021375.2	RefSeq	CDS	1728	1849	.	-	0	ID=cds-NP_060950.3;Parent=rna-NM_018480.7;Dbxref=CCDS:CCDS8267.2,GeneID:55863,GenBank:NP_060950.3,HGNC:HGNC:30883,MIM:615533;Name=NP_060950.3;Note=isoform a is encoded by transcript variant 1;exception=annotated by transcript or proteomic data;gbkey=CDS;gene=TMEM126B;inference=similar to AA sequence (same species):RefSeq:NP_060950.3;partial=true;product=complex I assembly factor TMEM126B%2C mitochondrial isoform a;protein_id=NP_060950.3;start_range=.,1728
+NG_021375.2	RefSeq	mRNA	1728	4943	.	-	.	ID=rna-NM_001350394.2;Parent=gene-TMEM126B;Dbxref=GeneID:55863,GenBank:NM_001350394.2,HGNC:HGNC:30883,MIM:615533;Name=NM_001350394.2;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=TMEM126B;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001350394.2;partial=true;product=transmembrane protein 126B%2C transcript variant 7;start_range=.,1728;transcript_id=NM_001350394.2
+NG_021375.2	RefSeq	exon	4848	4943	.	-	.	ID=exon-NM_001350394.2-1;Parent=rna-NM_001350394.2;Dbxref=GeneID:55863,GenBank:NM_001350394.2,HGNC:HGNC:30883,MIM:615533;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=TMEM126B;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001350394.2;partial=true;product=transmembrane protein 126B%2C transcript variant 7;transcript_id=NM_001350394.2
+NG_021375.2	RefSeq	exon	1728	1849	.	-	.	ID=exon-NM_001350394.2-2;Parent=rna-NM_001350394.2;Dbxref=GeneID:55863,GenBank:NM_001350394.2,HGNC:HGNC:30883,MIM:615533;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=TMEM126B;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001350394.2;partial=true;product=transmembrane protein 126B%2C transcript variant 7;start_range=.,1728;transcript_id=NM_001350394.2
+NG_021375.2	RefSeq	CDS	4848	4928	.	-	0	ID=cds-NP_001337323.1;Parent=rna-NM_001350394.2;Dbxref=GeneID:55863,GenBank:NP_001337323.1,HGNC:HGNC:30883,MIM:615533;Name=NP_001337323.1;Note=isoform f is encoded by transcript variant 7;exception=annotated by transcript or proteomic data;gbkey=CDS;gene=TMEM126B;inference=similar to AA sequence (same species):RefSeq:NP_001337323.1;partial=true;product=complex I assembly factor TMEM126B%2C mitochondrial isoform f;protein_id=NP_001337323.1
+NG_021375.2	RefSeq	CDS	1728	1849	.	-	0	ID=cds-NP_001337323.1;Parent=rna-NM_001350394.2;Dbxref=GeneID:55863,GenBank:NP_001337323.1,HGNC:HGNC:30883,MIM:615533;Name=NP_001337323.1;Note=isoform f is encoded by transcript variant 7;exception=annotated by transcript or proteomic data;gbkey=CDS;gene=TMEM126B;inference=similar to AA sequence (same species):RefSeq:NP_001337323.1;partial=true;product=complex I assembly factor TMEM126B%2C mitochondrial isoform f;protein_id=NP_001337323.1;start_range=.,1728
+NG_021375.2	RefSeq	mRNA	1728	4943	.	-	.	ID=rna-NM_001350396.2;Parent=gene-TMEM126B;Dbxref=GeneID:55863,GenBank:NM_001350396.2,HGNC:HGNC:30883,MIM:615533;Name=NM_001350396.2;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=TMEM126B;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001350396.2;partial=true;product=transmembrane protein 126B%2C transcript variant 9;start_range=.,1728;transcript_id=NM_001350396.2
+NG_021375.2	RefSeq	exon	4848	4943	.	-	.	ID=exon-NM_001350396.2-1;Parent=rna-NM_001350396.2;Dbxref=GeneID:55863,GenBank:NM_001350396.2,HGNC:HGNC:30883,MIM:615533;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=TMEM126B;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001350396.2;partial=true;product=transmembrane protein 126B%2C transcript variant 9;transcript_id=NM_001350396.2
+NG_021375.2	RefSeq	exon	2220	2391	.	-	.	ID=exon-NM_001350396.2-2;Parent=rna-NM_001350396.2;Dbxref=GeneID:55863,GenBank:NM_001350396.2,HGNC:HGNC:30883,MIM:615533;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=TMEM126B;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001350396.2;partial=true;product=transmembrane protein 126B%2C transcript variant 9;transcript_id=NM_001350396.2
+NG_021375.2	RefSeq	exon	1728	1849	.	-	.	ID=exon-NM_001350396.2-3;Parent=rna-NM_001350396.2;Dbxref=GeneID:55863,GenBank:NM_001350396.2,HGNC:HGNC:30883,MIM:615533;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=TMEM126B;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001350396.2;partial=true;product=transmembrane protein 126B%2C transcript variant 9;start_range=.,1728;transcript_id=NM_001350396.2
+NG_021375.2	RefSeq	CDS	1728	1840	.	-	0	ID=cds-NP_001337325.1;Parent=rna-NM_001350396.2;Dbxref=GeneID:55863,GenBank:NP_001337325.1,HGNC:HGNC:30883,MIM:615533;Name=NP_001337325.1;Note=isoform h is encoded by transcript variant 9;exception=annotated by transcript or proteomic data;gbkey=CDS;gene=TMEM126B;inference=similar to AA sequence (same species):RefSeq:NP_001337325.1;partial=true;product=complex I assembly factor TMEM126B%2C mitochondrial isoform h;protein_id=NP_001337325.1;start_range=.,1728
+NG_021375.2	RefSeq	mRNA	1728	4943	.	-	.	ID=rna-NM_001350395.2;Parent=gene-TMEM126B;Dbxref=GeneID:55863,GenBank:NM_001350395.2,HGNC:HGNC:30883,MIM:615533;Name=NM_001350395.2;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=TMEM126B;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001350395.2;partial=true;product=transmembrane protein 126B%2C transcript variant 8;start_range=.,1728;transcript_id=NM_001350395.2
+NG_021375.2	RefSeq	exon	4848	4943	.	-	.	ID=exon-NM_001350395.2-1;Parent=rna-NM_001350395.2;Dbxref=GeneID:55863,GenBank:NM_001350395.2,HGNC:HGNC:30883,MIM:615533;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=TMEM126B;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001350395.2;partial=true;product=transmembrane protein 126B%2C transcript variant 8;transcript_id=NM_001350395.2
+NG_021375.2	RefSeq	exon	4274	4404	.	-	.	ID=exon-NM_001350395.2-2;Parent=rna-NM_001350395.2;Dbxref=GeneID:55863,GenBank:NM_001350395.2,HGNC:HGNC:30883,MIM:615533;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=TMEM126B;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001350395.2;partial=true;product=transmembrane protein 126B%2C transcript variant 8;transcript_id=NM_001350395.2
+NG_021375.2	RefSeq	exon	1728	1849	.	-	.	ID=exon-NM_001350395.2-3;Parent=rna-NM_001350395.2;Dbxref=GeneID:55863,GenBank:NM_001350395.2,HGNC:HGNC:30883,MIM:615533;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=TMEM126B;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001350395.2;partial=true;product=transmembrane protein 126B%2C transcript variant 8;start_range=.,1728;transcript_id=NM_001350395.2
+NG_021375.2	RefSeq	CDS	4274	4294	.	-	0	ID=cds-NP_001337324.1;Parent=rna-NM_001350395.2;Dbxref=GeneID:55863,GenBank:NP_001337324.1,HGNC:HGNC:30883,MIM:615533;Name=NP_001337324.1;Note=isoform g is encoded by transcript variant 8;exception=annotated by transcript or proteomic data;gbkey=CDS;gene=TMEM126B;inference=similar to AA sequence (same species):RefSeq:NP_001337324.1;partial=true;product=complex I assembly factor TMEM126B%2C mitochondrial isoform g;protein_id=NP_001337324.1
+NG_021375.2	RefSeq	CDS	1728	1849	.	-	0	ID=cds-NP_001337324.1;Parent=rna-NM_001350395.2;Dbxref=GeneID:55863,GenBank:NP_001337324.1,HGNC:HGNC:30883,MIM:615533;Name=NP_001337324.1;Note=isoform g is encoded by transcript variant 8;exception=annotated by transcript or proteomic data;gbkey=CDS;gene=TMEM126B;inference=similar to AA sequence (same species):RefSeq:NP_001337324.1;partial=true;product=complex I assembly factor TMEM126B%2C mitochondrial isoform g;protein_id=NP_001337324.1;start_range=.,1728
+NG_021375.2	RefSeq	mRNA	4848	4963	.	-	.	ID=rna-NM_001256547.2;Parent=gene-TMEM126B;Dbxref=GeneID:55863,GenBank:NM_001256547.2,HGNC:HGNC:30883,MIM:615533;Name=NM_001256547.2;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=TMEM126B;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001256547.2;partial=true;product=transmembrane protein 126B%2C transcript variant 4;start_range=.,4848;transcript_id=NM_001256547.2
+NG_021375.2	RefSeq	exon	4848	4963	.	-	.	ID=exon-NM_001256547.2-1;Parent=rna-NM_001256547.2;Dbxref=GeneID:55863,GenBank:NM_001256547.2,HGNC:HGNC:30883,MIM:615533;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=TMEM126B;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001256547.2;partial=true;product=transmembrane protein 126B%2C transcript variant 4;start_range=.,4848;transcript_id=NM_001256547.2
+NG_021375.2	RefSeq	CDS	4848	4912	.	-	0	ID=cds-NP_001243476.1;Parent=rna-NM_001256547.2;Dbxref=GeneID:55863,GenBank:NP_001243476.1,HGNC:HGNC:30883,MIM:615533;Name=NP_001243476.1;Note=isoform d is encoded by transcript variant 4;exception=annotated by transcript or proteomic data;gbkey=CDS;gene=TMEM126B;inference=similar to AA sequence (same species):RefSeq:NP_001243476.1;partial=true;product=complex I assembly factor TMEM126B%2C mitochondrial isoform d;protein_id=NP_001243476.1;start_range=.,4848
+NG_021375.2	RefSeq	mRNA	4848	4963	.	-	.	ID=rna-NM_001350393.1;Parent=gene-TMEM126B;Dbxref=GeneID:55863,GenBank:NM_001350393.1,HGNC:HGNC:30883,MIM:615533;Name=NM_001350393.1;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=TMEM126B;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001350393.1;partial=true;product=transmembrane protein 126B%2C transcript variant 6;start_range=.,4848;transcript_id=NM_001350393.1
+NG_021375.2	RefSeq	exon	4848	4963	.	-	.	ID=exon-NM_001350393.1-1;Parent=rna-NM_001350393.1;Dbxref=GeneID:55863,GenBank:NM_001350393.1,HGNC:HGNC:30883,MIM:615533;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=TMEM126B;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001350393.1;partial=true;product=transmembrane protein 126B%2C transcript variant 6;start_range=.,4848;transcript_id=NM_001350393.1
+NG_021375.2	RefSeq	CDS	4848	4928	.	-	0	ID=cds-NP_001337322.1;Parent=rna-NM_001350393.1;Dbxref=GeneID:55863,GenBank:NP_001337322.1,HGNC:HGNC:30883,MIM:615533;Name=NP_001337322.1;Note=isoform e is encoded by transcript variant 6;exception=annotated by transcript or proteomic data;gbkey=CDS;gene=TMEM126B;inference=similar to AA sequence (same species):RefSeq:NP_001337322.1;partial=true;product=complex I assembly factor TMEM126B%2C mitochondrial isoform e;protein_id=NP_001337322.1;start_range=.,4848
+NG_021375.2	RefSeq	gene	6192	2178363	.	+	.	ID=gene-DLG2;Dbxref=GeneID:1740,HGNC:HGNC:2901,MIM:603583;Name=DLG2;description=discs large MAGUK scaffold protein 2;gbkey=Gene;gene=DLG2;gene_biotype=protein_coding;gene_synonym=chapsyn-110,PPP1R58,PSD-93,PSD93
+NG_021375.2	RefSeq	exon	6192	6318	.	+	.	ID=id-DLG2-1;Parent=gene-DLG2;Dbxref=GeneID:1740,HGNC:HGNC:2901,MIM:603583;exon_number=1;gbkey=exon;gene=DLG2;inference=alignment:Splign:2.1.0;number=1
+NG_021375.2	RefSeq	exon	6783	6949	.	+	.	ID=id-DLG2-2;Parent=gene-DLG2;Dbxref=GeneID:1740,HGNC:HGNC:2901,MIM:603583;exon_number=2;gbkey=exon;gene=DLG2;inference=alignment:Splign:2.1.0;number=2
+NG_021375.2	RefSeq	exon	34748	34879	.	+	.	ID=id-DLG2-3;Parent=gene-DLG2;Dbxref=GeneID:1740,HGNC:HGNC:2901,MIM:603583;exon_number=3;gbkey=exon;gene=DLG2;inference=alignment:Splign:2.1.0;number=3
+NG_021375.2	RefSeq	exon	348171	348316	.	+	.	ID=id-DLG2-4;Parent=gene-DLG2;Dbxref=GeneID:1740,HGNC:HGNC:2901,MIM:603583;exon_number=4;gbkey=exon;gene=DLG2;inference=alignment:Splign:2.1.0;number=4
+NG_021375.2	RefSeq	exon	478885	478980	.	+	.	ID=id-DLG2-5;Parent=gene-DLG2;Dbxref=GeneID:1740,HGNC:HGNC:2901,MIM:603583;exon_number=5;gbkey=exon;gene=DLG2;inference=alignment:Splign:2.1.0;number=5
+NG_021375.2	RefSeq	exon	521801	521875	.	+	.	ID=id-DLG2-6;Parent=gene-DLG2;Dbxref=GeneID:1740,HGNC:HGNC:2901,MIM:603583;exon_number=6;gbkey=exon;gene=DLG2;inference=alignment:Splign:2.1.0;number=6
+NG_021375.2	RefSeq	exon	1098805	1098966	.	+	.	ID=id-DLG2-7;Parent=gene-DLG2;Dbxref=GeneID:1740,HGNC:HGNC:2901,MIM:603583;exon_number=7;gbkey=exon;gene=DLG2;inference=alignment:Splign:2.1.0;number=7
+NG_021375.2	RefSeq	exon	1382245	1382298	.	+	.	ID=id-DLG2-8;Parent=gene-DLG2;Dbxref=GeneID:1740,HGNC:HGNC:2901,MIM:603583;exon_number=8;gbkey=exon;gene=DLG2;inference=alignment:Splign:2.1.0;number=8
+NG_021375.2	RefSeq	exon	1470025	1470075	.	+	.	ID=id-DLG2-9;Parent=gene-DLG2;Dbxref=GeneID:1740,HGNC:HGNC:2901,MIM:603583;exon_number=9;gbkey=exon;gene=DLG2;inference=alignment:Splign:2.1.0;number=9
+NG_021375.2	RefSeq	exon	1534489	1534613	.	+	.	ID=id-DLG2-10;Parent=gene-DLG2;Dbxref=GeneID:1740,HGNC:HGNC:2901,MIM:603583;exon_number=10;gbkey=exon;gene=DLG2;inference=alignment:Splign:2.1.0;number=10
+NG_021375.2	RefSeq	exon	1574052	1574221	.	+	.	ID=id-DLG2-11;Parent=gene-DLG2;Dbxref=GeneID:1740,HGNC:HGNC:2901,MIM:603583;exon_number=11;gbkey=exon;gene=DLG2;inference=alignment:Splign:2.1.0;number=11
+NG_021375.2	RefSeq	exon	1652894	1653030	.	+	.	ID=id-DLG2-12;Parent=gene-DLG2;Dbxref=GeneID:1740,HGNC:HGNC:2901,MIM:603583;exon_number=12;gbkey=exon;gene=DLG2;inference=alignment:Splign:2.1.0;number=12
+NG_021375.2	RefSeq	exon	1668068	1668212	.	+	.	ID=id-DLG2-13;Parent=gene-DLG2;Dbxref=GeneID:1740,HGNC:HGNC:2901,MIM:603583;exon_number=13;gbkey=exon;gene=DLG2;inference=alignment:Splign:2.1.0;number=13
+NG_021375.2	RefSeq	exon	1670513	1670651	.	+	.	ID=id-DLG2-14;Parent=gene-DLG2;Dbxref=GeneID:1740,HGNC:HGNC:2901,MIM:603583;exon_number=14;gbkey=exon;gene=DLG2;inference=alignment:Splign:2.1.0;number=14
+NG_021375.2	RefSeq	exon	1703053	1703208	.	+	.	ID=id-DLG2-15;Parent=gene-DLG2;Dbxref=GeneID:1740,HGNC:HGNC:2901,MIM:603583;exon_number=15;gbkey=exon;gene=DLG2;inference=alignment:Splign:2.1.0;number=15
+NG_021375.2	RefSeq	exon	1759048	1759116	.	+	.	ID=id-DLG2-16;Parent=gene-DLG2;Dbxref=GeneID:1740,HGNC:HGNC:2901,MIM:603583;exon_number=16;gbkey=exon;gene=DLG2;inference=alignment:Splign:2.1.0;number=16
+NG_021375.2	RefSeq	exon	1799766	1799922	.	+	.	ID=id-DLG2-17;Parent=gene-DLG2;Dbxref=GeneID:1740,HGNC:HGNC:2901,MIM:603583;exon_number=17;gbkey=exon;gene=DLG2;inference=alignment:Splign:2.1.0;number=17
+NG_021375.2	RefSeq	exon	1846744	1846846	.	+	.	ID=id-DLG2-18;Parent=gene-DLG2;Dbxref=GeneID:1740,HGNC:HGNC:2901,MIM:603583;exon_number=18;gbkey=exon;gene=DLG2;inference=alignment:Splign:2.1.0;number=18
+NG_021375.2	RefSeq	exon	2000211	2000325	.	+	.	ID=id-DLG2-19;Parent=gene-DLG2;Dbxref=GeneID:1740,HGNC:HGNC:2901,MIM:603583;exon_number=19;gbkey=exon;gene=DLG2;inference=alignment:Splign:2.1.0;number=19
+NG_021375.2	RefSeq	exon	2091678	2091854	.	+	.	ID=id-DLG2-20;Parent=gene-DLG2;Dbxref=GeneID:1740,HGNC:HGNC:2901,MIM:603583;exon_number=20;gbkey=exon;gene=DLG2;inference=alignment:Splign:2.1.0;number=20
+NG_021375.2	RefSeq	exon	2100753	2100828	.	+	.	ID=id-DLG2-21;Parent=gene-DLG2;Dbxref=GeneID:1740,HGNC:HGNC:2901,MIM:603583;exon_number=21;gbkey=exon;gene=DLG2;inference=alignment:Splign:2.1.0;number=21
+NG_021375.2	RefSeq	exon	2149308	2149407	.	+	.	ID=id-DLG2-22;Parent=gene-DLG2;Dbxref=GeneID:1740,HGNC:HGNC:2901,MIM:603583;exon_number=22;gbkey=exon;gene=DLG2;inference=alignment:Splign:2.1.0;number=22
+NG_021375.2	RefSeq	exon	2160759	2160809	.	+	.	ID=id-DLG2-23;Parent=gene-DLG2;Dbxref=GeneID:1740,HGNC:HGNC:2901,MIM:603583;exon_number=23;gbkey=exon;gene=DLG2;inference=alignment:Splign:2.1.0;number=23
+NG_021375.2	RefSeq	exon	2161809	2161910	.	+	.	ID=id-DLG2-24;Parent=gene-DLG2;Dbxref=GeneID:1740,HGNC:HGNC:2901,MIM:603583;exon_number=24;gbkey=exon;gene=DLG2;inference=alignment:Splign:2.1.0;number=24
+NG_021375.2	RefSeq	exon	2164163	2164335	.	+	.	ID=id-DLG2-25;Parent=gene-DLG2;Dbxref=GeneID:1740,HGNC:HGNC:2901,MIM:603583;exon_number=25;gbkey=exon;gene=DLG2;inference=alignment:Splign:2.1.0;number=25
+NG_021375.2	RefSeq	exon	2166719	2166828	.	+	.	ID=id-DLG2-26;Parent=gene-DLG2;Dbxref=GeneID:1740,HGNC:HGNC:2901,MIM:603583;exon_number=26;gbkey=exon;gene=DLG2;inference=alignment:Splign:2.1.0;number=26
+NG_021375.2	RefSeq	exon	2171443	2171534	.	+	.	ID=id-DLG2-27;Parent=gene-DLG2;Dbxref=GeneID:1740,HGNC:HGNC:2901,MIM:603583;exon_number=27;gbkey=exon;gene=DLG2;inference=alignment:Splign:2.1.0;number=27
+NG_021375.2	RefSeq	exon	2173612	2178363	.	+	.	ID=id-DLG2-28;Parent=gene-DLG2;Dbxref=GeneID:1740,HGNC:HGNC:2901,MIM:603583;exon_number=28;gbkey=exon;gene=DLG2;inference=alignment:Splign:2.1.0;number=28
+NG_021375.2	RefSeq	mRNA	6192	2178363	.	+	.	ID=rna-NM_001142699.3;Parent=gene-DLG2;Dbxref=GeneID:1740,GenBank:NM_001142699.3,HGNC:HGNC:2901,MIM:603583;Name=NM_001142699.3;gbkey=mRNA;gene=DLG2;product=discs large MAGUK scaffold protein 2%2C transcript variant 1;transcript_id=NM_001142699.3
+NG_021375.2	RefSeq	exon	6192	6318	.	+	.	ID=exon-NM_001142699.3-1;Parent=rna-NM_001142699.3;Dbxref=GeneID:1740,GenBank:NM_001142699.3,HGNC:HGNC:2901,MIM:603583;gbkey=mRNA;gene=DLG2;product=discs large MAGUK scaffold protein 2%2C transcript variant 1;transcript_id=NM_001142699.3
+NG_021375.2	RefSeq	exon	6783	6949	.	+	.	ID=exon-NM_001142699.3-2;Parent=rna-NM_001142699.3;Dbxref=GeneID:1740,GenBank:NM_001142699.3,HGNC:HGNC:2901,MIM:603583;gbkey=mRNA;gene=DLG2;product=discs large MAGUK scaffold protein 2%2C transcript variant 1;transcript_id=NM_001142699.3
+NG_021375.2	RefSeq	exon	34748	34879	.	+	.	ID=exon-NM_001142699.3-3;Parent=rna-NM_001142699.3;Dbxref=GeneID:1740,GenBank:NM_001142699.3,HGNC:HGNC:2901,MIM:603583;gbkey=mRNA;gene=DLG2;product=discs large MAGUK scaffold protein 2%2C transcript variant 1;transcript_id=NM_001142699.3
+NG_021375.2	RefSeq	exon	348171	348316	.	+	.	ID=exon-NM_001142699.3-4;Parent=rna-NM_001142699.3;Dbxref=GeneID:1740,GenBank:NM_001142699.3,HGNC:HGNC:2901,MIM:603583;gbkey=mRNA;gene=DLG2;product=discs large MAGUK scaffold protein 2%2C transcript variant 1;transcript_id=NM_001142699.3
+NG_021375.2	RefSeq	exon	478885	478980	.	+	.	ID=exon-NM_001142699.3-5;Parent=rna-NM_001142699.3;Dbxref=GeneID:1740,GenBank:NM_001142699.3,HGNC:HGNC:2901,MIM:603583;gbkey=mRNA;gene=DLG2;product=discs large MAGUK scaffold protein 2%2C transcript variant 1;transcript_id=NM_001142699.3
+NG_021375.2	RefSeq	exon	521801	521875	.	+	.	ID=exon-NM_001142699.3-6;Parent=rna-NM_001142699.3;Dbxref=GeneID:1740,GenBank:NM_001142699.3,HGNC:HGNC:2901,MIM:603583;gbkey=mRNA;gene=DLG2;product=discs large MAGUK scaffold protein 2%2C transcript variant 1;transcript_id=NM_001142699.3
+NG_021375.2	RefSeq	exon	1098805	1098966	.	+	.	ID=exon-NM_001142699.3-7;Parent=rna-NM_001142699.3;Dbxref=GeneID:1740,GenBank:NM_001142699.3,HGNC:HGNC:2901,MIM:603583;gbkey=mRNA;gene=DLG2;product=discs large MAGUK scaffold protein 2%2C transcript variant 1;transcript_id=NM_001142699.3
+NG_021375.2	RefSeq	exon	1382245	1382298	.	+	.	ID=exon-NM_001142699.3-8;Parent=rna-NM_001142699.3;Dbxref=GeneID:1740,GenBank:NM_001142699.3,HGNC:HGNC:2901,MIM:603583;gbkey=mRNA;gene=DLG2;product=discs large MAGUK scaffold protein 2%2C transcript variant 1;transcript_id=NM_001142699.3
+NG_021375.2	RefSeq	exon	1470025	1470075	.	+	.	ID=exon-NM_001142699.3-9;Parent=rna-NM_001142699.3;Dbxref=GeneID:1740,GenBank:NM_001142699.3,HGNC:HGNC:2901,MIM:603583;gbkey=mRNA;gene=DLG2;product=discs large MAGUK scaffold protein 2%2C transcript variant 1;transcript_id=NM_001142699.3
+NG_021375.2	RefSeq	exon	1534489	1534613	.	+	.	ID=exon-NM_001142699.3-10;Parent=rna-NM_001142699.3;Dbxref=GeneID:1740,GenBank:NM_001142699.3,HGNC:HGNC:2901,MIM:603583;gbkey=mRNA;gene=DLG2;product=discs large MAGUK scaffold protein 2%2C transcript variant 1;transcript_id=NM_001142699.3
+NG_021375.2	RefSeq	exon	1574052	1574221	.	+	.	ID=exon-NM_001142699.3-11;Parent=rna-NM_001142699.3;Dbxref=GeneID:1740,GenBank:NM_001142699.3,HGNC:HGNC:2901,MIM:603583;gbkey=mRNA;gene=DLG2;product=discs large MAGUK scaffold protein 2%2C transcript variant 1;transcript_id=NM_001142699.3
+NG_021375.2	RefSeq	exon	1652894	1653030	.	+	.	ID=exon-NM_001142699.3-12;Parent=rna-NM_001142699.3;Dbxref=GeneID:1740,GenBank:NM_001142699.3,HGNC:HGNC:2901,MIM:603583;gbkey=mRNA;gene=DLG2;product=discs large MAGUK scaffold protein 2%2C transcript variant 1;transcript_id=NM_001142699.3
+NG_021375.2	RefSeq	exon	1668068	1668212	.	+	.	ID=exon-NM_001142699.3-13;Parent=rna-NM_001142699.3;Dbxref=GeneID:1740,GenBank:NM_001142699.3,HGNC:HGNC:2901,MIM:603583;gbkey=mRNA;gene=DLG2;product=discs large MAGUK scaffold protein 2%2C transcript variant 1;transcript_id=NM_001142699.3
+NG_021375.2	RefSeq	exon	1670513	1670651	.	+	.	ID=exon-NM_001142699.3-14;Parent=rna-NM_001142699.3;Dbxref=GeneID:1740,GenBank:NM_001142699.3,HGNC:HGNC:2901,MIM:603583;gbkey=mRNA;gene=DLG2;product=discs large MAGUK scaffold protein 2%2C transcript variant 1;transcript_id=NM_001142699.3
+NG_021375.2	RefSeq	exon	1703053	1703208	.	+	.	ID=exon-NM_001142699.3-15;Parent=rna-NM_001142699.3;Dbxref=GeneID:1740,GenBank:NM_001142699.3,HGNC:HGNC:2901,MIM:603583;gbkey=mRNA;gene=DLG2;product=discs large MAGUK scaffold protein 2%2C transcript variant 1;transcript_id=NM_001142699.3
+NG_021375.2	RefSeq	exon	1759048	1759116	.	+	.	ID=exon-NM_001142699.3-16;Parent=rna-NM_001142699.3;Dbxref=GeneID:1740,GenBank:NM_001142699.3,HGNC:HGNC:2901,MIM:603583;gbkey=mRNA;gene=DLG2;product=discs large MAGUK scaffold protein 2%2C transcript variant 1;transcript_id=NM_001142699.3
+NG_021375.2	RefSeq	exon	1799766	1799922	.	+	.	ID=exon-NM_001142699.3-17;Parent=rna-NM_001142699.3;Dbxref=GeneID:1740,GenBank:NM_001142699.3,HGNC:HGNC:2901,MIM:603583;gbkey=mRNA;gene=DLG2;product=discs large MAGUK scaffold protein 2%2C transcript variant 1;transcript_id=NM_001142699.3
+NG_021375.2	RefSeq	exon	1846744	1846846	.	+	.	ID=exon-NM_001142699.3-18;Parent=rna-NM_001142699.3;Dbxref=GeneID:1740,GenBank:NM_001142699.3,HGNC:HGNC:2901,MIM:603583;gbkey=mRNA;gene=DLG2;product=discs large MAGUK scaffold protein 2%2C transcript variant 1;transcript_id=NM_001142699.3
+NG_021375.2	RefSeq	exon	2000211	2000325	.	+	.	ID=exon-NM_001142699.3-19;Parent=rna-NM_001142699.3;Dbxref=GeneID:1740,GenBank:NM_001142699.3,HGNC:HGNC:2901,MIM:603583;gbkey=mRNA;gene=DLG2;product=discs large MAGUK scaffold protein 2%2C transcript variant 1;transcript_id=NM_001142699.3
+NG_021375.2	RefSeq	exon	2091678	2091854	.	+	.	ID=exon-NM_001142699.3-20;Parent=rna-NM_001142699.3;Dbxref=GeneID:1740,GenBank:NM_001142699.3,HGNC:HGNC:2901,MIM:603583;gbkey=mRNA;gene=DLG2;product=discs large MAGUK scaffold protein 2%2C transcript variant 1;transcript_id=NM_001142699.3
+NG_021375.2	RefSeq	exon	2100753	2100828	.	+	.	ID=exon-NM_001142699.3-21;Parent=rna-NM_001142699.3;Dbxref=GeneID:1740,GenBank:NM_001142699.3,HGNC:HGNC:2901,MIM:603583;gbkey=mRNA;gene=DLG2;product=discs large MAGUK scaffold protein 2%2C transcript variant 1;transcript_id=NM_001142699.3
+NG_021375.2	RefSeq	exon	2149308	2149407	.	+	.	ID=exon-NM_001142699.3-22;Parent=rna-NM_001142699.3;Dbxref=GeneID:1740,GenBank:NM_001142699.3,HGNC:HGNC:2901,MIM:603583;gbkey=mRNA;gene=DLG2;product=discs large MAGUK scaffold protein 2%2C transcript variant 1;transcript_id=NM_001142699.3
+NG_021375.2	RefSeq	exon	2160759	2160809	.	+	.	ID=exon-NM_001142699.3-23;Parent=rna-NM_001142699.3;Dbxref=GeneID:1740,GenBank:NM_001142699.3,HGNC:HGNC:2901,MIM:603583;gbkey=mRNA;gene=DLG2;product=discs large MAGUK scaffold protein 2%2C transcript variant 1;transcript_id=NM_001142699.3
+NG_021375.2	RefSeq	exon	2161809	2161910	.	+	.	ID=exon-NM_001142699.3-24;Parent=rna-NM_001142699.3;Dbxref=GeneID:1740,GenBank:NM_001142699.3,HGNC:HGNC:2901,MIM:603583;gbkey=mRNA;gene=DLG2;product=discs large MAGUK scaffold protein 2%2C transcript variant 1;transcript_id=NM_001142699.3
+NG_021375.2	RefSeq	exon	2164163	2164335	.	+	.	ID=exon-NM_001142699.3-25;Parent=rna-NM_001142699.3;Dbxref=GeneID:1740,GenBank:NM_001142699.3,HGNC:HGNC:2901,MIM:603583;gbkey=mRNA;gene=DLG2;product=discs large MAGUK scaffold protein 2%2C transcript variant 1;transcript_id=NM_001142699.3
+NG_021375.2	RefSeq	exon	2166719	2166828	.	+	.	ID=exon-NM_001142699.3-26;Parent=rna-NM_001142699.3;Dbxref=GeneID:1740,GenBank:NM_001142699.3,HGNC:HGNC:2901,MIM:603583;gbkey=mRNA;gene=DLG2;product=discs large MAGUK scaffold protein 2%2C transcript variant 1;transcript_id=NM_001142699.3
+NG_021375.2	RefSeq	exon	2171443	2171534	.	+	.	ID=exon-NM_001142699.3-27;Parent=rna-NM_001142699.3;Dbxref=GeneID:1740,GenBank:NM_001142699.3,HGNC:HGNC:2901,MIM:603583;gbkey=mRNA;gene=DLG2;product=discs large MAGUK scaffold protein 2%2C transcript variant 1;transcript_id=NM_001142699.3
+NG_021375.2	RefSeq	exon	2173612	2178363	.	+	.	ID=exon-NM_001142699.3-28;Parent=rna-NM_001142699.3;Dbxref=GeneID:1740,GenBank:NM_001142699.3,HGNC:HGNC:2901,MIM:603583;gbkey=mRNA;gene=DLG2;product=discs large MAGUK scaffold protein 2%2C transcript variant 1;transcript_id=NM_001142699.3
+NG_021375.2	RefSeq	CDS	34840	34879	.	+	0	ID=cds-NP_001136171.1;Parent=rna-NM_001142699.3;Dbxref=CCDS:CCDS44690.1,GeneID:1740,GenBank:NP_001136171.1,HGNC:HGNC:2901,MIM:603583;Name=NP_001136171.1;Note=isoform 1 is encoded by transcript variant 1;gbkey=CDS;gene=DLG2;product=disks large homolog 2 isoform 1;protein_id=NP_001136171.1
+NG_021375.2	RefSeq	CDS	348171	348316	.	+	2	ID=cds-NP_001136171.1;Parent=rna-NM_001142699.3;Dbxref=CCDS:CCDS44690.1,GeneID:1740,GenBank:NP_001136171.1,HGNC:HGNC:2901,MIM:603583;Name=NP_001136171.1;Note=isoform 1 is encoded by transcript variant 1;gbkey=CDS;gene=DLG2;product=disks large homolog 2 isoform 1;protein_id=NP_001136171.1
+NG_021375.2	RefSeq	CDS	478885	478980	.	+	0	ID=cds-NP_001136171.1;Parent=rna-NM_001142699.3;Dbxref=CCDS:CCDS44690.1,GeneID:1740,GenBank:NP_001136171.1,HGNC:HGNC:2901,MIM:603583;Name=NP_001136171.1;Note=isoform 1 is encoded by transcript variant 1;gbkey=CDS;gene=DLG2;product=disks large homolog 2 isoform 1;protein_id=NP_001136171.1
+NG_021375.2	RefSeq	CDS	521801	521875	.	+	0	ID=cds-NP_001136171.1;Parent=rna-NM_001142699.3;Dbxref=CCDS:CCDS44690.1,GeneID:1740,GenBank:NP_001136171.1,HGNC:HGNC:2901,MIM:603583;Name=NP_001136171.1;Note=isoform 1 is encoded by transcript variant 1;gbkey=CDS;gene=DLG2;product=disks large homolog 2 isoform 1;protein_id=NP_001136171.1
+NG_021375.2	RefSeq	CDS	1098805	1098966	.	+	0	ID=cds-NP_001136171.1;Parent=rna-NM_001142699.3;Dbxref=CCDS:CCDS44690.1,GeneID:1740,GenBank:NP_001136171.1,HGNC:HGNC:2901,MIM:603583;Name=NP_001136171.1;Note=isoform 1 is encoded by transcript variant 1;gbkey=CDS;gene=DLG2;product=disks large homolog 2 isoform 1;protein_id=NP_001136171.1
+NG_021375.2	RefSeq	CDS	1382245	1382298	.	+	0	ID=cds-NP_001136171.1;Parent=rna-NM_001142699.3;Dbxref=CCDS:CCDS44690.1,GeneID:1740,GenBank:NP_001136171.1,HGNC:HGNC:2901,MIM:603583;Name=NP_001136171.1;Note=isoform 1 is encoded by transcript variant 1;gbkey=CDS;gene=DLG2;product=disks large homolog 2 isoform 1;protein_id=NP_001136171.1
+NG_021375.2	RefSeq	CDS	1470025	1470075	.	+	0	ID=cds-NP_001136171.1;Parent=rna-NM_001142699.3;Dbxref=CCDS:CCDS44690.1,GeneID:1740,GenBank:NP_001136171.1,HGNC:HGNC:2901,MIM:603583;Name=NP_001136171.1;Note=isoform 1 is encoded by transcript variant 1;gbkey=CDS;gene=DLG2;product=disks large homolog 2 isoform 1;protein_id=NP_001136171.1
+NG_021375.2	RefSeq	CDS	1534489	1534613	.	+	0	ID=cds-NP_001136171.1;Parent=rna-NM_001142699.3;Dbxref=CCDS:CCDS44690.1,GeneID:1740,GenBank:NP_001136171.1,HGNC:HGNC:2901,MIM:603583;Name=NP_001136171.1;Note=isoform 1 is encoded by transcript variant 1;gbkey=CDS;gene=DLG2;product=disks large homolog 2 isoform 1;protein_id=NP_001136171.1
+NG_021375.2	RefSeq	CDS	1574052	1574221	.	+	1	ID=cds-NP_001136171.1;Parent=rna-NM_001142699.3;Dbxref=CCDS:CCDS44690.1,GeneID:1740,GenBank:NP_001136171.1,HGNC:HGNC:2901,MIM:603583;Name=NP_001136171.1;Note=isoform 1 is encoded by transcript variant 1;gbkey=CDS;gene=DLG2;product=disks large homolog 2 isoform 1;protein_id=NP_001136171.1
+NG_021375.2	RefSeq	CDS	1652894	1653030	.	+	2	ID=cds-NP_001136171.1;Parent=rna-NM_001142699.3;Dbxref=CCDS:CCDS44690.1,GeneID:1740,GenBank:NP_001136171.1,HGNC:HGNC:2901,MIM:603583;Name=NP_001136171.1;Note=isoform 1 is encoded by transcript variant 1;gbkey=CDS;gene=DLG2;product=disks large homolog 2 isoform 1;protein_id=NP_001136171.1
+NG_021375.2	RefSeq	CDS	1668068	1668212	.	+	0	ID=cds-NP_001136171.1;Parent=rna-NM_001142699.3;Dbxref=CCDS:CCDS44690.1,GeneID:1740,GenBank:NP_001136171.1,HGNC:HGNC:2901,MIM:603583;Name=NP_001136171.1;Note=isoform 1 is encoded by transcript variant 1;gbkey=CDS;gene=DLG2;product=disks large homolog 2 isoform 1;protein_id=NP_001136171.1
+NG_021375.2	RefSeq	CDS	1670513	1670651	.	+	2	ID=cds-NP_001136171.1;Parent=rna-NM_001142699.3;Dbxref=CCDS:CCDS44690.1,GeneID:1740,GenBank:NP_001136171.1,HGNC:HGNC:2901,MIM:603583;Name=NP_001136171.1;Note=isoform 1 is encoded by transcript variant 1;gbkey=CDS;gene=DLG2;product=disks large homolog 2 isoform 1;protein_id=NP_001136171.1
+NG_021375.2	RefSeq	CDS	1703053	1703208	.	+	1	ID=cds-NP_001136171.1;Parent=rna-NM_001142699.3;Dbxref=CCDS:CCDS44690.1,GeneID:1740,GenBank:NP_001136171.1,HGNC:HGNC:2901,MIM:603583;Name=NP_001136171.1;Note=isoform 1 is encoded by transcript variant 1;gbkey=CDS;gene=DLG2;product=disks large homolog 2 isoform 1;protein_id=NP_001136171.1
+NG_021375.2	RefSeq	CDS	1759048	1759116	.	+	1	ID=cds-NP_001136171.1;Parent=rna-NM_001142699.3;Dbxref=CCDS:CCDS44690.1,GeneID:1740,GenBank:NP_001136171.1,HGNC:HGNC:2901,MIM:603583;Name=NP_001136171.1;Note=isoform 1 is encoded by transcript variant 1;gbkey=CDS;gene=DLG2;product=disks large homolog 2 isoform 1;protein_id=NP_001136171.1
+NG_021375.2	RefSeq	CDS	1799766	1799922	.	+	1	ID=cds-NP_001136171.1;Parent=rna-NM_001142699.3;Dbxref=CCDS:CCDS44690.1,GeneID:1740,GenBank:NP_001136171.1,HGNC:HGNC:2901,MIM:603583;Name=NP_001136171.1;Note=isoform 1 is encoded by transcript variant 1;gbkey=CDS;gene=DLG2;product=disks large homolog 2 isoform 1;protein_id=NP_001136171.1
+NG_021375.2	RefSeq	CDS	1846744	1846846	.	+	0	ID=cds-NP_001136171.1;Parent=rna-NM_001142699.3;Dbxref=CCDS:CCDS44690.1,GeneID:1740,GenBank:NP_001136171.1,HGNC:HGNC:2901,MIM:603583;Name=NP_001136171.1;Note=isoform 1 is encoded by transcript variant 1;gbkey=CDS;gene=DLG2;product=disks large homolog 2 isoform 1;protein_id=NP_001136171.1
+NG_021375.2	RefSeq	CDS	2000211	2000325	.	+	2	ID=cds-NP_001136171.1;Parent=rna-NM_001142699.3;Dbxref=CCDS:CCDS44690.1,GeneID:1740,GenBank:NP_001136171.1,HGNC:HGNC:2901,MIM:603583;Name=NP_001136171.1;Note=isoform 1 is encoded by transcript variant 1;gbkey=CDS;gene=DLG2;product=disks large homolog 2 isoform 1;protein_id=NP_001136171.1
+NG_021375.2	RefSeq	CDS	2091678	2091854	.	+	1	ID=cds-NP_001136171.1;Parent=rna-NM_001142699.3;Dbxref=CCDS:CCDS44690.1,GeneID:1740,GenBank:NP_001136171.1,HGNC:HGNC:2901,MIM:603583;Name=NP_001136171.1;Note=isoform 1 is encoded by transcript variant 1;gbkey=CDS;gene=DLG2;product=disks large homolog 2 isoform 1;protein_id=NP_001136171.1
+NG_021375.2	RefSeq	CDS	2100753	2100828	.	+	1	ID=cds-NP_001136171.1;Parent=rna-NM_001142699.3;Dbxref=CCDS:CCDS44690.1,GeneID:1740,GenBank:NP_001136171.1,HGNC:HGNC:2901,MIM:603583;Name=NP_001136171.1;Note=isoform 1 is encoded by transcript variant 1;gbkey=CDS;gene=DLG2;product=disks large homolog 2 isoform 1;protein_id=NP_001136171.1
+NG_021375.2	RefSeq	CDS	2149308	2149407	.	+	0	ID=cds-NP_001136171.1;Parent=rna-NM_001142699.3;Dbxref=CCDS:CCDS44690.1,GeneID:1740,GenBank:NP_001136171.1,HGNC:HGNC:2901,MIM:603583;Name=NP_001136171.1;Note=isoform 1 is encoded by transcript variant 1;gbkey=CDS;gene=DLG2;product=disks large homolog 2 isoform 1;protein_id=NP_001136171.1
+NG_021375.2	RefSeq	CDS	2160759	2160809	.	+	2	ID=cds-NP_001136171.1;Parent=rna-NM_001142699.3;Dbxref=CCDS:CCDS44690.1,GeneID:1740,GenBank:NP_001136171.1,HGNC:HGNC:2901,MIM:603583;Name=NP_001136171.1;Note=isoform 1 is encoded by transcript variant 1;gbkey=CDS;gene=DLG2;product=disks large homolog 2 isoform 1;protein_id=NP_001136171.1
+NG_021375.2	RefSeq	CDS	2161809	2161910	.	+	2	ID=cds-NP_001136171.1;Parent=rna-NM_001142699.3;Dbxref=CCDS:CCDS44690.1,GeneID:1740,GenBank:NP_001136171.1,HGNC:HGNC:2901,MIM:603583;Name=NP_001136171.1;Note=isoform 1 is encoded by transcript variant 1;gbkey=CDS;gene=DLG2;product=disks large homolog 2 isoform 1;protein_id=NP_001136171.1
+NG_021375.2	RefSeq	CDS	2164163	2164335	.	+	2	ID=cds-NP_001136171.1;Parent=rna-NM_001142699.3;Dbxref=CCDS:CCDS44690.1,GeneID:1740,GenBank:NP_001136171.1,HGNC:HGNC:2901,MIM:603583;Name=NP_001136171.1;Note=isoform 1 is encoded by transcript variant 1;gbkey=CDS;gene=DLG2;product=disks large homolog 2 isoform 1;protein_id=NP_001136171.1
+NG_021375.2	RefSeq	CDS	2166719	2166828	.	+	0	ID=cds-NP_001136171.1;Parent=rna-NM_001142699.3;Dbxref=CCDS:CCDS44690.1,GeneID:1740,GenBank:NP_001136171.1,HGNC:HGNC:2901,MIM:603583;Name=NP_001136171.1;Note=isoform 1 is encoded by transcript variant 1;gbkey=CDS;gene=DLG2;product=disks large homolog 2 isoform 1;protein_id=NP_001136171.1
+NG_021375.2	RefSeq	CDS	2171443	2171534	.	+	1	ID=cds-NP_001136171.1;Parent=rna-NM_001142699.3;Dbxref=CCDS:CCDS44690.1,GeneID:1740,GenBank:NP_001136171.1,HGNC:HGNC:2901,MIM:603583;Name=NP_001136171.1;Note=isoform 1 is encoded by transcript variant 1;gbkey=CDS;gene=DLG2;product=disks large homolog 2 isoform 1;protein_id=NP_001136171.1
+NG_021375.2	RefSeq	CDS	2173612	2173718	.	+	2	ID=cds-NP_001136171.1;Parent=rna-NM_001142699.3;Dbxref=CCDS:CCDS44690.1,GeneID:1740,GenBank:NP_001136171.1,HGNC:HGNC:2901,MIM:603583;Name=NP_001136171.1;Note=isoform 1 is encoded by transcript variant 1;gbkey=CDS;gene=DLG2;product=disks large homolog 2 isoform 1;protein_id=NP_001136171.1
+NG_021375.2	RefSeq	pseudogene	123492	123598	.	-	.	ID=gene-RNU6-1292P;Dbxref=GeneID:106480656,HGNC:HGNC:48255;Name=RNU6-1292P;description=RNA%2C U6 small nuclear 1292%2C pseudogene;gbkey=Gene;gene=RNU6-1292P;gene_biotype=pseudogene;pseudo=true
+NG_021375.2	RefSeq	pseudogene	179780	180495	.	+	.	ID=gene-LOC100421303;Dbxref=GeneID:100421303;Name=LOC100421303;description=DExH-box helicase 9 pseudogene;gbkey=Gene;gene=LOC100421303;gene_biotype=pseudogene;pseudo=true
+NG_021375.2	RefSeq	pseudogene	296965	297474	.	+	.	ID=gene-LOC100419092;Dbxref=GeneID:100419092;Name=LOC100419092;description=REST corepressor 1 pseudogene;gbkey=Gene;gene=LOC100419092;gene_biotype=pseudogene;pseudo=true
+NG_021375.2	RefSeq	pseudogene	611693	612755	.	+	.	ID=gene-HNRNPCP6;Dbxref=GeneID:100421794,HGNC:HGNC:48817;Name=HNRNPCP6;description=heterogeneous nuclear ribonucleoprotein C pseudogene 6;gbkey=Gene;gene=HNRNPCP6;gene_biotype=pseudogene;pseudo=true
+NG_021375.2	RefSeq	gene	832833	913124	.	-	.	ID=gene-LOC124902727;Dbxref=GeneID:124902727;Name=LOC124902727;description=uncharacterized LOC124902727;gbkey=Gene;gene=LOC124902727;gene_biotype=lncRNA
+NG_021375.2	RefSeq	lnc_RNA	832833	913124	.	-	.	ID=rna-NR_189147.1;Parent=gene-LOC124902727;Dbxref=GeneID:124902727,GenBank:NR_189147.1;Name=NR_189147.1;gbkey=ncRNA;gene=LOC124902727;product=uncharacterized LOC124902727%2C transcript variant 2;transcript_id=NR_189147.1
+NG_021375.2	RefSeq	exon	912983	913124	.	-	.	ID=exon-NR_189147.1-1;Parent=rna-NR_189147.1;Dbxref=GeneID:124902727,GenBank:NR_189147.1;gbkey=ncRNA;gene=LOC124902727;product=uncharacterized LOC124902727%2C transcript variant 2;transcript_id=NR_189147.1
+NG_021375.2	RefSeq	exon	871368	871425	.	-	.	ID=exon-NR_189147.1-2;Parent=rna-NR_189147.1;Dbxref=GeneID:124902727,GenBank:NR_189147.1;gbkey=ncRNA;gene=LOC124902727;product=uncharacterized LOC124902727%2C transcript variant 2;transcript_id=NR_189147.1
+NG_021375.2	RefSeq	exon	870181	870246	.	-	.	ID=exon-NR_189147.1-3;Parent=rna-NR_189147.1;Dbxref=GeneID:124902727,GenBank:NR_189147.1;gbkey=ncRNA;gene=LOC124902727;product=uncharacterized LOC124902727%2C transcript variant 2;transcript_id=NR_189147.1
+NG_021375.2	RefSeq	exon	832833	833005	.	-	.	ID=exon-NR_189147.1-4;Parent=rna-NR_189147.1;Dbxref=GeneID:124902727,GenBank:NR_189147.1;gbkey=ncRNA;gene=LOC124902727;product=uncharacterized LOC124902727%2C transcript variant 2;transcript_id=NR_189147.1
+NG_021375.2	RefSeq	lnc_RNA	832833	912749	.	-	.	ID=rna-NR_189146.1;Parent=gene-LOC124902727;Dbxref=GeneID:124902727,GenBank:NR_189146.1;Name=NR_189146.1;gbkey=ncRNA;gene=LOC124902727;product=uncharacterized LOC124902727%2C transcript variant 1;transcript_id=NR_189146.1
+NG_021375.2	RefSeq	exon	912655	912749	.	-	.	ID=exon-NR_189146.1-1;Parent=rna-NR_189146.1;Dbxref=GeneID:124902727,GenBank:NR_189146.1;gbkey=ncRNA;gene=LOC124902727;product=uncharacterized LOC124902727%2C transcript variant 1;transcript_id=NR_189146.1
+NG_021375.2	RefSeq	exon	871368	871425	.	-	.	ID=exon-NR_189146.1-2;Parent=rna-NR_189146.1;Dbxref=GeneID:124902727,GenBank:NR_189146.1;gbkey=ncRNA;gene=LOC124902727;product=uncharacterized LOC124902727%2C transcript variant 1;transcript_id=NR_189146.1
+NG_021375.2	RefSeq	exon	870181	870246	.	-	.	ID=exon-NR_189146.1-3;Parent=rna-NR_189146.1;Dbxref=GeneID:124902727,GenBank:NR_189146.1;gbkey=ncRNA;gene=LOC124902727;product=uncharacterized LOC124902727%2C transcript variant 1;transcript_id=NR_189146.1
+NG_021375.2	RefSeq	exon	832833	833005	.	-	.	ID=exon-NR_189146.1-4;Parent=rna-NR_189146.1;Dbxref=GeneID:124902727,GenBank:NR_189146.1;gbkey=ncRNA;gene=LOC124902727;product=uncharacterized LOC124902727%2C transcript variant 1;transcript_id=NR_189146.1
+NG_021375.2	RefSeq	pseudogene	992877	993571	.	-	.	ID=gene-RPL9P22;Dbxref=GeneID:100130066,HGNC:HGNC:36994;Name=RPL9P22;description=ribosomal protein L9 pseudogene 22;gbkey=Gene;gene=RPL9P22;gene_biotype=pseudogene;gene_synonym=RPL9_6_1163;pseudo=true
+NG_021375.2	RefSeq	pseudogene	1086612	1088604	.	+	.	ID=gene-HNRNPA1P72;Dbxref=GeneID:106480236,HGNC:HGNC:48802;Name=HNRNPA1P72;description=heterogeneous nuclear ribonucleoprotein A1 pseudogene 72;gbkey=Gene;gene=HNRNPA1P72;gene_biotype=pseudogene;pseudo=true
+NG_021375.2	RefSeq	pseudogene	1817869	1819270	.	+	.	ID=gene-LDHAL6DP;Dbxref=GeneID:100420508,HGNC:HGNC:44239;Name=LDHAL6DP;description=lactate dehydrogenase A like 6D%2C pseudogene;gbkey=Gene;gene=LDHAL6DP;gene_biotype=pseudogene;pseudo=true
+NG_021375.2	RefSeq	pseudogene	1841925	1843700	.	+	.	ID=gene-LOC100420800;Dbxref=GeneID:100420800;Name=LOC100420800;description=suppressor of cytokine signaling 6 pseudogene;gbkey=Gene;gene=LOC100420800;gene_biotype=pseudogene;pseudo=true
+NG_021375.2	RefSeq	gene	1908146	1995843	.	-	.	ID=gene-DLG2-AS2;Dbxref=GeneID:101929043,HGNC:HGNC:40179;Name=DLG2-AS2;description=DLG2 antisense RNA 2;gbkey=Gene;gene=DLG2-AS2;gene_biotype=lncRNA
+NG_021375.2	RefSeq	lnc_RNA	1908146	1995843	.	-	.	ID=rna-NR_187249.1;Parent=gene-DLG2-AS2;Dbxref=GeneID:101929043,GenBank:NR_187249.1,HGNC:HGNC:40179;Name=NR_187249.1;gbkey=ncRNA;gene=DLG2-AS2;product=DLG2 antisense RNA 2;transcript_id=NR_187249.1
+NG_021375.2	RefSeq	exon	1995586	1995843	.	-	.	ID=exon-NR_187249.1-1;Parent=rna-NR_187249.1;Dbxref=GeneID:101929043,GenBank:NR_187249.1,HGNC:HGNC:40179;gbkey=ncRNA;gene=DLG2-AS2;product=DLG2 antisense RNA 2;transcript_id=NR_187249.1
+NG_021375.2	RefSeq	exon	1995050	1995134	.	-	.	ID=exon-NR_187249.1-2;Parent=rna-NR_187249.1;Dbxref=GeneID:101929043,GenBank:NR_187249.1,HGNC:HGNC:40179;gbkey=ncRNA;gene=DLG2-AS2;product=DLG2 antisense RNA 2;transcript_id=NR_187249.1
+NG_021375.2	RefSeq	exon	1991036	1991146	.	-	.	ID=exon-NR_187249.1-3;Parent=rna-NR_187249.1;Dbxref=GeneID:101929043,GenBank:NR_187249.1,HGNC:HGNC:40179;gbkey=ncRNA;gene=DLG2-AS2;product=DLG2 antisense RNA 2;transcript_id=NR_187249.1
+NG_021375.2	RefSeq	exon	1989822	1989934	.	-	.	ID=exon-NR_187249.1-4;Parent=rna-NR_187249.1;Dbxref=GeneID:101929043,GenBank:NR_187249.1,HGNC:HGNC:40179;gbkey=ncRNA;gene=DLG2-AS2;product=DLG2 antisense RNA 2;transcript_id=NR_187249.1
+NG_021375.2	RefSeq	exon	1987699	1987781	.	-	.	ID=exon-NR_187249.1-5;Parent=rna-NR_187249.1;Dbxref=GeneID:101929043,GenBank:NR_187249.1,HGNC:HGNC:40179;gbkey=ncRNA;gene=DLG2-AS2;product=DLG2 antisense RNA 2;transcript_id=NR_187249.1
+NG_021375.2	RefSeq	exon	1985942	1986032	.	-	.	ID=exon-NR_187249.1-6;Parent=rna-NR_187249.1;Dbxref=GeneID:101929043,GenBank:NR_187249.1,HGNC:HGNC:40179;gbkey=ncRNA;gene=DLG2-AS2;product=DLG2 antisense RNA 2;transcript_id=NR_187249.1
+NG_021375.2	RefSeq	exon	1949011	1949087	.	-	.	ID=exon-NR_187249.1-7;Parent=rna-NR_187249.1;Dbxref=GeneID:101929043,GenBank:NR_187249.1,HGNC:HGNC:40179;gbkey=ncRNA;gene=DLG2-AS2;product=DLG2 antisense RNA 2;transcript_id=NR_187249.1
+NG_021375.2	RefSeq	exon	1941461	1941515	.	-	.	ID=exon-NR_187249.1-8;Parent=rna-NR_187249.1;Dbxref=GeneID:101929043,GenBank:NR_187249.1,HGNC:HGNC:40179;gbkey=ncRNA;gene=DLG2-AS2;product=DLG2 antisense RNA 2;transcript_id=NR_187249.1
+NG_021375.2	RefSeq	exon	1940465	1940607	.	-	.	ID=exon-NR_187249.1-9;Parent=rna-NR_187249.1;Dbxref=GeneID:101929043,GenBank:NR_187249.1,HGNC:HGNC:40179;gbkey=ncRNA;gene=DLG2-AS2;product=DLG2 antisense RNA 2;transcript_id=NR_187249.1
+NG_021375.2	RefSeq	exon	1939726	1939804	.	-	.	ID=exon-NR_187249.1-10;Parent=rna-NR_187249.1;Dbxref=GeneID:101929043,GenBank:NR_187249.1,HGNC:HGNC:40179;gbkey=ncRNA;gene=DLG2-AS2;product=DLG2 antisense RNA 2;transcript_id=NR_187249.1
+NG_021375.2	RefSeq	exon	1912551	1912706	.	-	.	ID=exon-NR_187249.1-11;Parent=rna-NR_187249.1;Dbxref=GeneID:101929043,GenBank:NR_187249.1,HGNC:HGNC:40179;gbkey=ncRNA;gene=DLG2-AS2;product=DLG2 antisense RNA 2;transcript_id=NR_187249.1
+NG_021375.2	RefSeq	exon	1908146	1908344	.	-	.	ID=exon-NR_187249.1-12;Parent=rna-NR_187249.1;Dbxref=GeneID:101929043,GenBank:NR_187249.1,HGNC:HGNC:40179;gbkey=ncRNA;gene=DLG2-AS2;product=DLG2 antisense RNA 2;transcript_id=NR_187249.1
+NG_021375.2	RefSeq	cDNA_match	5163	5847	.	+	.	ID=aln0;Target=NM_001351274.2 1 685 +;idty=1;splign=685
+NG_021375.2	RefSeq	cDNA_match	6783	6937	.	+	.	ID=aln0;Target=NM_001351274.2 686 840 +;idty=1;splign=155
+NG_021375.2	RefSeq	cDNA_match	34748	34879	.	+	.	ID=aln0;Target=NM_001351274.2 841 972 +;idty=1;splign=132
+NG_021375.2	RefSeq	cDNA_match	348171	348316	.	+	.	ID=aln0;Target=NM_001351274.2 973 1118 +;idty=1;splign=146
+NG_021375.2	RefSeq	cDNA_match	478885	478980	.	+	.	ID=aln0;Target=NM_001351274.2 1119 1214 +;idty=1;splign=96
+NG_021375.2	RefSeq	cDNA_match	1098805	1098966	.	+	.	ID=aln0;Target=NM_001351274.2 1215 1376 +;idty=1;splign=162
+NG_021375.2	RefSeq	cDNA_match	1382245	1382298	.	+	.	ID=aln0;Target=NM_001351274.2 1377 1430 +;idty=1;splign=54
+NG_021375.2	RefSeq	cDNA_match	1470025	1470075	.	+	.	ID=aln0;Target=NM_001351274.2 1431 1481 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	1534489	1534613	.	+	.	ID=aln0;Target=NM_001351274.2 1482 1606 +;idty=1;splign=125
+NG_021375.2	RefSeq	cDNA_match	1574052	1574221	.	+	.	ID=aln0;Target=NM_001351274.2 1607 1776 +;idty=1;splign=170
+NG_021375.2	RefSeq	cDNA_match	1652894	1653030	.	+	.	ID=aln0;Target=NM_001351274.2 1777 1913 +;idty=1;splign=137
+NG_021375.2	RefSeq	cDNA_match	1668068	1668212	.	+	.	ID=aln0;Target=NM_001351274.2 1914 2058 +;idty=1;splign=145
+NG_021375.2	RefSeq	cDNA_match	1670513	1670651	.	+	.	ID=aln0;Target=NM_001351274.2 2059 2197 +;idty=1;splign=139
+NG_021375.2	RefSeq	cDNA_match	1703053	1703208	.	+	.	ID=aln0;Target=NM_001351274.2 2198 2353 +;idty=1;splign=156
+NG_021375.2	RefSeq	cDNA_match	1759048	1759116	.	+	.	ID=aln0;Target=NM_001351274.2 2354 2422 +;idty=1;splign=69
+NG_021375.2	RefSeq	cDNA_match	1799766	1799922	.	+	.	ID=aln0;Target=NM_001351274.2 2423 2579 +;idty=1;splign=157
+NG_021375.2	RefSeq	cDNA_match	1846744	1846846	.	+	.	ID=aln0;Target=NM_001351274.2 2580 2682 +;idty=1;splign=103
+NG_021375.2	RefSeq	cDNA_match	2000211	2000325	.	+	.	ID=aln0;Target=NM_001351274.2 2683 2797 +;idty=1;splign=115
+NG_021375.2	RefSeq	cDNA_match	2091678	2091854	.	+	.	ID=aln0;Target=NM_001351274.2 2798 2974 +;idty=1;splign=177
+NG_021375.2	RefSeq	cDNA_match	2100753	2100828	.	+	.	ID=aln0;Target=NM_001351274.2 2975 3050 +;idty=1;splign=76
+NG_021375.2	RefSeq	cDNA_match	2150238	2150283	.	+	.	ID=aln0;Target=NM_001351274.2 3051 3096 +;idty=1;splign=46
+NG_021375.2	RefSeq	cDNA_match	2160759	2160809	.	+	.	ID=aln0;Target=NM_001351274.2 3097 3147 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	2161809	2161910	.	+	.	ID=aln0;Target=NM_001351274.2 3148 3249 +;idty=1;splign=102
+NG_021375.2	RefSeq	cDNA_match	2164163	2164335	.	+	.	ID=aln0;Target=NM_001351274.2 3250 3422 +;idty=1;splign=173
+NG_021375.2	RefSeq	cDNA_match	2166719	2166828	.	+	.	ID=aln0;Target=NM_001351274.2 3423 3532 +;idty=1;splign=110
+NG_021375.2	RefSeq	cDNA_match	2171443	2171534	.	+	.	ID=aln0;Target=NM_001351274.2 3533 3624 +;idty=1;splign=92
+NG_021375.2	RefSeq	cDNA_match	2173612	2178524	.	+	.	ID=aln0;Target=NM_001351274.2 3625 8537 +;idty=1;splign=4913
+NG_021375.2	RefSeq	cDNA_match	5163	6937	.	+	.	ID=aln1;Target=NM_001351275.2 1 1775 +;idty=1;splign=1775
+NG_021375.2	RefSeq	cDNA_match	34748	34879	.	+	.	ID=aln1;Target=NM_001351275.2 1776 1907 +;idty=1;splign=132
+NG_021375.2	RefSeq	cDNA_match	348171	348316	.	+	.	ID=aln1;Target=NM_001351275.2 1908 2053 +;idty=1;splign=146
+NG_021375.2	RefSeq	cDNA_match	478885	478980	.	+	.	ID=aln1;Target=NM_001351275.2 2054 2149 +;idty=1;splign=96
+NG_021375.2	RefSeq	cDNA_match	1098808	1098966	.	+	.	ID=aln1;Target=NM_001351275.2 2150 2308 +;idty=1;splign=159
+NG_021375.2	RefSeq	cDNA_match	1382245	1382298	.	+	.	ID=aln1;Target=NM_001351275.2 2309 2362 +;idty=1;splign=54
+NG_021375.2	RefSeq	cDNA_match	1470025	1470075	.	+	.	ID=aln1;Target=NM_001351275.2 2363 2413 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	1534489	1534613	.	+	.	ID=aln1;Target=NM_001351275.2 2414 2538 +;idty=1;splign=125
+NG_021375.2	RefSeq	cDNA_match	1574052	1574221	.	+	.	ID=aln1;Target=NM_001351275.2 2539 2708 +;idty=1;splign=170
+NG_021375.2	RefSeq	cDNA_match	1652894	1653030	.	+	.	ID=aln1;Target=NM_001351275.2 2709 2845 +;idty=1;splign=137
+NG_021375.2	RefSeq	cDNA_match	1668068	1668212	.	+	.	ID=aln1;Target=NM_001351275.2 2846 2990 +;idty=1;splign=145
+NG_021375.2	RefSeq	cDNA_match	1670513	1670651	.	+	.	ID=aln1;Target=NM_001351275.2 2991 3129 +;idty=1;splign=139
+NG_021375.2	RefSeq	cDNA_match	1703053	1703208	.	+	.	ID=aln1;Target=NM_001351275.2 3130 3285 +;idty=1;splign=156
+NG_021375.2	RefSeq	cDNA_match	1759048	1759116	.	+	.	ID=aln1;Target=NM_001351275.2 3286 3354 +;idty=1;splign=69
+NG_021375.2	RefSeq	cDNA_match	1799766	1799922	.	+	.	ID=aln1;Target=NM_001351275.2 3355 3511 +;idty=1;splign=157
+NG_021375.2	RefSeq	cDNA_match	1846744	1846846	.	+	.	ID=aln1;Target=NM_001351275.2 3512 3614 +;idty=1;splign=103
+NG_021375.2	RefSeq	cDNA_match	2000211	2000325	.	+	.	ID=aln1;Target=NM_001351275.2 3615 3729 +;idty=1;splign=115
+NG_021375.2	RefSeq	cDNA_match	2091678	2091854	.	+	.	ID=aln1;Target=NM_001351275.2 3730 3906 +;idty=1;splign=177
+NG_021375.2	RefSeq	cDNA_match	2100753	2100828	.	+	.	ID=aln1;Target=NM_001351275.2 3907 3982 +;idty=1;splign=76
+NG_021375.2	RefSeq	cDNA_match	2150238	2150283	.	+	.	ID=aln1;Target=NM_001351275.2 3983 4028 +;idty=1;splign=46
+NG_021375.2	RefSeq	cDNA_match	2160759	2160809	.	+	.	ID=aln1;Target=NM_001351275.2 4029 4079 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	2161809	2161910	.	+	.	ID=aln1;Target=NM_001351275.2 4080 4181 +;idty=1;splign=102
+NG_021375.2	RefSeq	cDNA_match	2164163	2164335	.	+	.	ID=aln1;Target=NM_001351275.2 4182 4354 +;idty=1;splign=173
+NG_021375.2	RefSeq	cDNA_match	2166719	2166828	.	+	.	ID=aln1;Target=NM_001351275.2 4355 4464 +;idty=1;splign=110
+NG_021375.2	RefSeq	cDNA_match	2171443	2171534	.	+	.	ID=aln1;Target=NM_001351275.2 4465 4556 +;idty=1;splign=92
+NG_021375.2	RefSeq	cDNA_match	2173612	2178524	.	+	.	ID=aln1;Target=NM_001351275.2 4557 9469 +;idty=1;splign=4913
+NG_021375.2	RefSeq	cDNA_match	6192	6318	.	+	.	ID=aln2;Target=NM_001142699.3 1 127 +;idty=1;splign=127
+NG_021375.2	RefSeq	cDNA_match	6783	6949	.	+	.	ID=aln2;Target=NM_001142699.3 128 294 +;idty=1;splign=167
+NG_021375.2	RefSeq	cDNA_match	34748	34879	.	+	.	ID=aln2;Target=NM_001142699.3 295 426 +;idty=1;splign=132
+NG_021375.2	RefSeq	cDNA_match	348171	348316	.	+	.	ID=aln2;Target=NM_001142699.3 427 572 +;idty=1;splign=146
+NG_021375.2	RefSeq	cDNA_match	478885	478980	.	+	.	ID=aln2;Target=NM_001142699.3 573 668 +;idty=1;splign=96
+NG_021375.2	RefSeq	cDNA_match	521801	521875	.	+	.	ID=aln2;Target=NM_001142699.3 669 743 +;idty=1;splign=75
+NG_021375.2	RefSeq	cDNA_match	1098805	1098966	.	+	.	ID=aln2;Target=NM_001142699.3 744 905 +;idty=1;splign=162
+NG_021375.2	RefSeq	cDNA_match	1382245	1382298	.	+	.	ID=aln2;Target=NM_001142699.3 906 959 +;idty=1;splign=54
+NG_021375.2	RefSeq	cDNA_match	1470025	1470075	.	+	.	ID=aln2;Target=NM_001142699.3 960 1010 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	1534489	1534613	.	+	.	ID=aln2;Target=NM_001142699.3 1011 1135 +;idty=1;splign=125
+NG_021375.2	RefSeq	cDNA_match	1574052	1574221	.	+	.	ID=aln2;Target=NM_001142699.3 1136 1305 +;idty=1;splign=170
+NG_021375.2	RefSeq	cDNA_match	1652894	1653030	.	+	.	ID=aln2;Target=NM_001142699.3 1306 1442 +;idty=1;splign=137
+NG_021375.2	RefSeq	cDNA_match	1668068	1668212	.	+	.	ID=aln2;Target=NM_001142699.3 1443 1587 +;idty=1;splign=145
+NG_021375.2	RefSeq	cDNA_match	1670513	1670651	.	+	.	ID=aln2;Target=NM_001142699.3 1588 1726 +;idty=1;splign=139
+NG_021375.2	RefSeq	cDNA_match	1703053	1703208	.	+	.	ID=aln2;Target=NM_001142699.3 1727 1882 +;idty=1;splign=156
+NG_021375.2	RefSeq	cDNA_match	1759048	1759116	.	+	.	ID=aln2;Target=NM_001142699.3 1883 1951 +;idty=1;splign=69
+NG_021375.2	RefSeq	cDNA_match	1799766	1799922	.	+	.	ID=aln2;Target=NM_001142699.3 1952 2108 +;idty=1;splign=157
+NG_021375.2	RefSeq	cDNA_match	1846744	1846846	.	+	.	ID=aln2;Target=NM_001142699.3 2109 2211 +;idty=1;splign=103
+NG_021375.2	RefSeq	cDNA_match	2000211	2000325	.	+	.	ID=aln2;Target=NM_001142699.3 2212 2326 +;idty=1;splign=115
+NG_021375.2	RefSeq	cDNA_match	2091678	2091854	.	+	.	ID=aln2;Target=NM_001142699.3 2327 2503 +;idty=1;splign=177
+NG_021375.2	RefSeq	cDNA_match	2100753	2100828	.	+	.	ID=aln2;Target=NM_001142699.3 2504 2579 +;idty=1;splign=76
+NG_021375.2	RefSeq	cDNA_match	2149308	2149407	.	+	.	ID=aln2;Target=NM_001142699.3 2580 2679 +;idty=1;splign=100
+NG_021375.2	RefSeq	cDNA_match	2160759	2160809	.	+	.	ID=aln2;Target=NM_001142699.3 2680 2730 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	2161809	2161910	.	+	.	ID=aln2;Target=NM_001142699.3 2731 2832 +;idty=1;splign=102
+NG_021375.2	RefSeq	cDNA_match	2164163	2164335	.	+	.	ID=aln2;Target=NM_001142699.3 2833 3005 +;idty=1;splign=173
+NG_021375.2	RefSeq	cDNA_match	2166719	2166828	.	+	.	ID=aln2;Target=NM_001142699.3 3006 3115 +;idty=1;splign=110
+NG_021375.2	RefSeq	cDNA_match	2171443	2171534	.	+	.	ID=aln2;Target=NM_001142699.3 3116 3207 +;idty=1;splign=92
+NG_021375.2	RefSeq	cDNA_match	2173612	2178363	.	+	.	ID=aln2;Target=NM_001142699.3 3208 7959 +;idty=1;splign=4752
+NG_021375.2	RefSeq	cDNA_match	710115	710459	.	+	.	ID=aln3;Target=NM_001377968.1 1 345 +;idty=1;splign=345
+NG_021375.2	RefSeq	cDNA_match	1098805	1098966	.	+	.	ID=aln3;Target=NM_001377968.1 346 507 +;idty=1;splign=162
+NG_021375.2	RefSeq	cDNA_match	1382245	1382298	.	+	.	ID=aln3;Target=NM_001377968.1 508 561 +;idty=1;splign=54
+NG_021375.2	RefSeq	cDNA_match	1470025	1470075	.	+	.	ID=aln3;Target=NM_001377968.1 562 612 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	1534489	1534613	.	+	.	ID=aln3;Target=NM_001377968.1 613 737 +;idty=1;splign=125
+NG_021375.2	RefSeq	cDNA_match	1574052	1574221	.	+	.	ID=aln3;Target=NM_001377968.1 738 907 +;idty=1;splign=170
+NG_021375.2	RefSeq	cDNA_match	1652894	1653030	.	+	.	ID=aln3;Target=NM_001377968.1 908 1044 +;idty=1;splign=137
+NG_021375.2	RefSeq	cDNA_match	1668068	1668212	.	+	.	ID=aln3;Target=NM_001377968.1 1045 1189 +;idty=1;splign=145
+NG_021375.2	RefSeq	cDNA_match	1670513	1670651	.	+	.	ID=aln3;Target=NM_001377968.1 1190 1328 +;idty=1;splign=139
+NG_021375.2	RefSeq	cDNA_match	1703053	1703208	.	+	.	ID=aln3;Target=NM_001377968.1 1329 1484 +;idty=1;splign=156
+NG_021375.2	RefSeq	cDNA_match	1759048	1759116	.	+	.	ID=aln3;Target=NM_001377968.1 1485 1553 +;idty=1;splign=69
+NG_021375.2	RefSeq	cDNA_match	1799766	1799922	.	+	.	ID=aln3;Target=NM_001377968.1 1554 1710 +;idty=1;splign=157
+NG_021375.2	RefSeq	cDNA_match	1846744	1846846	.	+	.	ID=aln3;Target=NM_001377968.1 1711 1813 +;idty=1;splign=103
+NG_021375.2	RefSeq	cDNA_match	2000211	2000325	.	+	.	ID=aln3;Target=NM_001377968.1 1814 1928 +;idty=1;splign=115
+NG_021375.2	RefSeq	cDNA_match	2091678	2091854	.	+	.	ID=aln3;Target=NM_001377968.1 1929 2105 +;idty=1;splign=177
+NG_021375.2	RefSeq	cDNA_match	2100753	2100828	.	+	.	ID=aln3;Target=NM_001377968.1 2106 2181 +;idty=1;splign=76
+NG_021375.2	RefSeq	cDNA_match	2150238	2150283	.	+	.	ID=aln3;Target=NM_001377968.1 2182 2227 +;idty=1;splign=46
+NG_021375.2	RefSeq	cDNA_match	2153123	2153164	.	+	.	ID=aln3;Target=NM_001377968.1 2228 2269 +;idty=1;splign=42
+NG_021375.2	RefSeq	cDNA_match	2160759	2160809	.	+	.	ID=aln3;Target=NM_001377968.1 2270 2320 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	2161809	2161910	.	+	.	ID=aln3;Target=NM_001377968.1 2321 2422 +;idty=1;splign=102
+NG_021375.2	RefSeq	cDNA_match	2164163	2164335	.	+	.	ID=aln3;Target=NM_001377968.1 2423 2595 +;idty=1;splign=173
+NG_021375.2	RefSeq	cDNA_match	2166719	2166828	.	+	.	ID=aln3;Target=NM_001377968.1 2596 2705 +;idty=1;splign=110
+NG_021375.2	RefSeq	cDNA_match	2171443	2171534	.	+	.	ID=aln3;Target=NM_001377968.1 2706 2797 +;idty=1;splign=92
+NG_021375.2	RefSeq	cDNA_match	2173612	2178524	.	+	.	ID=aln3;Target=NM_001377968.1 2798 7710 +;idty=1;splign=4913
+NG_021375.2	RefSeq	cDNA_match	710115	710459	.	+	.	ID=aln4;Target=NM_001364.3 1 345 +;idty=1;splign=345
+NG_021375.2	RefSeq	cDNA_match	1098805	1098966	.	+	.	ID=aln4;Target=NM_001364.3 346 507 +;idty=1;splign=162
+NG_021375.2	RefSeq	cDNA_match	1382245	1382298	.	+	.	ID=aln4;Target=NM_001364.3 508 561 +;idty=1;splign=54
+NG_021375.2	RefSeq	cDNA_match	1470025	1470075	.	+	.	ID=aln4;Target=NM_001364.3 562 612 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	1534489	1534613	.	+	.	ID=aln4;Target=NM_001364.3 613 737 +;idty=1;splign=125
+NG_021375.2	RefSeq	cDNA_match	1574052	1574221	.	+	.	ID=aln4;Target=NM_001364.3 738 907 +;idty=1;splign=170
+NG_021375.2	RefSeq	cDNA_match	1652894	1653030	.	+	.	ID=aln4;Target=NM_001364.3 908 1044 +;idty=1;splign=137
+NG_021375.2	RefSeq	cDNA_match	1668068	1668212	.	+	.	ID=aln4;Target=NM_001364.3 1045 1189 +;idty=1;splign=145
+NG_021375.2	RefSeq	cDNA_match	1670513	1670651	.	+	.	ID=aln4;Target=NM_001364.3 1190 1328 +;idty=1;splign=139
+NG_021375.2	RefSeq	cDNA_match	1703053	1703208	.	+	.	ID=aln4;Target=NM_001364.3 1329 1484 +;idty=1;splign=156
+NG_021375.2	RefSeq	cDNA_match	1759048	1759116	.	+	.	ID=aln4;Target=NM_001364.3 1485 1553 +;idty=1;splign=69
+NG_021375.2	RefSeq	cDNA_match	1799766	1799922	.	+	.	ID=aln4;Target=NM_001364.3 1554 1710 +;idty=1;splign=157
+NG_021375.2	RefSeq	cDNA_match	1846744	1846846	.	+	.	ID=aln4;Target=NM_001364.3 1711 1813 +;idty=1;splign=103
+NG_021375.2	RefSeq	cDNA_match	2000211	2000325	.	+	.	ID=aln4;Target=NM_001364.3 1814 1928 +;idty=1;splign=115
+NG_021375.2	RefSeq	cDNA_match	2091678	2091854	.	+	.	ID=aln4;Target=NM_001364.3 1929 2105 +;idty=1;splign=177
+NG_021375.2	RefSeq	cDNA_match	2100753	2100828	.	+	.	ID=aln4;Target=NM_001364.3 2106 2181 +;idty=1;splign=76
+NG_021375.2	RefSeq	cDNA_match	2149308	2149407	.	+	.	ID=aln4;Target=NM_001364.3 2182 2281 +;idty=1;splign=100
+NG_021375.2	RefSeq	cDNA_match	2160759	2160809	.	+	.	ID=aln4;Target=NM_001364.3 2282 2332 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	2161809	2161910	.	+	.	ID=aln4;Target=NM_001364.3 2333 2434 +;idty=1;splign=102
+NG_021375.2	RefSeq	cDNA_match	2164163	2164335	.	+	.	ID=aln4;Target=NM_001364.3 2435 2607 +;idty=1;splign=173
+NG_021375.2	RefSeq	cDNA_match	2166719	2166828	.	+	.	ID=aln4;Target=NM_001364.3 2608 2717 +;idty=1;splign=110
+NG_021375.2	RefSeq	cDNA_match	2171443	2171534	.	+	.	ID=aln4;Target=NM_001364.3 2718 2809 +;idty=1;splign=92
+NG_021375.2	RefSeq	cDNA_match	2173612	2178524	.	+	.	ID=aln4;Target=NM_001364.3 2810 7722 +;idty=1;splign=4913
+NG_021375.2	RefSeq	cDNA_match	710115	710459	.	+	.	ID=aln5;Target=NM_001300983.1 1 345 +;idty=1;splign=345
+NG_021375.2	RefSeq	cDNA_match	1098805	1098966	.	+	.	ID=aln5;Target=NM_001300983.1 346 507 +;idty=1;splign=162
+NG_021375.2	RefSeq	cDNA_match	1382245	1382298	.	+	.	ID=aln5;Target=NM_001300983.1 508 561 +;idty=1;splign=54
+NG_021375.2	RefSeq	cDNA_match	1470025	1470075	.	+	.	ID=aln5;Target=NM_001300983.1 562 612 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	1534489	1534613	.	+	.	ID=aln5;Target=NM_001300983.1 613 737 +;idty=1;splign=125
+NG_021375.2	RefSeq	cDNA_match	1574052	1574221	.	+	.	ID=aln5;Target=NM_001300983.1 738 907 +;idty=1;splign=170
+NG_021375.2	RefSeq	cDNA_match	1652894	1653030	.	+	.	ID=aln5;Target=NM_001300983.1 908 1044 +;idty=1;splign=137
+NG_021375.2	RefSeq	cDNA_match	1668068	1668212	.	+	.	ID=aln5;Target=NM_001300983.1 1045 1189 +;idty=1;splign=145
+NG_021375.2	RefSeq	cDNA_match	1670513	1670651	.	+	.	ID=aln5;Target=NM_001300983.1 1190 1328 +;idty=1;splign=139
+NG_021375.2	RefSeq	cDNA_match	1703053	1703208	.	+	.	ID=aln5;Target=NM_001300983.1 1329 1484 +;idty=1;splign=156
+NG_021375.2	RefSeq	cDNA_match	1759048	1759116	.	+	.	ID=aln5;Target=NM_001300983.1 1485 1553 +;idty=1;splign=69
+NG_021375.2	RefSeq	cDNA_match	1799766	1799922	.	+	.	ID=aln5;Target=NM_001300983.1 1554 1710 +;idty=1;splign=157
+NG_021375.2	RefSeq	cDNA_match	1846744	1846846	.	+	.	ID=aln5;Target=NM_001300983.1 1711 1813 +;idty=1;splign=103
+NG_021375.2	RefSeq	cDNA_match	2000211	2000325	.	+	.	ID=aln5;Target=NM_001300983.1 1814 1928 +;idty=1;splign=115
+NG_021375.2	RefSeq	cDNA_match	2091678	2091854	.	+	.	ID=aln5;Target=NM_001300983.1 1929 2105 +;idty=1;splign=177
+NG_021375.2	RefSeq	cDNA_match	2100753	2100828	.	+	.	ID=aln5;Target=NM_001300983.1 2106 2181 +;idty=1;splign=76
+NG_021375.2	RefSeq	cDNA_match	2150238	2150283	.	+	.	ID=aln5;Target=NM_001300983.1 2182 2227 +;idty=1;splign=46
+NG_021375.2	RefSeq	cDNA_match	2160759	2160809	.	+	.	ID=aln5;Target=NM_001300983.1 2228 2278 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	2161809	2161910	.	+	.	ID=aln5;Target=NM_001300983.1 2279 2380 +;idty=1;splign=102
+NG_021375.2	RefSeq	cDNA_match	2164163	2164335	.	+	.	ID=aln5;Target=NM_001300983.1 2381 2553 +;idty=1;splign=173
+NG_021375.2	RefSeq	cDNA_match	2166719	2166828	.	+	.	ID=aln5;Target=NM_001300983.1 2554 2663 +;idty=1;splign=110
+NG_021375.2	RefSeq	cDNA_match	2171443	2171534	.	+	.	ID=aln5;Target=NM_001300983.1 2664 2755 +;idty=1;splign=92
+NG_021375.2	RefSeq	cDNA_match	2173612	2178524	.	+	.	ID=aln5;Target=NM_001300983.1 2756 7668 +;idty=1;splign=4913
+NG_021375.2	RefSeq	cDNA_match	912594	913240	.	+	.	ID=aln6;Target=NM_001351276.2 1 647 +;idty=1;splign=647
+NG_021375.2	RefSeq	cDNA_match	1098808	1098966	.	+	.	ID=aln6;Target=NM_001351276.2 648 806 +;idty=1;splign=159
+NG_021375.2	RefSeq	cDNA_match	1382245	1382298	.	+	.	ID=aln6;Target=NM_001351276.2 807 860 +;idty=1;splign=54
+NG_021375.2	RefSeq	cDNA_match	1470025	1470075	.	+	.	ID=aln6;Target=NM_001351276.2 861 911 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	1534489	1534613	.	+	.	ID=aln6;Target=NM_001351276.2 912 1036 +;idty=1;splign=125
+NG_021375.2	RefSeq	cDNA_match	1574052	1574221	.	+	.	ID=aln6;Target=NM_001351276.2 1037 1206 +;idty=1;splign=170
+NG_021375.2	RefSeq	cDNA_match	1652894	1653030	.	+	.	ID=aln6;Target=NM_001351276.2 1207 1343 +;idty=1;splign=137
+NG_021375.2	RefSeq	cDNA_match	1668068	1668212	.	+	.	ID=aln6;Target=NM_001351276.2 1344 1488 +;idty=1;splign=145
+NG_021375.2	RefSeq	cDNA_match	1670513	1670651	.	+	.	ID=aln6;Target=NM_001351276.2 1489 1627 +;idty=1;splign=139
+NG_021375.2	RefSeq	cDNA_match	1703053	1703208	.	+	.	ID=aln6;Target=NM_001351276.2 1628 1783 +;idty=1;splign=156
+NG_021375.2	RefSeq	cDNA_match	1759048	1759116	.	+	.	ID=aln6;Target=NM_001351276.2 1784 1852 +;idty=1;splign=69
+NG_021375.2	RefSeq	cDNA_match	1799766	1799922	.	+	.	ID=aln6;Target=NM_001351276.2 1853 2009 +;idty=1;splign=157
+NG_021375.2	RefSeq	cDNA_match	1846744	1846846	.	+	.	ID=aln6;Target=NM_001351276.2 2010 2112 +;idty=1;splign=103
+NG_021375.2	RefSeq	cDNA_match	2000211	2000325	.	+	.	ID=aln6;Target=NM_001351276.2 2113 2227 +;idty=1;splign=115
+NG_021375.2	RefSeq	cDNA_match	2091678	2091854	.	+	.	ID=aln6;Target=NM_001351276.2 2228 2404 +;idty=1;splign=177
+NG_021375.2	RefSeq	cDNA_match	2100753	2100828	.	+	.	ID=aln6;Target=NM_001351276.2 2405 2480 +;idty=1;splign=76
+NG_021375.2	RefSeq	cDNA_match	2150238	2150283	.	+	.	ID=aln6;Target=NM_001351276.2 2481 2526 +;idty=1;splign=46
+NG_021375.2	RefSeq	cDNA_match	2160759	2160809	.	+	.	ID=aln6;Target=NM_001351276.2 2527 2577 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	2161809	2161910	.	+	.	ID=aln6;Target=NM_001351276.2 2578 2679 +;idty=1;splign=102
+NG_021375.2	RefSeq	cDNA_match	2164163	2164335	.	+	.	ID=aln6;Target=NM_001351276.2 2680 2852 +;idty=1;splign=173
+NG_021375.2	RefSeq	cDNA_match	2166719	2166828	.	+	.	ID=aln6;Target=NM_001351276.2 2853 2962 +;idty=1;splign=110
+NG_021375.2	RefSeq	cDNA_match	2171443	2171534	.	+	.	ID=aln6;Target=NM_001351276.2 2963 3054 +;idty=1;splign=92
+NG_021375.2	RefSeq	cDNA_match	2173612	2178524	.	+	.	ID=aln6;Target=NM_001351276.2 3055 7967 +;idty=1;splign=4913
+NG_021375.2	RefSeq	cDNA_match	1195730	1196148	.	+	.	ID=aln7;Target=NM_001377973.1 1 419 +;idty=1;splign=419
+NG_021375.2	RefSeq	cDNA_match	1382245	1382298	.	+	.	ID=aln7;Target=NM_001377973.1 420 473 +;idty=1;splign=54
+NG_021375.2	RefSeq	cDNA_match	1470025	1470075	.	+	.	ID=aln7;Target=NM_001377973.1 474 524 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	1534489	1534613	.	+	.	ID=aln7;Target=NM_001377973.1 525 649 +;idty=1;splign=125
+NG_021375.2	RefSeq	cDNA_match	1574052	1574221	.	+	.	ID=aln7;Target=NM_001377973.1 650 819 +;idty=1;splign=170
+NG_021375.2	RefSeq	cDNA_match	1652894	1653030	.	+	.	ID=aln7;Target=NM_001377973.1 820 956 +;idty=1;splign=137
+NG_021375.2	RefSeq	cDNA_match	1668068	1668212	.	+	.	ID=aln7;Target=NM_001377973.1 957 1101 +;idty=1;splign=145
+NG_021375.2	RefSeq	cDNA_match	1670513	1670651	.	+	.	ID=aln7;Target=NM_001377973.1 1102 1240 +;idty=1;splign=139
+NG_021375.2	RefSeq	cDNA_match	1703053	1703208	.	+	.	ID=aln7;Target=NM_001377973.1 1241 1396 +;idty=1;splign=156
+NG_021375.2	RefSeq	cDNA_match	1759048	1759116	.	+	.	ID=aln7;Target=NM_001377973.1 1397 1465 +;idty=1;splign=69
+NG_021375.2	RefSeq	cDNA_match	1799766	1799922	.	+	.	ID=aln7;Target=NM_001377973.1 1466 1622 +;idty=1;splign=157
+NG_021375.2	RefSeq	cDNA_match	1846744	1846846	.	+	.	ID=aln7;Target=NM_001377973.1 1623 1725 +;idty=1;splign=103
+NG_021375.2	RefSeq	cDNA_match	2000211	2000325	.	+	.	ID=aln7;Target=NM_001377973.1 1726 1840 +;idty=1;splign=115
+NG_021375.2	RefSeq	cDNA_match	2091678	2091854	.	+	.	ID=aln7;Target=NM_001377973.1 1841 2017 +;idty=1;splign=177
+NG_021375.2	RefSeq	cDNA_match	2100753	2100828	.	+	.	ID=aln7;Target=NM_001377973.1 2018 2093 +;idty=1;splign=76
+NG_021375.2	RefSeq	cDNA_match	2150238	2150283	.	+	.	ID=aln7;Target=NM_001377973.1 2094 2139 +;idty=1;splign=46
+NG_021375.2	RefSeq	cDNA_match	2160759	2160809	.	+	.	ID=aln7;Target=NM_001377973.1 2140 2190 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	2161809	2161910	.	+	.	ID=aln7;Target=NM_001377973.1 2191 2292 +;idty=1;splign=102
+NG_021375.2	RefSeq	cDNA_match	2164163	2164335	.	+	.	ID=aln7;Target=NM_001377973.1 2293 2465 +;idty=1;splign=173
+NG_021375.2	RefSeq	cDNA_match	2166719	2166828	.	+	.	ID=aln7;Target=NM_001377973.1 2466 2575 +;idty=1;splign=110
+NG_021375.2	RefSeq	cDNA_match	2171443	2171534	.	+	.	ID=aln7;Target=NM_001377973.1 2576 2667 +;idty=1;splign=92
+NG_021375.2	RefSeq	cDNA_match	2173612	2178524	.	+	.	ID=aln7;Target=NM_001377973.1 2668 7580 +;idty=1;splign=4913
+NG_021375.2	RefSeq	cDNA_match	1316199	1316711	.	+	.	ID=aln8;Target=NM_001206769.2 1 513 +;idty=1;splign=513
+NG_021375.2	RefSeq	cDNA_match	1382245	1382298	.	+	.	ID=aln8;Target=NM_001206769.2 514 567 +;idty=1;splign=54
+NG_021375.2	RefSeq	cDNA_match	1470025	1470075	.	+	.	ID=aln8;Target=NM_001206769.2 568 618 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	1534489	1534613	.	+	.	ID=aln8;Target=NM_001206769.2 619 743 +;idty=1;splign=125
+NG_021375.2	RefSeq	cDNA_match	1574052	1574221	.	+	.	ID=aln8;Target=NM_001206769.2 744 913 +;idty=1;splign=170
+NG_021375.2	RefSeq	cDNA_match	1652894	1653030	.	+	.	ID=aln8;Target=NM_001206769.2 914 1050 +;idty=1;splign=137
+NG_021375.2	RefSeq	cDNA_match	1668068	1668212	.	+	.	ID=aln8;Target=NM_001206769.2 1051 1195 +;idty=1;splign=145
+NG_021375.2	RefSeq	cDNA_match	1670513	1670651	.	+	.	ID=aln8;Target=NM_001206769.2 1196 1334 +;idty=1;splign=139
+NG_021375.2	RefSeq	cDNA_match	1703053	1703208	.	+	.	ID=aln8;Target=NM_001206769.2 1335 1490 +;idty=1;splign=156
+NG_021375.2	RefSeq	cDNA_match	1759048	1759116	.	+	.	ID=aln8;Target=NM_001206769.2 1491 1559 +;idty=1;splign=69
+NG_021375.2	RefSeq	cDNA_match	1799766	1799922	.	+	.	ID=aln8;Target=NM_001206769.2 1560 1716 +;idty=1;splign=157
+NG_021375.2	RefSeq	cDNA_match	1846744	1846846	.	+	.	ID=aln8;Target=NM_001206769.2 1717 1819 +;idty=1;splign=103
+NG_021375.2	RefSeq	cDNA_match	2000211	2000325	.	+	.	ID=aln8;Target=NM_001206769.2 1820 1934 +;idty=1;splign=115
+NG_021375.2	RefSeq	cDNA_match	2091678	2091854	.	+	.	ID=aln8;Target=NM_001206769.2 1935 2111 +;idty=1;splign=177
+NG_021375.2	RefSeq	cDNA_match	2100753	2100828	.	+	.	ID=aln8;Target=NM_001206769.2 2112 2187 +;idty=1;splign=76
+NG_021375.2	RefSeq	cDNA_match	2149308	2149407	.	+	.	ID=aln8;Target=NM_001206769.2 2188 2287 +;idty=1;splign=100
+NG_021375.2	RefSeq	cDNA_match	2160759	2160809	.	+	.	ID=aln8;Target=NM_001206769.2 2288 2338 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	2161809	2161910	.	+	.	ID=aln8;Target=NM_001206769.2 2339 2440 +;idty=1;splign=102
+NG_021375.2	RefSeq	cDNA_match	2164163	2164335	.	+	.	ID=aln8;Target=NM_001206769.2 2441 2613 +;idty=1;splign=173
+NG_021375.2	RefSeq	cDNA_match	2166719	2166828	.	+	.	ID=aln8;Target=NM_001206769.2 2614 2723 +;idty=1;splign=110
+NG_021375.2	RefSeq	cDNA_match	2171443	2171534	.	+	.	ID=aln8;Target=NM_001206769.2 2724 2815 +;idty=1;splign=92
+NG_021375.2	RefSeq	cDNA_match	2173612	2178524	.	+	.	ID=aln8;Target=NM_001206769.2 2816 7728 +;idty=1;splign=4913
+NG_021375.2	RefSeq	cDNA_match	1316199	1316711	.	+	.	ID=aln9;Target=NM_001377967.1 1 513 +;idty=1;splign=513
+NG_021375.2	RefSeq	cDNA_match	1382245	1382298	.	+	.	ID=aln9;Target=NM_001377967.1 514 567 +;idty=1;splign=54
+NG_021375.2	RefSeq	cDNA_match	1470025	1470075	.	+	.	ID=aln9;Target=NM_001377967.1 568 618 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	1534489	1534613	.	+	.	ID=aln9;Target=NM_001377967.1 619 743 +;idty=1;splign=125
+NG_021375.2	RefSeq	cDNA_match	1574052	1574221	.	+	.	ID=aln9;Target=NM_001377967.1 744 913 +;idty=1;splign=170
+NG_021375.2	RefSeq	cDNA_match	1652894	1653030	.	+	.	ID=aln9;Target=NM_001377967.1 914 1050 +;idty=1;splign=137
+NG_021375.2	RefSeq	cDNA_match	1668068	1668212	.	+	.	ID=aln9;Target=NM_001377967.1 1051 1195 +;idty=1;splign=145
+NG_021375.2	RefSeq	cDNA_match	1670513	1670651	.	+	.	ID=aln9;Target=NM_001377967.1 1196 1334 +;idty=1;splign=139
+NG_021375.2	RefSeq	cDNA_match	1703053	1703208	.	+	.	ID=aln9;Target=NM_001377967.1 1335 1490 +;idty=1;splign=156
+NG_021375.2	RefSeq	cDNA_match	1759048	1759116	.	+	.	ID=aln9;Target=NM_001377967.1 1491 1559 +;idty=1;splign=69
+NG_021375.2	RefSeq	cDNA_match	1799766	1799922	.	+	.	ID=aln9;Target=NM_001377967.1 1560 1716 +;idty=1;splign=157
+NG_021375.2	RefSeq	cDNA_match	1846744	1846846	.	+	.	ID=aln9;Target=NM_001377967.1 1717 1819 +;idty=1;splign=103
+NG_021375.2	RefSeq	cDNA_match	2000211	2000325	.	+	.	ID=aln9;Target=NM_001377967.1 1820 1934 +;idty=1;splign=115
+NG_021375.2	RefSeq	cDNA_match	2091678	2091854	.	+	.	ID=aln9;Target=NM_001377967.1 1935 2111 +;idty=1;splign=177
+NG_021375.2	RefSeq	cDNA_match	2100753	2100828	.	+	.	ID=aln9;Target=NM_001377967.1 2112 2187 +;idty=1;splign=76
+NG_021375.2	RefSeq	cDNA_match	2150238	2150283	.	+	.	ID=aln9;Target=NM_001377967.1 2188 2233 +;idty=1;splign=46
+NG_021375.2	RefSeq	cDNA_match	2160759	2160809	.	+	.	ID=aln9;Target=NM_001377967.1 2234 2284 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	2161809	2161910	.	+	.	ID=aln9;Target=NM_001377967.1 2285 2386 +;idty=1;splign=102
+NG_021375.2	RefSeq	cDNA_match	2164163	2164335	.	+	.	ID=aln9;Target=NM_001377967.1 2387 2559 +;idty=1;splign=173
+NG_021375.2	RefSeq	cDNA_match	2166719	2166828	.	+	.	ID=aln9;Target=NM_001377967.1 2560 2669 +;idty=1;splign=110
+NG_021375.2	RefSeq	cDNA_match	2171443	2171534	.	+	.	ID=aln9;Target=NM_001377967.1 2670 2761 +;idty=1;splign=92
+NG_021375.2	RefSeq	cDNA_match	2173612	2178524	.	+	.	ID=aln9;Target=NM_001377967.1 2762 7674 +;idty=1;splign=4913
+NG_021375.2	RefSeq	cDNA_match	1316199	1316711	.	+	.	ID=aln10;Target=NM_001377966.1 1 513 +;idty=1;splign=513
+NG_021375.2	RefSeq	cDNA_match	1382245	1382298	.	+	.	ID=aln10;Target=NM_001377966.1 514 567 +;idty=1;splign=54
+NG_021375.2	RefSeq	cDNA_match	1470025	1470075	.	+	.	ID=aln10;Target=NM_001377966.1 568 618 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	1534489	1534613	.	+	.	ID=aln10;Target=NM_001377966.1 619 743 +;idty=1;splign=125
+NG_021375.2	RefSeq	cDNA_match	1574052	1574221	.	+	.	ID=aln10;Target=NM_001377966.1 744 913 +;idty=1;splign=170
+NG_021375.2	RefSeq	cDNA_match	1652894	1653030	.	+	.	ID=aln10;Target=NM_001377966.1 914 1050 +;idty=1;splign=137
+NG_021375.2	RefSeq	cDNA_match	1668068	1668212	.	+	.	ID=aln10;Target=NM_001377966.1 1051 1195 +;idty=1;splign=145
+NG_021375.2	RefSeq	cDNA_match	1670513	1670651	.	+	.	ID=aln10;Target=NM_001377966.1 1196 1334 +;idty=1;splign=139
+NG_021375.2	RefSeq	cDNA_match	1703053	1703208	.	+	.	ID=aln10;Target=NM_001377966.1 1335 1490 +;idty=1;splign=156
+NG_021375.2	RefSeq	cDNA_match	1759048	1759116	.	+	.	ID=aln10;Target=NM_001377966.1 1491 1559 +;idty=1;splign=69
+NG_021375.2	RefSeq	cDNA_match	1799766	1799922	.	+	.	ID=aln10;Target=NM_001377966.1 1560 1716 +;idty=1;splign=157
+NG_021375.2	RefSeq	cDNA_match	1846744	1846846	.	+	.	ID=aln10;Target=NM_001377966.1 1717 1819 +;idty=1;splign=103
+NG_021375.2	RefSeq	cDNA_match	2000211	2000325	.	+	.	ID=aln10;Target=NM_001377966.1 1820 1934 +;idty=1;splign=115
+NG_021375.2	RefSeq	cDNA_match	2091678	2091854	.	+	.	ID=aln10;Target=NM_001377966.1 1935 2111 +;idty=1;splign=177
+NG_021375.2	RefSeq	cDNA_match	2100753	2100828	.	+	.	ID=aln10;Target=NM_001377966.1 2112 2187 +;idty=1;splign=76
+NG_021375.2	RefSeq	cDNA_match	2149308	2149407	.	+	.	ID=aln10;Target=NM_001377966.1 2188 2287 +;idty=1;splign=100
+NG_021375.2	RefSeq	cDNA_match	2160759	2160809	.	+	.	ID=aln10;Target=NM_001377966.1 2288 2338 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	2161809	2161910	.	+	.	ID=aln10;Target=NM_001377966.1 2339 2440 +;idty=1;splign=102
+NG_021375.2	RefSeq	cDNA_match	2164163	2164335	.	+	.	ID=aln10;Target=NM_001377966.1 2441 2613 +;idty=1;splign=173
+NG_021375.2	RefSeq	cDNA_match	2166719	2166810	.	+	.	ID=aln10;Target=NM_001377966.1 2614 2705 +;idty=1;splign=92
+NG_021375.2	RefSeq	cDNA_match	2171443	2171534	.	+	.	ID=aln10;Target=NM_001377966.1 2706 2797 +;idty=1;splign=92
+NG_021375.2	RefSeq	cDNA_match	2173612	2178524	.	+	.	ID=aln10;Target=NM_001377966.1 2798 7710 +;idty=1;splign=4913
+NG_021375.2	RefSeq	cDNA_match	1316199	1316711	.	+	.	ID=aln11;Target=NM_001377970.1 1 513 +;idty=1;splign=513
+NG_021375.2	RefSeq	cDNA_match	1382245	1382298	.	+	.	ID=aln11;Target=NM_001377970.1 514 567 +;idty=1;splign=54
+NG_021375.2	RefSeq	cDNA_match	1470025	1470075	.	+	.	ID=aln11;Target=NM_001377970.1 568 618 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	1534489	1534613	.	+	.	ID=aln11;Target=NM_001377970.1 619 743 +;idty=1;splign=125
+NG_021375.2	RefSeq	cDNA_match	1574052	1574221	.	+	.	ID=aln11;Target=NM_001377970.1 744 913 +;idty=1;splign=170
+NG_021375.2	RefSeq	cDNA_match	1652894	1653030	.	+	.	ID=aln11;Target=NM_001377970.1 914 1050 +;idty=1;splign=137
+NG_021375.2	RefSeq	cDNA_match	1668068	1668212	.	+	.	ID=aln11;Target=NM_001377970.1 1051 1195 +;idty=1;splign=145
+NG_021375.2	RefSeq	cDNA_match	1670513	1670651	.	+	.	ID=aln11;Target=NM_001377970.1 1196 1334 +;idty=1;splign=139
+NG_021375.2	RefSeq	cDNA_match	1759048	1759116	.	+	.	ID=aln11;Target=NM_001377970.1 1335 1403 +;idty=1;splign=69
+NG_021375.2	RefSeq	cDNA_match	1799766	1799922	.	+	.	ID=aln11;Target=NM_001377970.1 1404 1560 +;idty=1;splign=157
+NG_021375.2	RefSeq	cDNA_match	1846744	1846846	.	+	.	ID=aln11;Target=NM_001377970.1 1561 1663 +;idty=1;splign=103
+NG_021375.2	RefSeq	cDNA_match	2000211	2000325	.	+	.	ID=aln11;Target=NM_001377970.1 1664 1778 +;idty=1;splign=115
+NG_021375.2	RefSeq	cDNA_match	2091678	2091854	.	+	.	ID=aln11;Target=NM_001377970.1 1779 1955 +;idty=1;splign=177
+NG_021375.2	RefSeq	cDNA_match	2100753	2100828	.	+	.	ID=aln11;Target=NM_001377970.1 1956 2031 +;idty=1;splign=76
+NG_021375.2	RefSeq	cDNA_match	2149308	2149407	.	+	.	ID=aln11;Target=NM_001377970.1 2032 2131 +;idty=1;splign=100
+NG_021375.2	RefSeq	cDNA_match	2160759	2160809	.	+	.	ID=aln11;Target=NM_001377970.1 2132 2182 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	2161809	2161910	.	+	.	ID=aln11;Target=NM_001377970.1 2183 2284 +;idty=1;splign=102
+NG_021375.2	RefSeq	cDNA_match	2164163	2164335	.	+	.	ID=aln11;Target=NM_001377970.1 2285 2457 +;idty=1;splign=173
+NG_021375.2	RefSeq	cDNA_match	2166719	2166828	.	+	.	ID=aln11;Target=NM_001377970.1 2458 2567 +;idty=1;splign=110
+NG_021375.2	RefSeq	cDNA_match	2171443	2171534	.	+	.	ID=aln11;Target=NM_001377970.1 2568 2659 +;idty=1;splign=92
+NG_021375.2	RefSeq	cDNA_match	2173612	2178524	.	+	.	ID=aln11;Target=NM_001377970.1 2660 7572 +;idty=1;splign=4913
+NG_021375.2	RefSeq	cDNA_match	1316199	1316711	.	+	.	ID=aln12;Target=NM_001377971.1 1 513 +;idty=1;splign=513
+NG_021375.2	RefSeq	cDNA_match	1382245	1382298	.	+	.	ID=aln12;Target=NM_001377971.1 514 567 +;idty=1;splign=54
+NG_021375.2	RefSeq	cDNA_match	1470025	1470075	.	+	.	ID=aln12;Target=NM_001377971.1 568 618 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	1534489	1534613	.	+	.	ID=aln12;Target=NM_001377971.1 619 743 +;idty=1;splign=125
+NG_021375.2	RefSeq	cDNA_match	1574052	1574221	.	+	.	ID=aln12;Target=NM_001377971.1 744 913 +;idty=1;splign=170
+NG_021375.2	RefSeq	cDNA_match	1652894	1653030	.	+	.	ID=aln12;Target=NM_001377971.1 914 1050 +;idty=1;splign=137
+NG_021375.2	RefSeq	cDNA_match	1668068	1668212	.	+	.	ID=aln12;Target=NM_001377971.1 1051 1195 +;idty=1;splign=145
+NG_021375.2	RefSeq	cDNA_match	1670513	1670651	.	+	.	ID=aln12;Target=NM_001377971.1 1196 1334 +;idty=1;splign=139
+NG_021375.2	RefSeq	cDNA_match	1759048	1759116	.	+	.	ID=aln12;Target=NM_001377971.1 1335 1403 +;idty=1;splign=69
+NG_021375.2	RefSeq	cDNA_match	1799766	1799922	.	+	.	ID=aln12;Target=NM_001377971.1 1404 1560 +;idty=1;splign=157
+NG_021375.2	RefSeq	cDNA_match	1846744	1846846	.	+	.	ID=aln12;Target=NM_001377971.1 1561 1663 +;idty=1;splign=103
+NG_021375.2	RefSeq	cDNA_match	2000211	2000325	.	+	.	ID=aln12;Target=NM_001377971.1 1664 1778 +;idty=1;splign=115
+NG_021375.2	RefSeq	cDNA_match	2091678	2091854	.	+	.	ID=aln12;Target=NM_001377971.1 1779 1955 +;idty=1;splign=177
+NG_021375.2	RefSeq	cDNA_match	2100753	2100828	.	+	.	ID=aln12;Target=NM_001377971.1 1956 2031 +;idty=1;splign=76
+NG_021375.2	RefSeq	cDNA_match	2150238	2150283	.	+	.	ID=aln12;Target=NM_001377971.1 2032 2077 +;idty=1;splign=46
+NG_021375.2	RefSeq	cDNA_match	2160759	2160809	.	+	.	ID=aln12;Target=NM_001377971.1 2078 2128 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	2161809	2161910	.	+	.	ID=aln12;Target=NM_001377971.1 2129 2230 +;idty=1;splign=102
+NG_021375.2	RefSeq	cDNA_match	2164163	2164335	.	+	.	ID=aln12;Target=NM_001377971.1 2231 2403 +;idty=1;splign=173
+NG_021375.2	RefSeq	cDNA_match	2166719	2166828	.	+	.	ID=aln12;Target=NM_001377971.1 2404 2513 +;idty=1;splign=110
+NG_021375.2	RefSeq	cDNA_match	2171443	2171534	.	+	.	ID=aln12;Target=NM_001377971.1 2514 2605 +;idty=1;splign=92
+NG_021375.2	RefSeq	cDNA_match	2173612	2178524	.	+	.	ID=aln12;Target=NM_001377971.1 2606 7518 +;idty=1;splign=4913
+NG_021375.2	RefSeq	cDNA_match	1316199	1316711	.	+	.	ID=aln13;Target=NM_001377983.1 1 513 +;idty=1;splign=513
+NG_021375.2	RefSeq	cDNA_match	1382245	1382298	.	+	.	ID=aln13;Target=NM_001377983.1 514 567 +;idty=1;splign=54
+NG_021375.2	RefSeq	cDNA_match	1470025	1470075	.	+	.	ID=aln13;Target=NM_001377983.1 568 618 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	1534489	1534613	.	+	.	ID=aln13;Target=NM_001377983.1 619 743 +;idty=1;splign=125
+NG_021375.2	RefSeq	cDNA_match	1574052	1574221	.	+	.	ID=aln13;Target=NM_001377983.1 744 913 +;idty=1;splign=170
+NG_021375.2	RefSeq	cDNA_match	1611941	1616150	.	+	.	ID=aln13;Target=NM_001377983.1 914 5123 +;idty=1;splign=4210
+NG_021375.2	RefSeq	cDNA_match	1360256	1360385	.	+	.	ID=aln14;Target=NM_001377972.1 1 130 +;idty=1;splign=130
+NG_021375.2	RefSeq	cDNA_match	1382245	1382298	.	+	.	ID=aln14;Target=NM_001377972.1 131 184 +;idty=1;splign=54
+NG_021375.2	RefSeq	cDNA_match	1470025	1470075	.	+	.	ID=aln14;Target=NM_001377972.1 185 235 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	1534489	1534613	.	+	.	ID=aln14;Target=NM_001377972.1 236 360 +;idty=1;splign=125
+NG_021375.2	RefSeq	cDNA_match	1574052	1574221	.	+	.	ID=aln14;Target=NM_001377972.1 361 530 +;idty=1;splign=170
+NG_021375.2	RefSeq	cDNA_match	1652894	1653030	.	+	.	ID=aln14;Target=NM_001377972.1 531 667 +;idty=1;splign=137
+NG_021375.2	RefSeq	cDNA_match	1668068	1668212	.	+	.	ID=aln14;Target=NM_001377972.1 668 812 +;idty=1;splign=145
+NG_021375.2	RefSeq	cDNA_match	1670513	1670651	.	+	.	ID=aln14;Target=NM_001377972.1 813 951 +;idty=1;splign=139
+NG_021375.2	RefSeq	cDNA_match	1703053	1703208	.	+	.	ID=aln14;Target=NM_001377972.1 952 1107 +;idty=1;splign=156
+NG_021375.2	RefSeq	cDNA_match	1759048	1759116	.	+	.	ID=aln14;Target=NM_001377972.1 1108 1176 +;idty=1;splign=69
+NG_021375.2	RefSeq	cDNA_match	1799766	1799922	.	+	.	ID=aln14;Target=NM_001377972.1 1177 1333 +;idty=1;splign=157
+NG_021375.2	RefSeq	cDNA_match	1846744	1846846	.	+	.	ID=aln14;Target=NM_001377972.1 1334 1436 +;idty=1;splign=103
+NG_021375.2	RefSeq	cDNA_match	2000211	2000325	.	+	.	ID=aln14;Target=NM_001377972.1 1437 1551 +;idty=1;splign=115
+NG_021375.2	RefSeq	cDNA_match	2091678	2091854	.	+	.	ID=aln14;Target=NM_001377972.1 1552 1728 +;idty=1;splign=177
+NG_021375.2	RefSeq	cDNA_match	2100753	2100828	.	+	.	ID=aln14;Target=NM_001377972.1 1729 1804 +;idty=1;splign=76
+NG_021375.2	RefSeq	cDNA_match	2150238	2150283	.	+	.	ID=aln14;Target=NM_001377972.1 1805 1850 +;idty=1;splign=46
+NG_021375.2	RefSeq	cDNA_match	2160759	2160809	.	+	.	ID=aln14;Target=NM_001377972.1 1851 1901 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	2161809	2161910	.	+	.	ID=aln14;Target=NM_001377972.1 1902 2003 +;idty=1;splign=102
+NG_021375.2	RefSeq	cDNA_match	2164163	2164335	.	+	.	ID=aln14;Target=NM_001377972.1 2004 2176 +;idty=1;splign=173
+NG_021375.2	RefSeq	cDNA_match	2166719	2166828	.	+	.	ID=aln14;Target=NM_001377972.1 2177 2286 +;idty=1;splign=110
+NG_021375.2	RefSeq	cDNA_match	2171443	2171534	.	+	.	ID=aln14;Target=NM_001377972.1 2287 2378 +;idty=1;splign=92
+NG_021375.2	RefSeq	cDNA_match	2173612	2178524	.	+	.	ID=aln14;Target=NM_001377972.1 2379 7291 +;idty=1;splign=4913
+NG_021375.2	RefSeq	cDNA_match	1360256	1360385	.	+	.	ID=aln15;Target=NM_001377974.1 1 130 +;idty=1;splign=130
+NG_021375.2	RefSeq	cDNA_match	1382245	1382298	.	+	.	ID=aln15;Target=NM_001377974.1 131 184 +;idty=1;splign=54
+NG_021375.2	RefSeq	cDNA_match	1470025	1470075	.	+	.	ID=aln15;Target=NM_001377974.1 185 235 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	1534489	1534613	.	+	.	ID=aln15;Target=NM_001377974.1 236 360 +;idty=1;splign=125
+NG_021375.2	RefSeq	cDNA_match	1574052	1574221	.	+	.	ID=aln15;Target=NM_001377974.1 361 530 +;idty=1;splign=170
+NG_021375.2	RefSeq	cDNA_match	1652894	1653030	.	+	.	ID=aln15;Target=NM_001377974.1 531 667 +;idty=1;splign=137
+NG_021375.2	RefSeq	cDNA_match	1668068	1668212	.	+	.	ID=aln15;Target=NM_001377974.1 668 812 +;idty=1;splign=145
+NG_021375.2	RefSeq	cDNA_match	1670513	1670651	.	+	.	ID=aln15;Target=NM_001377974.1 813 951 +;idty=1;splign=139
+NG_021375.2	RefSeq	cDNA_match	1759048	1759116	.	+	.	ID=aln15;Target=NM_001377974.1 952 1020 +;idty=1;splign=69
+NG_021375.2	RefSeq	cDNA_match	1799766	1799922	.	+	.	ID=aln15;Target=NM_001377974.1 1021 1177 +;idty=1;splign=157
+NG_021375.2	RefSeq	cDNA_match	1846744	1846846	.	+	.	ID=aln15;Target=NM_001377974.1 1178 1280 +;idty=1;splign=103
+NG_021375.2	RefSeq	cDNA_match	2000211	2000325	.	+	.	ID=aln15;Target=NM_001377974.1 1281 1395 +;idty=1;splign=115
+NG_021375.2	RefSeq	cDNA_match	2091678	2091854	.	+	.	ID=aln15;Target=NM_001377974.1 1396 1572 +;idty=1;splign=177
+NG_021375.2	RefSeq	cDNA_match	2100753	2100828	.	+	.	ID=aln15;Target=NM_001377974.1 1573 1648 +;idty=1;splign=76
+NG_021375.2	RefSeq	cDNA_match	2150238	2150283	.	+	.	ID=aln15;Target=NM_001377974.1 1649 1694 +;idty=1;splign=46
+NG_021375.2	RefSeq	cDNA_match	2160759	2160809	.	+	.	ID=aln15;Target=NM_001377974.1 1695 1745 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	2161809	2161910	.	+	.	ID=aln15;Target=NM_001377974.1 1746 1847 +;idty=1;splign=102
+NG_021375.2	RefSeq	cDNA_match	2164163	2164335	.	+	.	ID=aln15;Target=NM_001377974.1 1848 2020 +;idty=1;splign=173
+NG_021375.2	RefSeq	cDNA_match	2166719	2166828	.	+	.	ID=aln15;Target=NM_001377974.1 2021 2130 +;idty=1;splign=110
+NG_021375.2	RefSeq	cDNA_match	2171443	2171534	.	+	.	ID=aln15;Target=NM_001377974.1 2131 2222 +;idty=1;splign=92
+NG_021375.2	RefSeq	cDNA_match	2173612	2178524	.	+	.	ID=aln15;Target=NM_001377974.1 2223 7135 +;idty=1;splign=4913
+NG_021375.2	RefSeq	cDNA_match	1360256	1360385	.	+	.	ID=aln16;Target=NR_165353.1 1 130 +;idty=1;splign=130
+NG_021375.2	RefSeq	cDNA_match	1382245	1382298	.	+	.	ID=aln16;Target=NR_165353.1 131 184 +;idty=1;splign=54
+NG_021375.2	RefSeq	cDNA_match	1470025	1470075	.	+	.	ID=aln16;Target=NR_165353.1 185 235 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	1534489	1534613	.	+	.	ID=aln16;Target=NR_165353.1 236 360 +;idty=1;splign=125
+NG_021375.2	RefSeq	cDNA_match	1574052	1574221	.	+	.	ID=aln16;Target=NR_165353.1 361 530 +;idty=1;splign=170
+NG_021375.2	RefSeq	cDNA_match	1652894	1653030	.	+	.	ID=aln16;Target=NR_165353.1 531 667 +;idty=1;splign=137
+NG_021375.2	RefSeq	cDNA_match	1668068	1668212	.	+	.	ID=aln16;Target=NR_165353.1 668 812 +;idty=1;splign=145
+NG_021375.2	RefSeq	cDNA_match	1670513	1670651	.	+	.	ID=aln16;Target=NR_165353.1 813 951 +;idty=1;splign=139
+NG_021375.2	RefSeq	cDNA_match	1703053	1703208	.	+	.	ID=aln16;Target=NR_165353.1 952 1107 +;idty=1;splign=156
+NG_021375.2	RefSeq	cDNA_match	1759048	1759116	.	+	.	ID=aln16;Target=NR_165353.1 1108 1176 +;idty=1;splign=69
+NG_021375.2	RefSeq	cDNA_match	1799766	1799922	.	+	.	ID=aln16;Target=NR_165353.1 1177 1333 +;idty=1;splign=157
+NG_021375.2	RefSeq	cDNA_match	1846744	1846846	.	+	.	ID=aln16;Target=NR_165353.1 1334 1436 +;idty=1;splign=103
+NG_021375.2	RefSeq	cDNA_match	2000211	2000325	.	+	.	ID=aln16;Target=NR_165353.1 1437 1551 +;idty=1;splign=115
+NG_021375.2	RefSeq	cDNA_match	2091678	2091854	.	+	.	ID=aln16;Target=NR_165353.1 1552 1728 +;idty=1;splign=177
+NG_021375.2	RefSeq	cDNA_match	2100753	2100828	.	+	.	ID=aln16;Target=NR_165353.1 1729 1804 +;idty=1;splign=76
+NG_021375.2	RefSeq	cDNA_match	2161809	2161910	.	+	.	ID=aln16;Target=NR_165353.1 1805 1906 +;idty=1;splign=102
+NG_021375.2	RefSeq	cDNA_match	2164163	2164335	.	+	.	ID=aln16;Target=NR_165353.1 1907 2079 +;idty=1;splign=173
+NG_021375.2	RefSeq	cDNA_match	2166719	2166828	.	+	.	ID=aln16;Target=NR_165353.1 2080 2189 +;idty=1;splign=110
+NG_021375.2	RefSeq	cDNA_match	2171443	2171534	.	+	.	ID=aln16;Target=NR_165353.1 2190 2281 +;idty=1;splign=92
+NG_021375.2	RefSeq	cDNA_match	2173612	2178524	.	+	.	ID=aln16;Target=NR_165353.1 2282 7194 +;idty=1;splign=4913
+NG_021375.2	RefSeq	cDNA_match	1360256	1360385	.	+	.	ID=aln17;Target=NM_001142700.2 1 130 +;idty=1;splign=130
+NG_021375.2	RefSeq	cDNA_match	1470025	1470075	.	+	.	ID=aln17;Target=NM_001142700.2 131 181 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	1534489	1534613	.	+	.	ID=aln17;Target=NM_001142700.2 182 306 +;idty=1;splign=125
+NG_021375.2	RefSeq	cDNA_match	1574052	1574221	.	+	.	ID=aln17;Target=NM_001142700.2 307 476 +;idty=1;splign=170
+NG_021375.2	RefSeq	cDNA_match	1652894	1653030	.	+	.	ID=aln17;Target=NM_001142700.2 477 613 +;idty=1;splign=137
+NG_021375.2	RefSeq	cDNA_match	1668068	1668212	.	+	.	ID=aln17;Target=NM_001142700.2 614 758 +;idty=1;splign=145
+NG_021375.2	RefSeq	cDNA_match	1670513	1670651	.	+	.	ID=aln17;Target=NM_001142700.2 759 897 +;idty=1;splign=139
+NG_021375.2	RefSeq	cDNA_match	1759048	1759116	.	+	.	ID=aln17;Target=NM_001142700.2 898 966 +;idty=1;splign=69
+NG_021375.2	RefSeq	cDNA_match	1799766	1799922	.	+	.	ID=aln17;Target=NM_001142700.2 967 1123 +;idty=1;splign=157
+NG_021375.2	RefSeq	cDNA_match	1846744	1846846	.	+	.	ID=aln17;Target=NM_001142700.2 1124 1226 +;idty=1;splign=103
+NG_021375.2	RefSeq	cDNA_match	2000211	2000325	.	+	.	ID=aln17;Target=NM_001142700.2 1227 1341 +;idty=1;splign=115
+NG_021375.2	RefSeq	cDNA_match	2091678	2091854	.	+	.	ID=aln17;Target=NM_001142700.2 1342 1518 +;idty=1;splign=177
+NG_021375.2	RefSeq	cDNA_match	2100753	2100828	.	+	.	ID=aln17;Target=NM_001142700.2 1519 1594 +;idty=1;splign=76
+NG_021375.2	RefSeq	cDNA_match	2150238	2150283	.	+	.	ID=aln17;Target=NM_001142700.2 1595 1640 +;idty=1;splign=46
+NG_021375.2	RefSeq	cDNA_match	2160759	2160809	.	+	.	ID=aln17;Target=NM_001142700.2 1641 1691 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	2161809	2161910	.	+	.	ID=aln17;Target=NM_001142700.2 1692 1793 +;idty=1;splign=102
+NG_021375.2	RefSeq	cDNA_match	2164163	2164335	.	+	.	ID=aln17;Target=NM_001142700.2 1794 1966 +;idty=1;splign=173
+NG_021375.2	RefSeq	cDNA_match	2166719	2166828	.	+	.	ID=aln17;Target=NM_001142700.2 1967 2076 +;idty=1;splign=110
+NG_021375.2	RefSeq	cDNA_match	2171443	2171534	.	+	.	ID=aln17;Target=NM_001142700.2 2077 2168 +;idty=1;splign=92
+NG_021375.2	RefSeq	cDNA_match	2173612	2178524	.	+	.	ID=aln17;Target=NM_001142700.2 2169 7081 +;idty=1;splign=4913
+NG_021375.2	RefSeq	cDNA_match	1360256	1360385	.	+	.	ID=aln18;Target=NM_001377975.1 1 130 +;idty=1;splign=130
+NG_021375.2	RefSeq	cDNA_match	1382245	1382298	.	+	.	ID=aln18;Target=NM_001377975.1 131 184 +;idty=1;splign=54
+NG_021375.2	RefSeq	cDNA_match	1470025	1470075	.	+	.	ID=aln18;Target=NM_001377975.1 185 235 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	1534489	1534613	.	+	.	ID=aln18;Target=NM_001377975.1 236 360 +;idty=1;splign=125
+NG_021375.2	RefSeq	cDNA_match	1574052	1574221	.	+	.	ID=aln18;Target=NM_001377975.1 361 530 +;idty=1;splign=170
+NG_021375.2	RefSeq	cDNA_match	1652894	1653030	.	+	.	ID=aln18;Target=NM_001377975.1 531 667 +;idty=1;splign=137
+NG_021375.2	RefSeq	cDNA_match	1668068	1668212	.	+	.	ID=aln18;Target=NM_001377975.1 668 812 +;idty=1;splign=145
+NG_021375.2	RefSeq	cDNA_match	1670513	1670651	.	+	.	ID=aln18;Target=NM_001377975.1 813 951 +;idty=1;splign=139
+NG_021375.2	RefSeq	cDNA_match	1703053	1703208	.	+	.	ID=aln18;Target=NM_001377975.1 952 1107 +;idty=1;splign=156
+NG_021375.2	RefSeq	cDNA_match	1759048	1759116	.	+	.	ID=aln18;Target=NM_001377975.1 1108 1176 +;idty=1;splign=69
+NG_021375.2	RefSeq	cDNA_match	1799766	1799922	.	+	.	ID=aln18;Target=NM_001377975.1 1177 1333 +;idty=1;splign=157
+NG_021375.2	RefSeq	cDNA_match	1846744	1846846	.	+	.	ID=aln18;Target=NM_001377975.1 1334 1436 +;idty=1;splign=103
+NG_021375.2	RefSeq	cDNA_match	2000211	2000325	.	+	.	ID=aln18;Target=NM_001377975.1 1437 1551 +;idty=1;splign=115
+NG_021375.2	RefSeq	cDNA_match	2002727	2003684	.	+	.	ID=aln18;Target=NM_001377975.1 1552 2509 +;idty=1;splign=958
+NG_021375.2	RefSeq	cDNA_match	1908611	1908680	.	+	.	ID=aln19;Target=NM_001377977.1 1 70 +;idty=1;splign=70
+NG_021375.2	RefSeq	cDNA_match	2000211	2000325	.	+	.	ID=aln19;Target=NM_001377977.1 71 185 +;idty=1;splign=115
+NG_021375.2	RefSeq	cDNA_match	2091678	2091854	.	+	.	ID=aln19;Target=NM_001377977.1 186 362 +;idty=1;splign=177
+NG_021375.2	RefSeq	cDNA_match	2100753	2100828	.	+	.	ID=aln19;Target=NM_001377977.1 363 438 +;idty=1;splign=76
+NG_021375.2	RefSeq	cDNA_match	2150238	2150283	.	+	.	ID=aln19;Target=NM_001377977.1 439 484 +;idty=1;splign=46
+NG_021375.2	RefSeq	cDNA_match	2160759	2160809	.	+	.	ID=aln19;Target=NM_001377977.1 485 535 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	2161809	2161910	.	+	.	ID=aln19;Target=NM_001377977.1 536 637 +;idty=1;splign=102
+NG_021375.2	RefSeq	cDNA_match	2164163	2164335	.	+	.	ID=aln19;Target=NM_001377977.1 638 810 +;idty=1;splign=173
+NG_021375.2	RefSeq	cDNA_match	2166719	2166828	.	+	.	ID=aln19;Target=NM_001377977.1 811 920 +;idty=1;splign=110
+NG_021375.2	RefSeq	cDNA_match	2171443	2171534	.	+	.	ID=aln19;Target=NM_001377977.1 921 1012 +;idty=1;splign=92
+NG_021375.2	RefSeq	cDNA_match	2173612	2178524	.	+	.	ID=aln19;Target=NM_001377977.1 1013 5925 +;idty=1;splign=4913
+NG_021375.2	RefSeq	cDNA_match	1951248	1951378	.	+	.	ID=aln20;Target=NM_001377979.1 1 131 +;idty=1;splign=131
+NG_021375.2	RefSeq	cDNA_match	2000211	2000325	.	+	.	ID=aln20;Target=NM_001377979.1 132 246 +;idty=1;splign=115
+NG_021375.2	RefSeq	cDNA_match	2091678	2091854	.	+	.	ID=aln20;Target=NM_001377979.1 247 423 +;idty=1;splign=177
+NG_021375.2	RefSeq	cDNA_match	2100753	2100828	.	+	.	ID=aln20;Target=NM_001377979.1 424 499 +;idty=1;splign=76
+NG_021375.2	RefSeq	cDNA_match	2150238	2150283	.	+	.	ID=aln20;Target=NM_001377979.1 500 545 +;idty=1;splign=46
+NG_021375.2	RefSeq	cDNA_match	2153123	2153164	.	+	.	ID=aln20;Target=NM_001377979.1 546 587 +;idty=1;splign=42
+NG_021375.2	RefSeq	cDNA_match	2160759	2160809	.	+	.	ID=aln20;Target=NM_001377979.1 588 638 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	2161809	2161910	.	+	.	ID=aln20;Target=NM_001377979.1 639 740 +;idty=1;splign=102
+NG_021375.2	RefSeq	cDNA_match	2164163	2164335	.	+	.	ID=aln20;Target=NM_001377979.1 741 913 +;idty=1;splign=173
+NG_021375.2	RefSeq	cDNA_match	2166719	2166828	.	+	.	ID=aln20;Target=NM_001377979.1 914 1023 +;idty=1;splign=110
+NG_021375.2	RefSeq	cDNA_match	2171443	2171534	.	+	.	ID=aln20;Target=NM_001377979.1 1024 1115 +;idty=1;splign=92
+NG_021375.2	RefSeq	cDNA_match	2173612	2178524	.	+	.	ID=aln20;Target=NM_001377979.1 1116 6028 +;idty=1;splign=4913
+NG_021375.2	RefSeq	cDNA_match	1951248	1951378	.	+	.	ID=aln21;Target=NM_001377976.1 1 131 +;idty=1;splign=131
+NG_021375.2	RefSeq	cDNA_match	1981606	1981697	.	+	.	ID=aln21;Target=NM_001377976.1 132 223 +;idty=1;splign=92
+NG_021375.2	RefSeq	cDNA_match	2000211	2000325	.	+	.	ID=aln21;Target=NM_001377976.1 224 338 +;idty=1;splign=115
+NG_021375.2	RefSeq	cDNA_match	2091678	2091854	.	+	.	ID=aln21;Target=NM_001377976.1 339 515 +;idty=1;splign=177
+NG_021375.2	RefSeq	cDNA_match	2100753	2100828	.	+	.	ID=aln21;Target=NM_001377976.1 516 591 +;idty=1;splign=76
+NG_021375.2	RefSeq	cDNA_match	2150238	2150283	.	+	.	ID=aln21;Target=NM_001377976.1 592 637 +;idty=1;splign=46
+NG_021375.2	RefSeq	cDNA_match	2160759	2160809	.	+	.	ID=aln21;Target=NM_001377976.1 638 688 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	2161809	2161910	.	+	.	ID=aln21;Target=NM_001377976.1 689 790 +;idty=1;splign=102
+NG_021375.2	RefSeq	cDNA_match	2164163	2164335	.	+	.	ID=aln21;Target=NM_001377976.1 791 963 +;idty=1;splign=173
+NG_021375.2	RefSeq	cDNA_match	2166719	2166828	.	+	.	ID=aln21;Target=NM_001377976.1 964 1073 +;idty=1;splign=110
+NG_021375.2	RefSeq	cDNA_match	2171443	2171534	.	+	.	ID=aln21;Target=NM_001377976.1 1074 1165 +;idty=1;splign=92
+NG_021375.2	RefSeq	cDNA_match	2173612	2178524	.	+	.	ID=aln21;Target=NM_001377976.1 1166 6078 +;idty=1;splign=4913
+NG_021375.2	RefSeq	cDNA_match	1951248	1951378	.	+	.	ID=aln22;Target=NM_001377978.1 1 131 +;idty=1;splign=131
+NG_021375.2	RefSeq	cDNA_match	2000211	2000325	.	+	.	ID=aln22;Target=NM_001377978.1 132 246 +;idty=1;splign=115
+NG_021375.2	RefSeq	cDNA_match	2091678	2091854	.	+	.	ID=aln22;Target=NM_001377978.1 247 423 +;idty=1;splign=177
+NG_021375.2	RefSeq	cDNA_match	2100753	2100828	.	+	.	ID=aln22;Target=NM_001377978.1 424 499 +;idty=1;splign=76
+NG_021375.2	RefSeq	cDNA_match	2149308	2149407	.	+	.	ID=aln22;Target=NM_001377978.1 500 599 +;idty=1;splign=100
+NG_021375.2	RefSeq	cDNA_match	2160759	2160809	.	+	.	ID=aln22;Target=NM_001377978.1 600 650 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	2161809	2161910	.	+	.	ID=aln22;Target=NM_001377978.1 651 752 +;idty=1;splign=102
+NG_021375.2	RefSeq	cDNA_match	2164163	2164335	.	+	.	ID=aln22;Target=NM_001377978.1 753 925 +;idty=1;splign=173
+NG_021375.2	RefSeq	cDNA_match	2166719	2166828	.	+	.	ID=aln22;Target=NM_001377978.1 926 1035 +;idty=1;splign=110
+NG_021375.2	RefSeq	cDNA_match	2171443	2171534	.	+	.	ID=aln22;Target=NM_001377978.1 1036 1127 +;idty=1;splign=92
+NG_021375.2	RefSeq	cDNA_match	2173612	2178524	.	+	.	ID=aln22;Target=NM_001377978.1 1128 6040 +;idty=1;splign=4913
+NG_021375.2	RefSeq	cDNA_match	1951248	1951378	.	+	.	ID=aln23;Target=NM_001142702.2 1 131 +;idty=1;splign=131
+NG_021375.2	RefSeq	cDNA_match	2000211	2000325	.	+	.	ID=aln23;Target=NM_001142702.2 132 246 +;idty=1;splign=115
+NG_021375.2	RefSeq	cDNA_match	2091678	2091854	.	+	.	ID=aln23;Target=NM_001142702.2 247 423 +;idty=1;splign=177
+NG_021375.2	RefSeq	cDNA_match	2100753	2100828	.	+	.	ID=aln23;Target=NM_001142702.2 424 499 +;idty=1;splign=76
+NG_021375.2	RefSeq	cDNA_match	2150238	2150283	.	+	.	ID=aln23;Target=NM_001142702.2 500 545 +;idty=1;splign=46
+NG_021375.2	RefSeq	cDNA_match	2160759	2160809	.	+	.	ID=aln23;Target=NM_001142702.2 546 596 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	2161809	2161910	.	+	.	ID=aln23;Target=NM_001142702.2 597 698 +;idty=1;splign=102
+NG_021375.2	RefSeq	cDNA_match	2164163	2164335	.	+	.	ID=aln23;Target=NM_001142702.2 699 871 +;idty=1;splign=173
+NG_021375.2	RefSeq	cDNA_match	2166719	2166828	.	+	.	ID=aln23;Target=NM_001142702.2 872 981 +;idty=1;splign=110
+NG_021375.2	RefSeq	cDNA_match	2171443	2171534	.	+	.	ID=aln23;Target=NM_001142702.2 982 1073 +;idty=1;splign=92
+NG_021375.2	RefSeq	cDNA_match	2173612	2178524	.	+	.	ID=aln23;Target=NM_001142702.2 1074 5986 +;idty=1;splign=4913
+NG_021375.2	RefSeq	cDNA_match	1951248	1951378	.	+	.	ID=aln24;Target=NM_001377980.1 1 131 +;idty=1;splign=131
+NG_021375.2	RefSeq	cDNA_match	2000211	2000325	.	+	.	ID=aln24;Target=NM_001377980.1 132 246 +;idty=1;splign=115
+NG_021375.2	RefSeq	cDNA_match	2091678	2091854	.	+	.	ID=aln24;Target=NM_001377980.1 247 423 +;idty=1;splign=177
+NG_021375.2	RefSeq	cDNA_match	2100753	2100828	.	+	.	ID=aln24;Target=NM_001377980.1 424 499 +;idty=1;splign=76
+NG_021375.2	RefSeq	cDNA_match	2150238	2150283	.	+	.	ID=aln24;Target=NM_001377980.1 500 545 +;idty=1;splign=46
+NG_021375.2	RefSeq	cDNA_match	2160759	2160809	.	+	.	ID=aln24;Target=NM_001377980.1 546 596 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	2161809	2161910	.	+	.	ID=aln24;Target=NM_001377980.1 597 698 +;idty=1;splign=102
+NG_021375.2	RefSeq	cDNA_match	2164163	2164335	.	+	.	ID=aln24;Target=NM_001377980.1 699 871 +;idty=1;splign=173
+NG_021375.2	RefSeq	cDNA_match	2166719	2166810	.	+	.	ID=aln24;Target=NM_001377980.1 872 963 +;idty=1;splign=92
+NG_021375.2	RefSeq	cDNA_match	2171443	2171534	.	+	.	ID=aln24;Target=NM_001377980.1 964 1055 +;idty=1;splign=92
+NG_021375.2	RefSeq	cDNA_match	2173612	2178524	.	+	.	ID=aln24;Target=NM_001377980.1 1056 5968 +;idty=1;splign=4913
+NG_021375.2	RefSeq	cDNA_match	1951248	1951378	.	+	.	ID=aln25;Target=NM_001377981.1 1 131 +;idty=1;splign=131
+NG_021375.2	RefSeq	cDNA_match	2000211	2000325	.	+	.	ID=aln25;Target=NM_001377981.1 132 246 +;idty=1;splign=115
+NG_021375.2	RefSeq	cDNA_match	2091678	2091854	.	+	.	ID=aln25;Target=NM_001377981.1 247 423 +;idty=1;splign=177
+NG_021375.2	RefSeq	cDNA_match	2100753	2100828	.	+	.	ID=aln25;Target=NM_001377981.1 424 499 +;idty=1;splign=76
+NG_021375.2	RefSeq	cDNA_match	2150238	2150283	.	+	.	ID=aln25;Target=NM_001377981.1 500 545 +;idty=1;splign=46
+NG_021375.2	RefSeq	cDNA_match	2161809	2161910	.	+	.	ID=aln25;Target=NM_001377981.1 546 647 +;idty=1;splign=102
+NG_021375.2	RefSeq	cDNA_match	2164163	2164335	.	+	.	ID=aln25;Target=NM_001377981.1 648 820 +;idty=1;splign=173
+NG_021375.2	RefSeq	cDNA_match	2166719	2166828	.	+	.	ID=aln25;Target=NM_001377981.1 821 930 +;idty=1;splign=110
+NG_021375.2	RefSeq	cDNA_match	2171443	2171534	.	+	.	ID=aln25;Target=NM_001377981.1 931 1022 +;idty=1;splign=92
+NG_021375.2	RefSeq	cDNA_match	2173612	2178524	.	+	.	ID=aln25;Target=NM_001377981.1 1023 5935 +;idty=1;splign=4913
+NG_021375.2	RefSeq	cDNA_match	1951248	1951378	.	+	.	ID=aln26;Target=NM_001377982.1 1 131 +;idty=1;splign=131
+NG_021375.2	RefSeq	cDNA_match	2000211	2000325	.	+	.	ID=aln26;Target=NM_001377982.1 132 246 +;idty=1;splign=115
+NG_021375.2	RefSeq	cDNA_match	2100753	2100828	.	+	.	ID=aln26;Target=NM_001377982.1 247 322 +;idty=1;splign=76
+NG_021375.2	RefSeq	cDNA_match	2150238	2150283	.	+	.	ID=aln26;Target=NM_001377982.1 323 368 +;idty=1;splign=46
+NG_021375.2	RefSeq	cDNA_match	2160759	2160809	.	+	.	ID=aln26;Target=NM_001377982.1 369 419 +;idty=1;splign=51
+NG_021375.2	RefSeq	cDNA_match	2161809	2161910	.	+	.	ID=aln26;Target=NM_001377982.1 420 521 +;idty=1;splign=102
+NG_021375.2	RefSeq	cDNA_match	2164163	2164335	.	+	.	ID=aln26;Target=NM_001377982.1 522 694 +;idty=1;splign=173
+NG_021375.2	RefSeq	cDNA_match	2166719	2166828	.	+	.	ID=aln26;Target=NM_001377982.1 695 804 +;idty=1;splign=110
+NG_021375.2	RefSeq	cDNA_match	2171443	2171534	.	+	.	ID=aln26;Target=NM_001377982.1 805 896 +;idty=1;splign=92
+NG_021375.2	RefSeq	cDNA_match	2173612	2178524	.	+	.	ID=aln26;Target=NM_001377982.1 897 5809 +;idty=1;splign=4913
+

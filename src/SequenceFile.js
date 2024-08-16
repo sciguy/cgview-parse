@@ -16,7 +16,7 @@
 // - consider changing type to molType
 // - consider changing inputType to fileType
 // - Note, feature locations that can't be parsed are not handled here. They are
-//   handled in the CGViewBuilder as warnings.
+//   handled/added in the CGViewBuilder.
 import Logger from './Logger.js';
 import CGViewBuilder from './CGViewBuilder.js';
 import * as helpers from './Helpers.js';

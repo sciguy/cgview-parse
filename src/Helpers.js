@@ -1,3 +1,32 @@
+// ----------------------------------------------------------------------------
+// CGPARSE HELPERS
+// ----------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------
+// CONSTANTS
+// ----------------------------------------------------------------------------
+
+// All GenBank/EMBL Feature Types
+export const FEATURE_TYPES = ["assembly_gap", "C_region", "CDS", "centromere", "D-loop", "D_segment", "exon", "gap", "gene", "iDNA", "intron", "J_segment", "mat_peptide", "misc_binding", "misc_difference", "misc_feature", "misc_recomb", "misc_RNA", "misc_structure", "mobile_element", "modified_base", "mRNA", "ncRNA", "N_region", "old_sequence", "operon", "oriT", "polyA_site", "precursor_RNA", "prim_transcript", "primer_bind", "propeptide", "protein_bind", "regulatory", "repeat_region", "rep_origin", "rRNA", "S_region", "sig_peptide", "source", "stem_loop", "STS", "telomere", "tmRNA", "transit_peptide", "tRNA", "unsure", "V_region", "V_segment", "variation", "3'UTR", "5'UTR"];
+// All GenBank/EMBL Qualifiers
+export const QUALIFIERS = [ "allele", "altitude", "anticodon", "artificial_location", "bio_material", "bound_moiety", "cell_line", "cell_type", "chromosome", "circular_RNA", "citation", "clone", "clone_lib", "codon_start", "collected_by", "collection_date", "compare", "country", "cultivar", "culture_collection", "db_xref", "dev_stage", "direction", "EC_number", "ecotype", "environmental_sample", "estimated_length", "exception", "experiment", "focus", "frequency", "function", "gap_type", "gene", "gene_synonym", "germline", "haplogroup", "haplotype", "host", "identified_by", "inference", "isolate", "isolation_source", "lab_host", "lat_lon", "linkage_evidence", "locus_tag", "macronuclear", "map", "mating_type", "metagenome_source", "mobile_element_type", "mod_base", "mol_type", "ncRNA_class", "note", "number", "old_locus_tag", "operon", "organelle", "organism", "partial", "PCR_conditions", "PCR_primers", "phenotype", "plasmid", "pop_variant", "product", "protein_id", "proviral", "pseudo", "pseudogene", "rearranged", "ination_class", "tory_class", "replace", "ribosomal_slippage", "rpt_family", "rpt_type", "rpt_unit_range", "rpt_unit_seq", "satellite", "segment", "serotype", "serovar", "sex", "specimen_voucher", "standard_name", "strain", "sub_clone", "submitter_seqid", "sub_species", "sub_strain", "tag_peptide", "tissue_lib", "tissue_type", "transgenic", "translation", "transl_except", "transl_table", "trans_splicing", "type_material", "variety"];
+// Sequence Ontology Terms (add more as needed)
+export const SO_TERMS = {
+  "SO:0000704": "gene",
+  "SO:0000234": "mRNA",
+  "SO:0000147": "exon",
+  "SO:0000316": "CDS",
+  "SO:0000188": "intron",
+  "SO:0000610": "polyA_sequence",
+  "SO:0000553": "polyA_site",
+  "SO:0000204": "five_prime_UTR",
+  "SO:0000205": "three_prime_UTR",
+}
+
+// ----------------------------------------------------------------------------
+// FORMATTING
+// ----------------------------------------------------------------------------
+
 export function removeWhiteSpace(string) {
   return string.replace(/\s+/g, "");
 }
@@ -14,6 +43,11 @@ export function convertLineEndingsToLF(text) {
   // Replace CRLF and CR with LF
   return text.replace(/\r\n?/g, '\n');
 }
+
+
+// ----------------------------------------------------------------------------
+// OTHERS
+// ----------------------------------------------------------------------------
 
 /**
  * Returns a string id using the _name_ and _start_ while
@@ -109,7 +143,7 @@ export function isBinary(text) {
     const printableRatio = printableCharacterCount / totalCharacterCount;
     const controlRatio = controlCharacterCount / totalCharacterCount;
 
-    console.log("IS BINARY: ", printableRatio, controlRatio)
+    // console.log("IS BINARY: ", printableRatio, controlRatio)
     if (printableRatio < 0.8 || controlRatio > 0.1) {
       isBinary = true;
     }

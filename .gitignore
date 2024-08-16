@@ -2,5 +2,6 @@
 scripts/copy*
 node_modules/
 OLD/
+docs/inputs/feature_files/arabidopsis_thaliana/
 # dist/
 

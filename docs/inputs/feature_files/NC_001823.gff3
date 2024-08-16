@@ -1,0 +1,238 @@
+##gff-version 3
+#!gff-spec-version 1.21
+#!processor NCBI annotwriter
+##sequence-region NC_001823.1 1 69034
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=48483
+NC_001823.1	RefSeq	region	1	69034	.	+	.	ID=NC_001823.1:1..69034;Dbxref=ATCC:50394,taxon:48483;Is_circular=true;Name=MT;gbkey=Src;genome=mitochondrion;mol_type=genomic DNA;strain=ATCC 50394
+NC_001823.1	RefSeq	gene	56	2806	.	+	.	ID=gene-ReamoMr68;Dbxref=GeneID:801132;Name=rnl;gbkey=Gene;gene=rnl;gene_biotype=rRNA;locus_tag=ReamoMr68
+NC_001823.1	RefSeq	rRNA	56	2806	.	+	.	ID=rna-ReamoMr68;Parent=gene-ReamoMr68;Dbxref=GeneID:801132;gbkey=rRNA;gene=rnl;locus_tag=ReamoMr68;product=large subunit ribosomal RNA
+NC_001823.1	RefSeq	exon	56	2806	.	+	.	ID=exon-ReamoMr68-1;Parent=rna-ReamoMr68;Dbxref=GeneID:801132;gbkey=rRNA;gene=rnl;locus_tag=ReamoMr68;product=large subunit ribosomal RNA
+NC_001823.1	RefSeq	stem_loop	2843	2872	.	+	.	ID=id-NC_001823.1:2843..2872;Note=signal element pal1;gbkey=stem_loop
+NC_001823.1	RefSeq	gene	2923	3006	.	-	.	ID=gene-ReamoMt72;Dbxref=GeneID:801099;Name=trnL(gag);gbkey=Gene;gene=trnL(gag);gene_biotype=tRNA;locus_tag=ReamoMt72
+NC_001823.1	RefSeq	tRNA	2923	3006	.	-	.	ID=rna-ReamoMt72;Parent=gene-ReamoMt72;Dbxref=GeneID:801099;anticodon=(pos:complement(2971..2973));codons=CUC;gbkey=tRNA;gene=trnL(gag);locus_tag=ReamoMt72;product=tRNA-Leu
+NC_001823.1	RefSeq	exon	2923	3006	.	-	.	ID=exon-ReamoMt72-1;Parent=rna-ReamoMt72;Dbxref=GeneID:801099;anticodon=(pos:complement(2971..2973));codons=CUC;gbkey=tRNA;gene=trnL(gag);locus_tag=ReamoMt72;product=tRNA-Leu
+NC_001823.1	RefSeq	gene	3054	3127	.	-	.	ID=gene-ReamoMt73;Dbxref=GeneID:801103;Name=trnP(ugg);gbkey=Gene;gene=trnP(ugg);gene_biotype=tRNA;locus_tag=ReamoMt73
+NC_001823.1	RefSeq	tRNA	3054	3127	.	-	.	ID=rna-ReamoMt73;Parent=gene-ReamoMt73;Dbxref=GeneID:801103;anticodon=(pos:complement(3091..3093));codons=CCA;gbkey=tRNA;gene=trnP(ugg);locus_tag=ReamoMt73;product=tRNA-Pro
+NC_001823.1	RefSeq	exon	3054	3127	.	-	.	ID=exon-ReamoMt73-1;Parent=rna-ReamoMt73;Dbxref=GeneID:801103;anticodon=(pos:complement(3091..3093));codons=CCA;gbkey=tRNA;gene=trnP(ugg);locus_tag=ReamoMt73;product=tRNA-Pro
+NC_001823.1	RefSeq	gene	3140	3211	.	-	.	ID=gene-ReamoMt74;Dbxref=GeneID:801136;Name=trnK(uuu);gbkey=Gene;gene=trnK(uuu);gene_biotype=tRNA;locus_tag=ReamoMt74
+NC_001823.1	RefSeq	tRNA	3140	3211	.	-	.	ID=rna-ReamoMt74;Parent=gene-ReamoMt74;Dbxref=GeneID:801136;anticodon=(pos:complement(3178..3180));codons=AAA;gbkey=tRNA;gene=trnK(uuu);locus_tag=ReamoMt74;product=tRNA-Lys
+NC_001823.1	RefSeq	exon	3140	3211	.	-	.	ID=exon-ReamoMt74-1;Parent=rna-ReamoMt74;Dbxref=GeneID:801136;anticodon=(pos:complement(3178..3180));codons=AAA;gbkey=tRNA;gene=trnK(uuu);locus_tag=ReamoMt74;product=tRNA-Lys
+NC_001823.1	RefSeq	stem_loop	3212	3251	.	-	.	ID=id-NC_001823.1:3212..3251;Note=signal element pal2;gbkey=stem_loop
+NC_001823.1	RefSeq	gene	3252	3740	.	-	.	ID=gene-ReamoMp01;Dbxref=GeneID:801137;Name=nad8;gbkey=Gene;gene=nad8;gene_biotype=protein_coding;locus_tag=ReamoMp01
+NC_001823.1	RefSeq	CDS	3252	3740	.	-	0	ID=cds-NP_044745.1;Parent=gene-ReamoMp01;Dbxref=GenBank:NP_044745.1,GeneID:801137;Name=NP_044745.1;gbkey=CDS;gene=nad8;locus_tag=ReamoMp01;product=NADH dehydrogenase subunit 8;protein_id=NP_044745.1;transl_table=11
+NC_001823.1	RefSeq	gene	4098	4697	.	+	.	ID=gene-ReamoMt75;Dbxref=GeneID:801112;Name=trnW(cca);gbkey=Gene;gene=trnW(cca);gene_biotype=tRNA;locus_tag=ReamoMt75
+NC_001823.1	RefSeq	tRNA	4098	4697	.	+	.	ID=rna-ReamoMt75;Parent=gene-ReamoMt75;Dbxref=GeneID:801112;anticodon=(pos:4131..4133);codons=UGG;gbkey=tRNA;gene=trnW(cca);locus_tag=ReamoMt75;product=tRNA-Trp
+NC_001823.1	RefSeq	exon	4098	4135	.	+	.	ID=exon-ReamoMt75-1;Parent=rna-ReamoMt75;Dbxref=GeneID:801112;anticodon=(pos:4131..4133);codons=UGG;gbkey=tRNA;gene=trnW(cca);locus_tag=ReamoMt75;product=tRNA-Trp
+NC_001823.1	RefSeq	exon	4663	4697	.	+	.	ID=exon-ReamoMt75-2;Parent=rna-ReamoMt75;Dbxref=GeneID:801112;anticodon=(pos:4131..4133);codons=UGG;gbkey=tRNA;gene=trnW(cca);locus_tag=ReamoMt75;product=tRNA-Trp
+NC_001823.1	RefSeq	exon	4098	4135	.	+	.	ID=id-ReamoMt75-1;Parent=gene-ReamoMt75;Dbxref=GeneID:801112;exon_number=1;gbkey=exon;gene=trnW(cca);locus_tag=ReamoMt75;number=1
+NC_001823.1	RefSeq	exon	4663	4697	.	+	.	ID=id-ReamoMt75-2;Parent=gene-ReamoMt75;Dbxref=GeneID:801112;exon_number=2;gbkey=exon;gene=trnW(cca);locus_tag=ReamoMt75;number=2
+NC_001823.1	RefSeq	intron	4136	4662	.	+	.	ID=id-ReamoMt75;Parent=gene-ReamoMt75;Dbxref=GeneID:801112;Note=group 2;exon_number=1;gbkey=intron;gene=trnW(cca);locus_tag=ReamoMt75;number=1
+NC_001823.1	RefSeq	biological_region	4588	4621	.	+	.	ID=id-ReamoMt75-3;Dbxref=GeneID:801112;Name=Signal element domV;Note=signal element domV;gbkey=Region;gene=trnW(cca);locus_tag=ReamoMt75
+NC_001823.1	RefSeq	gene	4742	5179	.	+	.	ID=gene-ReamoMp02;Dbxref=GeneID:801114;Name=rpl11;gbkey=Gene;gene=rpl11;gene_biotype=protein_coding;locus_tag=ReamoMp02
+NC_001823.1	RefSeq	CDS	4742	5179	.	+	0	ID=cds-NP_044746.1;Parent=gene-ReamoMp02;Dbxref=GenBank:NP_044746.1,GeneID:801114;Name=NP_044746.1;gbkey=CDS;gene=rpl11;locus_tag=ReamoMp02;product=ribosomal protein L11;protein_id=NP_044746.1;transl_table=11
+NC_001823.1	RefSeq	gene	5207	5881	.	+	.	ID=gene-ReamoMp03;Dbxref=GeneID:801116;Name=rpl1;gbkey=Gene;gene=rpl1;gene_biotype=protein_coding;locus_tag=ReamoMp03
+NC_001823.1	RefSeq	CDS	5207	5881	.	+	0	ID=cds-NP_044747.1;Parent=gene-ReamoMp03;Dbxref=GenBank:NP_044747.1,GeneID:801116;Name=NP_044747.1;gbkey=CDS;gene=rpl1;locus_tag=ReamoMp03;product=ribosomal protein L1;protein_id=NP_044747.1;transl_table=11
+NC_001823.1	RefSeq	gene	5963	6544	.	+	.	ID=gene-ReamoMp04;Dbxref=GeneID:801150;Name=rpl10;gbkey=Gene;gene=rpl10;gene_biotype=protein_coding;locus_tag=ReamoMp04
+NC_001823.1	RefSeq	CDS	5963	6544	.	+	0	ID=cds-NP_044748.1;Parent=gene-ReamoMp04;Dbxref=GenBank:NP_044748.1,GeneID:801150;Name=NP_044748.1;gbkey=CDS;gene=rpl10;locus_tag=ReamoMp04;product=ribosomal protein L10;protein_id=NP_044748.1;transl_except=(pos:5963..5965%2Caa:Met);transl_table=11
+NC_001823.1	RefSeq	gene	6570	11006	.	+	.	ID=gene-ReamoMp05;Dbxref=GeneID:801100;Name=rpoB;gbkey=Gene;gene=rpoB;gene_biotype=protein_coding;locus_tag=ReamoMp05
+NC_001823.1	RefSeq	CDS	6570	11006	.	+	0	ID=cds-NP_044749.1;Parent=gene-ReamoMp05;Dbxref=GenBank:NP_044749.1,GeneID:801100;Name=NP_044749.1;gbkey=CDS;gene=rpoB;locus_tag=ReamoMp05;product=RNA polymerase subunit beta;protein_id=NP_044749.1;transl_table=11
+NC_001823.1	RefSeq	gene	11093	15247	.	+	.	ID=gene-ReamoMp06;Dbxref=GeneID:801102;Name=rpoC;gbkey=Gene;gene=rpoC;gene_biotype=protein_coding;locus_tag=ReamoMp06
+NC_001823.1	RefSeq	CDS	11093	15247	.	+	0	ID=cds-NP_044750.1;Parent=gene-ReamoMp06;Dbxref=GenBank:NP_044750.1,GeneID:801102;Name=NP_044750.1;gbkey=CDS;gene=rpoC;locus_tag=ReamoMp06;product=RNA polymerase subunit beta';protein_id=NP_044750.1;transl_table=11
+NC_001823.1	RefSeq	gene	15289	15684	.	+	.	ID=gene-ReamoMp07;Dbxref=GeneID:801092;Name=rps12;gbkey=Gene;gene=rps12;gene_biotype=protein_coding;locus_tag=ReamoMp07
+NC_001823.1	RefSeq	CDS	15289	15684	.	+	0	ID=cds-NP_044751.1;Parent=gene-ReamoMp07;Dbxref=GenBank:NP_044751.1,GeneID:801092;Name=NP_044751.1;gbkey=CDS;gene=rps12;locus_tag=ReamoMp07;product=ribosomal protein S12;protein_id=NP_044751.1;transl_table=11
+NC_001823.1	RefSeq	gene	15722	16201	.	+	.	ID=gene-ReamoMp08;Dbxref=GeneID:801093;Name=rps7;gbkey=Gene;gene=rps7;gene_biotype=protein_coding;locus_tag=ReamoMp08
+NC_001823.1	RefSeq	CDS	15722	16201	.	+	0	ID=cds-NP_044752.1;Parent=gene-ReamoMp08;Dbxref=GenBank:NP_044752.1,GeneID:801093;Name=NP_044752.1;gbkey=CDS;gene=rps7;locus_tag=ReamoMp08;product=ribosomal protein S7;protein_id=NP_044752.1;transl_table=11
+NC_001823.1	RefSeq	gene	16407	18482	.	+	.	ID=gene-ReamoMp09;Dbxref=GeneID:801135;Name=nad11;gbkey=Gene;gene=nad11;gene_biotype=protein_coding;locus_tag=ReamoMp09
+NC_001823.1	RefSeq	CDS	16407	18482	.	+	0	ID=cds-NP_044753.1;Parent=gene-ReamoMp09;Dbxref=GenBank:NP_044753.1,GeneID:801135;Name=NP_044753.1;gbkey=CDS;gene=nad11;locus_tag=ReamoMp09;product=NADH dehydrogenase subunit 11;protein_id=NP_044753.1;transl_table=11
+NC_001823.1	RefSeq	gene	18562	19563	.	+	.	ID=gene-ReamoMp10;Dbxref=GeneID:801080;Name=nad1;gbkey=Gene;gene=nad1;gene_biotype=protein_coding;locus_tag=ReamoMp10
+NC_001823.1	RefSeq	CDS	18562	19563	.	+	0	ID=cds-NP_044754.1;Parent=gene-ReamoMp10;Dbxref=GenBank:NP_044754.1,GeneID:801080;Name=NP_044754.1;gbkey=CDS;gene=nad1;locus_tag=ReamoMp10;product=NADH dehydrogenase subunit 1;protein_id=NP_044754.1;transl_table=11
+NC_001823.1	RefSeq	gene	19587	20135	.	+	.	ID=gene-ReamoMp11;Dbxref=GeneID:801083;Name=cox11;gbkey=Gene;gene=cox11;gene_biotype=protein_coding;locus_tag=ReamoMp11
+NC_001823.1	RefSeq	CDS	19587	20135	.	+	0	ID=cds-NP_044755.1;Parent=gene-ReamoMp11;Dbxref=GenBank:NP_044755.1,GeneID:801083;Name=NP_044755.1;gbkey=CDS;gene=cox11;locus_tag=ReamoMp11;product=component involved in Haem biosynthesis;protein_id=NP_044755.1;transl_table=11
+NC_001823.1	RefSeq	gene	20232	21035	.	+	.	ID=gene-ReamoMp12;Dbxref=GeneID:801086;Name=cox3;gbkey=Gene;gene=cox3;gene_biotype=protein_coding;locus_tag=ReamoMp12
+NC_001823.1	RefSeq	CDS	20232	21035	.	+	0	ID=cds-NP_044756.1;Parent=gene-ReamoMp12;Dbxref=GenBank:NP_044756.1,GeneID:801086;Name=NP_044756.1;gbkey=CDS;gene=cox3;locus_tag=ReamoMp12;product=cytochrome c oxidase subunit 3;protein_id=NP_044756.1;transl_table=11
+NC_001823.1	RefSeq	gene	21261	22445	.	+	.	ID=gene-ReamoMp13;Dbxref=GeneID:801090;Name=tufA;gbkey=Gene;gene=tufA;gene_biotype=protein_coding;locus_tag=ReamoMp13
+NC_001823.1	RefSeq	CDS	21261	22445	.	+	0	ID=cds-NP_044757.1;Parent=gene-ReamoMp13;Dbxref=GenBank:NP_044757.1,GeneID:801090;Name=NP_044757.1;gbkey=CDS;gene=tufA;locus_tag=ReamoMp13;product=elongation factor Tu;protein_id=NP_044757.1;transl_table=11
+NC_001823.1	RefSeq	gene	22518	22868	.	+	.	ID=gene-ReamoMp14;Dbxref=GeneID:801087;Name=rps10;gbkey=Gene;gene=rps10;gene_biotype=protein_coding;locus_tag=ReamoMp14
+NC_001823.1	RefSeq	CDS	22518	22868	.	+	0	ID=cds-NP_044758.1;Parent=gene-ReamoMp14;Dbxref=GenBank:NP_044758.1,GeneID:801087;Name=NP_044758.1;gbkey=CDS;gene=rps10;locus_tag=ReamoMp14;product=ribosomal protein S10;protein_id=NP_044758.1;transl_table=11
+NC_001823.1	RefSeq	gene	22891	23724	.	+	.	ID=gene-ReamoMp15;Dbxref=GeneID:801091;Name=rpl2;gbkey=Gene;gene=rpl2;gene_biotype=protein_coding;locus_tag=ReamoMp15
+NC_001823.1	RefSeq	CDS	22891	23724	.	+	0	ID=cds-NP_044759.2;Parent=gene-ReamoMp15;Dbxref=GenBank:NP_044759.2,GeneID:801091;Name=NP_044759.2;gbkey=CDS;gene=rpl2;locus_tag=ReamoMp15;product=ribosomal protein L2;protein_id=NP_044759.2;transl_table=11
+NC_001823.1	RefSeq	gene	23758	24018	.	+	.	ID=gene-ReamoMp16;Dbxref=GeneID:801063;Name=rps19;gbkey=Gene;gene=rps19;gene_biotype=protein_coding;locus_tag=ReamoMp16
+NC_001823.1	RefSeq	CDS	23758	24018	.	+	0	ID=cds-NP_044760.1;Parent=gene-ReamoMp16;Dbxref=GenBank:NP_044760.1,GeneID:801063;Name=NP_044760.1;gbkey=CDS;gene=rps19;locus_tag=ReamoMp16;product=ribosomal protein S19;protein_id=NP_044760.1;transl_table=11
+NC_001823.1	RefSeq	gene	24035	24898	.	+	.	ID=gene-ReamoMp17;Dbxref=GeneID:801149;Name=rps3;gbkey=Gene;gene=rps3;gene_biotype=protein_coding;locus_tag=ReamoMp17
+NC_001823.1	RefSeq	CDS	24035	24898	.	+	0	ID=cds-NP_044761.1;Parent=gene-ReamoMp17;Dbxref=GenBank:NP_044761.1,GeneID:801149;Name=NP_044761.1;gbkey=CDS;gene=rps3;locus_tag=ReamoMp17;product=ribosomal protein S3;protein_id=NP_044761.1;transl_table=11
+NC_001823.1	RefSeq	gene	24905	25318	.	+	.	ID=gene-ReamoMp18;Dbxref=GeneID:801138;Name=rpl16;gbkey=Gene;gene=rpl16;gene_biotype=protein_coding;locus_tag=ReamoMp18
+NC_001823.1	RefSeq	CDS	24905	25318	.	+	0	ID=cds-NP_044762.1;Parent=gene-ReamoMp18;Dbxref=GenBank:NP_044762.1,GeneID:801138;Name=NP_044762.1;gbkey=CDS;gene=rpl16;locus_tag=ReamoMp18;product=ribosomal protein L16;protein_id=NP_044762.1;transl_table=11
+NC_001823.1	RefSeq	gene	25399	25767	.	+	.	ID=gene-ReamoMp19;Dbxref=GeneID:801140;Name=rpl14;gbkey=Gene;gene=rpl14;gene_biotype=protein_coding;locus_tag=ReamoMp19
+NC_001823.1	RefSeq	CDS	25399	25767	.	+	0	ID=cds-NP_044763.1;Parent=gene-ReamoMp19;Dbxref=GenBank:NP_044763.1,GeneID:801140;Name=NP_044763.1;gbkey=CDS;gene=rpl14;locus_tag=ReamoMp19;product=ribosomal protein L14;protein_id=NP_044763.1;transl_table=11
+NC_001823.1	RefSeq	gene	25803	26351	.	+	.	ID=gene-ReamoMp20;Dbxref=GeneID:801146;Name=rpl5;gbkey=Gene;gene=rpl5;gene_biotype=protein_coding;locus_tag=ReamoMp20
+NC_001823.1	RefSeq	CDS	25803	26351	.	+	0	ID=cds-NP_044764.1;Parent=gene-ReamoMp20;Dbxref=GenBank:NP_044764.1,GeneID:801146;Name=NP_044764.1;gbkey=CDS;gene=rpl5;locus_tag=ReamoMp20;product=ribosomal protein L5;protein_id=NP_044764.1;transl_table=11
+NC_001823.1	RefSeq	gene	26383	26685	.	+	.	ID=gene-ReamoMp21;Dbxref=GeneID:801129;Name=rps14;gbkey=Gene;gene=rps14;gene_biotype=protein_coding;locus_tag=ReamoMp21
+NC_001823.1	RefSeq	CDS	26383	26685	.	+	0	ID=cds-NP_044765.1;Parent=gene-ReamoMp21;Dbxref=GenBank:NP_044765.1,GeneID:801129;Name=NP_044765.1;gbkey=CDS;gene=rps14;locus_tag=ReamoMp21;product=ribosomal protein S14;protein_id=NP_044765.1;transl_table=11
+NC_001823.1	RefSeq	gene	26717	27103	.	+	.	ID=gene-ReamoMp22;Dbxref=GeneID:801147;Name=rps8;gbkey=Gene;gene=rps8;gene_biotype=protein_coding;locus_tag=ReamoMp22
+NC_001823.1	RefSeq	CDS	26717	27103	.	+	0	ID=cds-NP_044766.1;Parent=gene-ReamoMp22;Dbxref=GenBank:NP_044766.1,GeneID:801147;Name=NP_044766.1;gbkey=CDS;gene=rps8;locus_tag=ReamoMp22;product=ribosomal protein S8;protein_id=NP_044766.1;transl_table=11
+NC_001823.1	RefSeq	gene	27115	27672	.	+	.	ID=gene-ReamoMp23;Dbxref=GeneID:801144;Name=rpl6;gbkey=Gene;gene=rpl6;gene_biotype=protein_coding;locus_tag=ReamoMp23
+NC_001823.1	RefSeq	CDS	27115	27672	.	+	0	ID=cds-NP_044767.1;Parent=gene-ReamoMp23;Dbxref=GenBank:NP_044767.1,GeneID:801144;Name=NP_044767.1;gbkey=CDS;gene=rpl6;locus_tag=ReamoMp23;product=ribosomal protein L6;protein_id=NP_044767.1;transl_table=11
+NC_001823.1	RefSeq	gene	27672	27962	.	+	.	ID=gene-ReamoMp24;Dbxref=GeneID:801105;Name=rpl18;gbkey=Gene;gene=rpl18;gene_biotype=protein_coding;locus_tag=ReamoMp24
+NC_001823.1	RefSeq	CDS	27672	27962	.	+	0	ID=cds-NP_044768.1;Parent=gene-ReamoMp24;Dbxref=GenBank:NP_044768.1,GeneID:801105;Name=NP_044768.1;gbkey=CDS;gene=rpl18;locus_tag=ReamoMp24;product=ribosomal protein L18;protein_id=NP_044768.1;transl_table=11
+NC_001823.1	RefSeq	gene	28012	29244	.	+	.	ID=gene-ReamoMp25;Dbxref=GeneID:801115;Name=secY;gbkey=Gene;gene=secY;gene_biotype=protein_coding;locus_tag=ReamoMp25
+NC_001823.1	RefSeq	CDS	28012	29244	.	+	0	ID=cds-NP_044769.1;Parent=gene-ReamoMp25;Dbxref=GenBank:NP_044769.1,GeneID:801115;Name=NP_044769.1;gbkey=CDS;gene=secY;locus_tag=ReamoMp25;product=SecY-type transporter protein;protein_id=NP_044769.1;transl_table=11
+NC_001823.1	RefSeq	gene	29273	29641	.	+	.	ID=gene-ReamoMp26;Dbxref=GeneID:801062;Name=rps13;gbkey=Gene;gene=rps13;gene_biotype=protein_coding;locus_tag=ReamoMp26
+NC_001823.1	RefSeq	CDS	29273	29641	.	+	0	ID=cds-NP_044770.1;Parent=gene-ReamoMp26;Dbxref=GenBank:NP_044770.1,GeneID:801062;Name=NP_044770.1;gbkey=CDS;gene=rps13;locus_tag=ReamoMp26;product=ribosomal protein S13;protein_id=NP_044770.1;transl_table=11
+NC_001823.1	RefSeq	gene	29666	30055	.	+	.	ID=gene-ReamoMp27;Dbxref=GeneID:801077;Name=rps11;gbkey=Gene;gene=rps11;gene_biotype=protein_coding;locus_tag=ReamoMp27
+NC_001823.1	RefSeq	CDS	29666	30055	.	+	0	ID=cds-NP_044771.1;Parent=gene-ReamoMp27;Dbxref=GenBank:NP_044771.1,GeneID:801077;Name=NP_044771.1;gbkey=CDS;gene=rps11;locus_tag=ReamoMp27;product=ribosomal protein S11;protein_id=NP_044771.1;transl_table=11
+NC_001823.1	RefSeq	gene	30138	30806	.	+	.	ID=gene-ReamoMp28;Dbxref=GeneID:801064;Name=rpoA;gbkey=Gene;gene=rpoA;gene_biotype=protein_coding;locus_tag=ReamoMp28
+NC_001823.1	RefSeq	CDS	30138	30806	.	+	0	ID=cds-NP_044772.1;Parent=gene-ReamoMp28;Dbxref=GenBank:NP_044772.1,GeneID:801064;Name=NP_044772.1;gbkey=CDS;gene=rpoA;locus_tag=ReamoMp28;product=RNA polymerase subunit alpha;protein_id=NP_044772.1;transl_table=11
+NC_001823.1	RefSeq	gene	30839	31414	.	+	.	ID=gene-ReamoMp29;Dbxref=GeneID:801154;Name=rps1;gbkey=Gene;gene=rps1;gene_biotype=protein_coding;locus_tag=ReamoMp29
+NC_001823.1	RefSeq	CDS	30839	31414	.	+	0	ID=cds-NP_044773.1;Parent=gene-ReamoMp29;Dbxref=GenBank:NP_044773.1,GeneID:801154;Name=NP_044773.1;Note=191 aa;gbkey=CDS;gene=rps1;locus_tag=ReamoMp29;product=ribosomal protein S1;protein_id=NP_044773.1;transl_table=11
+NC_001823.1	RefSeq	gene	31592	31993	.	+	.	ID=gene-ReamoMp30;Dbxref=GeneID:801155;Name=atp8;gbkey=Gene;gene=atp8;gene_biotype=protein_coding;gene_synonym=orfB;locus_tag=ReamoMp30
+NC_001823.1	RefSeq	CDS	31592	31993	.	+	0	ID=cds-NP_044774.1;Parent=gene-ReamoMp30;Dbxref=GenBank:NP_044774.1,GeneID:801155;Name=NP_044774.1;gbkey=CDS;gene=atp8;locus_tag=ReamoMp30;product=ATP synthase F0 subunit 8;protein_id=NP_044774.1;transl_table=11
+NC_001823.1	RefSeq	gene	32052	32123	.	+	.	ID=gene-ReamoMt76;Dbxref=GeneID:801088;Name=trnI(cau);gbkey=Gene;gene=trnI(cau);gene_biotype=tRNA;locus_tag=ReamoMt76
+NC_001823.1	RefSeq	tRNA	32052	32123	.	+	.	ID=rna-ReamoMt76;Parent=gene-ReamoMt76;Dbxref=GeneID:801088;anticodon=(pos:32084..32086);exception=RNA editing;gbkey=tRNA;gene=trnI(cau);locus_tag=ReamoMt76;product=tRNA-Ile
+NC_001823.1	RefSeq	exon	32052	32123	.	+	.	ID=exon-ReamoMt76-1;Parent=rna-ReamoMt76;Dbxref=GeneID:801088;anticodon=(pos:32084..32086);exception=RNA editing;gbkey=tRNA;gene=trnI(cau);locus_tag=ReamoMt76;product=tRNA-Ile
+NC_001823.1	RefSeq	gene	32140	32211	.	+	.	ID=gene-ReamoMt77;Dbxref=GeneID:801153;Name=trnM(cau)e;gbkey=Gene;gene=trnM(cau)e;gene_biotype=tRNA;locus_tag=ReamoMt77
+NC_001823.1	RefSeq	tRNA	32140	32211	.	+	.	ID=rna-ReamoMt77;Parent=gene-ReamoMt77;Dbxref=GeneID:801153;Note=elongator;anticodon=(pos:32172..32174);codons=AUG;gbkey=tRNA;gene=trnM(cau)e;locus_tag=ReamoMt77;product=tRNA-Met
+NC_001823.1	RefSeq	exon	32140	32211	.	+	.	ID=exon-ReamoMt77-1;Parent=rna-ReamoMt77;Dbxref=GeneID:801153;Note=elongator;anticodon=(pos:32172..32174);codons=AUG;gbkey=tRNA;gene=trnM(cau)e;locus_tag=ReamoMt77;product=tRNA-Met
+NC_001823.1	RefSeq	gene	32216	32297	.	+	.	ID=gene-ReamoMt78;Dbxref=GeneID:801151;Name=trnL(uaa);gbkey=Gene;gene=trnL(uaa);gene_biotype=tRNA;locus_tag=ReamoMt78
+NC_001823.1	RefSeq	tRNA	32216	32297	.	+	.	ID=rna-ReamoMt78;Parent=gene-ReamoMt78;Dbxref=GeneID:801151;anticodon=(pos:32250..32252);codons=UUA;gbkey=tRNA;gene=trnL(uaa);locus_tag=ReamoMt78;product=tRNA-Leu
+NC_001823.1	RefSeq	exon	32216	32297	.	+	.	ID=exon-ReamoMt78-1;Parent=rna-ReamoMt78;Dbxref=GeneID:801151;anticodon=(pos:32250..32252);codons=UUA;gbkey=tRNA;gene=trnL(uaa);locus_tag=ReamoMt78;product=tRNA-Leu
+NC_001823.1	RefSeq	gene	32368	33117	.	+	.	ID=gene-ReamoMp31;Dbxref=GeneID:801133;Name=rps4;gbkey=Gene;gene=rps4;gene_biotype=protein_coding;locus_tag=ReamoMp31
+NC_001823.1	RefSeq	CDS	32368	33117	.	+	0	ID=cds-NP_044775.1;Parent=gene-ReamoMp31;Dbxref=GenBank:NP_044775.1,GeneID:801133;Name=NP_044775.1;gbkey=CDS;gene=rps4;locus_tag=ReamoMp31;product=ribosomal protein S4;protein_id=NP_044775.1;transl_table=11
+NC_001823.1	RefSeq	gene	33184	33525	.	-	.	ID=gene-ReamoMp32;Dbxref=GeneID:801108;Name=rpl19;gbkey=Gene;gene=rpl19;gene_biotype=protein_coding;locus_tag=ReamoMp32
+NC_001823.1	RefSeq	CDS	33184	33525	.	-	0	ID=cds-NP_044776.1;Parent=gene-ReamoMp32;Dbxref=GenBank:NP_044776.1,GeneID:801108;Name=NP_044776.1;gbkey=CDS;gene=rpl19;locus_tag=ReamoMp32;product=ribosomal protein L19;protein_id=NP_044776.1;transl_table=11
+NC_001823.1	RefSeq	gene	33685	33912	.	+	.	ID=gene-ReamoMp33;Dbxref=GeneID:801152;Name=atp9;gbkey=Gene;gene=atp9;gene_biotype=protein_coding;locus_tag=ReamoMp33
+NC_001823.1	RefSeq	CDS	33685	33912	.	+	0	ID=cds-NP_044777.1;Parent=gene-ReamoMp33;Dbxref=GenBank:NP_044777.1,GeneID:801152;Name=NP_044777.1;gbkey=CDS;gene=atp9;locus_tag=ReamoMp33;product=ATP synthase F0 subunit 9;protein_id=NP_044777.1;transl_table=11
+NC_001823.1	RefSeq	gene	33962	34045	.	-	.	ID=gene-ReamoMt79;Dbxref=GeneID:801111;Name=trnY(gua);gbkey=Gene;gene=trnY(gua);gene_biotype=tRNA;locus_tag=ReamoMt79
+NC_001823.1	RefSeq	tRNA	33962	34045	.	-	.	ID=rna-ReamoMt79;Parent=gene-ReamoMt79;Dbxref=GeneID:801111;anticodon=(pos:complement(34009..34011));codons=UAC;gbkey=tRNA;gene=trnY(gua);locus_tag=ReamoMt79;product=tRNA-Tyr
+NC_001823.1	RefSeq	exon	33962	34045	.	-	.	ID=exon-ReamoMt79-1;Parent=rna-ReamoMt79;Dbxref=GeneID:801111;anticodon=(pos:complement(34009..34011));codons=UAC;gbkey=tRNA;gene=trnY(gua);locus_tag=ReamoMt79;product=tRNA-Tyr
+NC_001823.1	RefSeq	gene	34067	34146	.	+	.	ID=gene-ReamoMt80;Dbxref=GeneID:801078;Name=trnL(uag);gbkey=Gene;gene=trnL(uag);gene_biotype=tRNA;locus_tag=ReamoMt80
+NC_001823.1	RefSeq	tRNA	34067	34146	.	+	.	ID=rna-ReamoMt80;Parent=gene-ReamoMt80;Dbxref=GeneID:801078;anticodon=(pos:34101..34103);codons=CUA;gbkey=tRNA;gene=trnL(uag);locus_tag=ReamoMt80;product=tRNA-Leu
+NC_001823.1	RefSeq	exon	34067	34146	.	+	.	ID=exon-ReamoMt80-1;Parent=rna-ReamoMt80;Dbxref=GeneID:801078;anticodon=(pos:34101..34103);codons=CUA;gbkey=tRNA;gene=trnL(uag);locus_tag=ReamoMt80;product=tRNA-Leu
+NC_001823.1	RefSeq	gene	34158	34230	.	+	.	ID=gene-ReamoMt81;Dbxref=GeneID:801110;Name=trnM(cau)f;gbkey=Gene;gene=trnM(cau)f;gene_biotype=tRNA;locus_tag=ReamoMt81
+NC_001823.1	RefSeq	tRNA	34158	34230	.	+	.	ID=rna-ReamoMt81;Parent=gene-ReamoMt81;Dbxref=GeneID:801110;Note=initiator;anticodon=(pos:34191..34193);codons=AUG;gbkey=tRNA;gene=trnM(cau)f;locus_tag=ReamoMt81;product=tRNA-Met
+NC_001823.1	RefSeq	exon	34158	34230	.	+	.	ID=exon-ReamoMt81-1;Parent=rna-ReamoMt81;Dbxref=GeneID:801110;Note=initiator;anticodon=(pos:34191..34193);codons=AUG;gbkey=tRNA;gene=trnM(cau)f;locus_tag=ReamoMt81;product=tRNA-Met
+NC_001823.1	RefSeq	gene	34239	34311	.	+	.	ID=gene-ReamoMt82;Dbxref=GeneID:801096;Name=trnA(ugc);gbkey=Gene;gene=trnA(ugc);gene_biotype=tRNA;locus_tag=ReamoMt82
+NC_001823.1	RefSeq	tRNA	34239	34311	.	+	.	ID=rna-ReamoMt82;Parent=gene-ReamoMt82;Dbxref=GeneID:801096;anticodon=(pos:34272..34274);codons=GCA;gbkey=tRNA;gene=trnA(ugc);locus_tag=ReamoMt82;product=tRNA-Ala
+NC_001823.1	RefSeq	exon	34239	34311	.	+	.	ID=exon-ReamoMt82-1;Parent=rna-ReamoMt82;Dbxref=GeneID:801096;anticodon=(pos:34272..34274);codons=GCA;gbkey=tRNA;gene=trnA(ugc);locus_tag=ReamoMt82;product=tRNA-Ala
+NC_001823.1	RefSeq	gene	34250	35032	.	-	.	ID=gene-ReamoMp34;Dbxref=GeneID:801127;Name=tatC;gbkey=Gene;gene=tatC;gene_biotype=protein_coding;gene_synonym=mttB,ymf16;locus_tag=ReamoMp34
+NC_001823.1	RefSeq	CDS	34250	35032	.	-	0	ID=cds-NP_044778.1;Parent=gene-ReamoMp34;Dbxref=GenBank:NP_044778.1,GeneID:801127;Name=NP_044778.1;gbkey=CDS;gene=tatC;locus_tag=ReamoMp34;product=Sec-independent protein translocase component TatC;protein_id=NP_044778.1;transl_except=(pos:complement(35030..35032)%2Caa:Met);transl_table=11
+NC_001823.1	RefSeq	gene	35070	35153	.	-	.	ID=gene-ReamoMt83;Dbxref=GeneID:801098;Name=trnS(uga);gbkey=Gene;gene=trnS(uga);gene_biotype=tRNA;locus_tag=ReamoMt83
+NC_001823.1	RefSeq	tRNA	35070	35153	.	-	.	ID=rna-ReamoMt83;Parent=gene-ReamoMt83;Dbxref=GeneID:801098;anticodon=(pos:complement(35117..35119));codons=UCA;gbkey=tRNA;gene=trnS(uga);locus_tag=ReamoMt83;product=tRNA-Ser
+NC_001823.1	RefSeq	exon	35070	35153	.	-	.	ID=exon-ReamoMt83-1;Parent=rna-ReamoMt83;Dbxref=GeneID:801098;anticodon=(pos:complement(35117..35119));codons=UCA;gbkey=tRNA;gene=trnS(uga);locus_tag=ReamoMt83;product=tRNA-Ser
+NC_001823.1	RefSeq	gene	35158	35229	.	-	.	ID=gene-ReamoMt84;Dbxref=GeneID:801126;Name=trnG(ucc);gbkey=Gene;gene=trnG(ucc);gene_biotype=tRNA;locus_tag=ReamoMt84
+NC_001823.1	RefSeq	tRNA	35158	35229	.	-	.	ID=rna-ReamoMt84;Parent=gene-ReamoMt84;Dbxref=GeneID:801126;anticodon=(pos:complement(35194..35196));codons=GGA;gbkey=tRNA;gene=trnG(ucc);locus_tag=ReamoMt84;product=tRNA-Gly
+NC_001823.1	RefSeq	exon	35158	35229	.	-	.	ID=exon-ReamoMt84-1;Parent=rna-ReamoMt84;Dbxref=GeneID:801126;anticodon=(pos:complement(35194..35196));codons=GGA;gbkey=tRNA;gene=trnG(ucc);locus_tag=ReamoMt84;product=tRNA-Gly
+NC_001823.1	RefSeq	gene	35237	35547	.	+	.	ID=gene-ReamoMr69;Dbxref=GeneID:801071;Name=rnpB;gbkey=Gene;gene=rnpB;gene_biotype=rRNA;locus_tag=ReamoMr69
+NC_001823.1	RefSeq	rRNA	35237	35547	.	+	.	ID=rna-ReamoMr69;Parent=gene-ReamoMr69;Dbxref=GeneID:801071;gbkey=rRNA;gene=rnpB;locus_tag=ReamoMr69;product=RNAse P RNA
+NC_001823.1	RefSeq	exon	35237	35547	.	+	.	ID=exon-ReamoMr69-1;Parent=rna-ReamoMr69;Dbxref=GeneID:801071;gbkey=rRNA;gene=rnpB;locus_tag=ReamoMr69;product=RNAse P RNA
+NC_001823.1	RefSeq	gene	35557	35628	.	+	.	ID=gene-ReamoMt85;Dbxref=GeneID:801104;Name=trnR(ucu);gbkey=Gene;gene=trnR(ucu);gene_biotype=tRNA;locus_tag=ReamoMt85
+NC_001823.1	RefSeq	tRNA	35557	35628	.	+	.	ID=rna-ReamoMt85;Parent=gene-ReamoMt85;Dbxref=GeneID:801104;anticodon=(pos:35589..35591);codons=AGA;gbkey=tRNA;gene=trnR(ucu);locus_tag=ReamoMt85;product=tRNA-Arg
+NC_001823.1	RefSeq	exon	35557	35628	.	+	.	ID=exon-ReamoMt85-1;Parent=rna-ReamoMt85;Dbxref=GeneID:801104;anticodon=(pos:35589..35591);codons=AGA;gbkey=tRNA;gene=trnR(ucu);locus_tag=ReamoMt85;product=tRNA-Arg
+NC_001823.1	RefSeq	gene	35634	35705	.	+	.	ID=gene-ReamoMt86;Dbxref=GeneID:801148;Name=trnV(uac);gbkey=Gene;gene=trnV(uac);gene_biotype=tRNA;locus_tag=ReamoMt86
+NC_001823.1	RefSeq	tRNA	35634	35705	.	+	.	ID=rna-ReamoMt86;Parent=gene-ReamoMt86;Dbxref=GeneID:801148;anticodon=(pos:35666..35668);codons=GUA;gbkey=tRNA;gene=trnV(uac);locus_tag=ReamoMt86;product=tRNA-Val
+NC_001823.1	RefSeq	exon	35634	35705	.	+	.	ID=exon-ReamoMt86-1;Parent=rna-ReamoMt86;Dbxref=GeneID:801148;anticodon=(pos:35666..35668);codons=GUA;gbkey=tRNA;gene=trnV(uac);locus_tag=ReamoMt86;product=tRNA-Val
+NC_001823.1	RefSeq	gene	35714	35787	.	+	.	ID=gene-ReamoMt87;Dbxref=GeneID:801074;Name=trnD(guc);gbkey=Gene;gene=trnD(guc);gene_biotype=tRNA;locus_tag=ReamoMt87
+NC_001823.1	RefSeq	tRNA	35714	35787	.	+	.	ID=rna-ReamoMt87;Parent=gene-ReamoMt87;Dbxref=GeneID:801074;anticodon=(pos:35748..35750);codons=GAC;gbkey=tRNA;gene=trnD(guc);locus_tag=ReamoMt87;product=tRNA-Asp
+NC_001823.1	RefSeq	exon	35714	35787	.	+	.	ID=exon-ReamoMt87-1;Parent=rna-ReamoMt87;Dbxref=GeneID:801074;anticodon=(pos:35748..35750);codons=GAC;gbkey=tRNA;gene=trnD(guc);locus_tag=ReamoMt87;product=tRNA-Asp
+NC_001823.1	RefSeq	gene	35796	35867	.	+	.	ID=gene-ReamoMt88;Dbxref=GeneID:801084;Name=trnF(gaa);gbkey=Gene;gene=trnF(gaa);gene_biotype=tRNA;locus_tag=ReamoMt88
+NC_001823.1	RefSeq	tRNA	35796	35867	.	+	.	ID=rna-ReamoMt88;Parent=gene-ReamoMt88;Dbxref=GeneID:801084;anticodon=(pos:35828..35830);codons=UUC;gbkey=tRNA;gene=trnF(gaa);locus_tag=ReamoMt88;product=tRNA-Phe
+NC_001823.1	RefSeq	exon	35796	35867	.	+	.	ID=exon-ReamoMt88-1;Parent=rna-ReamoMt88;Dbxref=GeneID:801084;anticodon=(pos:35828..35830);codons=UUC;gbkey=tRNA;gene=trnF(gaa);locus_tag=ReamoMt88;product=tRNA-Phe
+NC_001823.1	RefSeq	gene	35912	35984	.	-	.	ID=gene-ReamoMt89;Dbxref=GeneID:801131;Name=trnN(guu);gbkey=Gene;gene=trnN(guu);gene_biotype=tRNA;locus_tag=ReamoMt89
+NC_001823.1	RefSeq	tRNA	35912	35984	.	-	.	ID=rna-ReamoMt89;Parent=gene-ReamoMt89;Dbxref=GeneID:801131;anticodon=(pos:complement(35949..35951));codons=AAC;gbkey=tRNA;gene=trnN(guu);locus_tag=ReamoMt89;product=tRNA-Asn
+NC_001823.1	RefSeq	exon	35912	35984	.	-	.	ID=exon-ReamoMt89-1;Parent=rna-ReamoMt89;Dbxref=GeneID:801131;anticodon=(pos:complement(35949..35951));codons=AAC;gbkey=tRNA;gene=trnN(guu);locus_tag=ReamoMt89;product=tRNA-Asn
+NC_001823.1	RefSeq	gene	36097	36942	.	-	.	ID=gene-ReamoMp35;Dbxref=GeneID:801134;Name=atp3;gbkey=Gene;gene=atp3;gene_biotype=protein_coding;locus_tag=ReamoMp35
+NC_001823.1	RefSeq	CDS	36097	36942	.	-	0	ID=cds-NP_044779.1;Parent=gene-ReamoMp35;Dbxref=GenBank:NP_044779.1,GeneID:801134;Name=NP_044779.1;gbkey=CDS;gene=atp3;locus_tag=ReamoMp35;product=ATP synthase F1 subunit gamma;protein_id=NP_044779.1;transl_table=11
+NC_001823.1	RefSeq	gene	37067	38605	.	-	.	ID=gene-ReamoMp36;Dbxref=GeneID:801157;Name=atp1;gbkey=Gene;gene=atp1;gene_biotype=protein_coding;locus_tag=ReamoMp36
+NC_001823.1	RefSeq	CDS	37067	38605	.	-	0	ID=cds-NP_044780.1;Parent=gene-ReamoMp36;Dbxref=GenBank:NP_044780.1,GeneID:801157;Name=NP_044780.1;gbkey=CDS;gene=atp1;locus_tag=ReamoMp36;product=ATP synthase F1 subunit alpha;protein_id=NP_044780.1;transl_table=11
+NC_001823.1	RefSeq	gene	38816	39433	.	-	.	ID=gene-ReamoMp37;Dbxref=GeneID:801124;Name=nad6;gbkey=Gene;gene=nad6;gene_biotype=protein_coding;locus_tag=ReamoMp37
+NC_001823.1	RefSeq	CDS	38816	39433	.	-	0	ID=cds-NP_044781.1;Parent=gene-ReamoMp37;Dbxref=GenBank:NP_044781.1,GeneID:801124;Name=NP_044781.1;gbkey=CDS;gene=nad6;locus_tag=ReamoMp37;product=NADH dehydrogenase subunit 6;protein_id=NP_044781.1;transl_table=11
+NC_001823.1	RefSeq	gene	39509	40699	.	-	.	ID=gene-ReamoMp38;Dbxref=GeneID:801113;Name=nad7;gbkey=Gene;gene=nad7;gene_biotype=protein_coding;locus_tag=ReamoMp38
+NC_001823.1	RefSeq	CDS	39509	40699	.	-	0	ID=cds-NP_044782.1;Parent=gene-ReamoMp38;Dbxref=GenBank:NP_044782.1,GeneID:801113;Name=NP_044782.1;gbkey=CDS;gene=nad7;locus_tag=ReamoMp38;product=NADH dehydrogenase subunit 7;protein_id=NP_044782.1;transl_table=11
+NC_001823.1	RefSeq	gene	40738	41352	.	-	.	ID=gene-ReamoMp39;Dbxref=GeneID:801075;Name=nad9;gbkey=Gene;gene=nad9;gene_biotype=protein_coding;locus_tag=ReamoMp39
+NC_001823.1	RefSeq	CDS	40738	41352	.	-	0	ID=cds-NP_044783.1;Parent=gene-ReamoMp39;Dbxref=GenBank:NP_044783.1,GeneID:801075;Name=NP_044783.1;gbkey=CDS;gene=nad9;locus_tag=ReamoMp39;product=NADH dehydrogenase subunit 9;protein_id=NP_044783.1;transl_table=11
+NC_001823.1	RefSeq	gene	41393	41941	.	-	.	ID=gene-ReamoMp40;Dbxref=GeneID:801085;Name=nad10;gbkey=Gene;gene=nad10;gene_biotype=protein_coding;locus_tag=ReamoMp40
+NC_001823.1	RefSeq	CDS	41393	41941	.	-	0	ID=cds-NP_044784.1;Parent=gene-ReamoMp40;Dbxref=GenBank:NP_044784.1,GeneID:801085;Name=NP_044784.1;gbkey=CDS;gene=nad10;locus_tag=ReamoMp40;product=NADH dehydrogenase subunit 10;protein_id=NP_044784.1;transl_table=11
+NC_001823.1	RefSeq	gene	41911	42279	.	-	.	ID=gene-ReamoMp41;Dbxref=GeneID:801095;Name=nad3;gbkey=Gene;gene=nad3;gene_biotype=protein_coding;locus_tag=ReamoMp41
+NC_001823.1	RefSeq	CDS	41911	42279	.	-	0	ID=cds-NP_044785.1;Parent=gene-ReamoMp41;Dbxref=GenBank:NP_044785.1,GeneID:801095;Name=NP_044785.1;gbkey=CDS;gene=nad3;locus_tag=ReamoMp41;product=NADH dehydrogenase subunit 3;protein_id=NP_044785.1;transl_table=11
+NC_001823.1	RefSeq	gene	42413	42760	.	-	.	ID=gene-ReamoMp42;Dbxref=GeneID:801156;Name=rpl20;gbkey=Gene;gene=rpl20;gene_biotype=protein_coding;locus_tag=ReamoMp42
+NC_001823.1	RefSeq	CDS	42413	42760	.	-	0	ID=cds-NP_044786.1;Parent=gene-ReamoMp42;Dbxref=GenBank:NP_044786.1,GeneID:801156;Name=NP_044786.1;gbkey=CDS;gene=rpl20;locus_tag=ReamoMp42;product=ribosomal protein L20;protein_id=NP_044786.1;transl_table=11
+NC_001823.1	RefSeq	gene	42945	43190	.	+	.	ID=gene-ReamoMp43;Dbxref=GeneID:801070;Name=rpl27;gbkey=Gene;gene=rpl27;gene_biotype=protein_coding;locus_tag=ReamoMp43
+NC_001823.1	RefSeq	CDS	42945	43190	.	+	0	ID=cds-NP_044787.1;Parent=gene-ReamoMp43;Dbxref=GenBank:NP_044787.1,GeneID:801070;Name=NP_044787.1;gbkey=CDS;gene=rpl27;locus_tag=ReamoMp43;product=ribosomal protein L27;protein_id=NP_044787.1;transl_table=11
+NC_001823.1	RefSeq	gene	43224	43352	.	-	.	ID=gene-ReamoMp44;Dbxref=GeneID:801094;Name=rpl34;gbkey=Gene;gene=rpl34;gene_biotype=protein_coding;locus_tag=ReamoMp44
+NC_001823.1	RefSeq	CDS	43224	43352	.	-	0	ID=cds-NP_044788.1;Parent=gene-ReamoMp44;Dbxref=GenBank:NP_044788.1,GeneID:801094;Name=NP_044788.1;gbkey=CDS;gene=rpl34;locus_tag=ReamoMp44;product=ribosomal protein L34;protein_id=NP_044788.1;transl_table=11
+NC_001823.1	RefSeq	gene	43382	45295	.	-	.	ID=gene-ReamoMp45;Dbxref=GeneID:801065;Name=ccmF;gbkey=Gene;gene=ccmF;gene_biotype=protein_coding;gene_synonym=ccl1,yejR;locus_tag=ReamoMp45
+NC_001823.1	RefSeq	CDS	43382	45295	.	-	0	ID=cds-NP_044789.1;Parent=gene-ReamoMp45;Dbxref=GenBank:NP_044789.1,GeneID:801065;Name=NP_044789.1;gbkey=CDS;gene=ccmF;locus_tag=ReamoMp45;product=heme lyase;protein_id=NP_044789.1;transl_table=11
+NC_001823.1	RefSeq	gene	45316	46104	.	-	.	ID=gene-ReamoMp46;Dbxref=GeneID:801069;Name=ccmC;gbkey=Gene;gene=ccmC;gene_biotype=protein_coding;gene_synonym=yejU;locus_tag=ReamoMp46
+NC_001823.1	RefSeq	CDS	45316	46104	.	-	0	ID=cds-NP_044790.1;Parent=gene-ReamoMp46;Dbxref=GenBank:NP_044790.1,GeneID:801069;Name=NP_044790.1;gbkey=CDS;gene=ccmC;locus_tag=ReamoMp46;product=ABC transporter subunit C;protein_id=NP_044790.1;transl_table=11
+NC_001823.1	RefSeq	gene	46089	46763	.	-	.	ID=gene-ReamoMp47;Dbxref=GeneID:801076;Name=ccmB;gbkey=Gene;gene=ccmB;gene_biotype=protein_coding;gene_synonym=yejV;locus_tag=ReamoMp47
+NC_001823.1	RefSeq	CDS	46089	46763	.	-	0	ID=cds-NP_044791.1;Parent=gene-ReamoMp47;Dbxref=GenBank:NP_044791.1,GeneID:801076;Name=NP_044791.1;gbkey=CDS;gene=ccmB;locus_tag=ReamoMp47;product=ABC transporter channel subunit;protein_id=NP_044791.1;transl_table=11
+NC_001823.1	RefSeq	gene	46784	47452	.	-	.	ID=gene-ReamoMp48;Dbxref=GeneID:801082;Name=ccmA;gbkey=Gene;gene=ccmA;gene_biotype=protein_coding;gene_synonym=yejW;locus_tag=ReamoMp48
+NC_001823.1	RefSeq	CDS	46784	47452	.	-	0	ID=cds-NP_044792.1;Parent=gene-ReamoMp48;Dbxref=GenBank:NP_044792.1,GeneID:801082;Name=NP_044792.1;gbkey=CDS;gene=ccmA;locus_tag=ReamoMp48;product=ABC transporter ATP-binding subunit;protein_id=NP_044792.1;transl_table=11
+NC_001823.1	RefSeq	gene	47505	47693	.	+	.	ID=gene-ReamoMp49;Dbxref=GeneID:801101;Name=rpl32;gbkey=Gene;gene=rpl32;gene_biotype=protein_coding;locus_tag=ReamoMp49
+NC_001823.1	RefSeq	CDS	47505	47693	.	+	0	ID=cds-NP_044793.1;Parent=gene-ReamoMp49;Dbxref=GenBank:NP_044793.1,GeneID:801101;Name=NP_044793.1;gbkey=CDS;gene=rpl32;locus_tag=ReamoMp49;product=ribosomal protein L32;protein_id=NP_044793.1;transl_table=11
+NC_001823.1	RefSeq	gene	47712	47783	.	-	.	ID=gene-ReamoMt90;Dbxref=GeneID:801139;Name=trnR(acg);gbkey=Gene;gene=trnR(acg);gene_biotype=tRNA;locus_tag=ReamoMt90
+NC_001823.1	RefSeq	tRNA	47712	47783	.	-	.	ID=rna-ReamoMt90;Parent=gene-ReamoMt90;Dbxref=GeneID:801139;anticodon=(pos:complement(47749..47751));codons=CGU;gbkey=tRNA;gene=trnR(acg);locus_tag=ReamoMt90;product=tRNA-Arg
+NC_001823.1	RefSeq	exon	47712	47783	.	-	.	ID=exon-ReamoMt90-1;Parent=rna-ReamoMt90;Dbxref=GeneID:801139;anticodon=(pos:complement(47749..47751));codons=CGU;gbkey=tRNA;gene=trnR(acg);locus_tag=ReamoMt90;product=tRNA-Arg
+NC_001823.1	RefSeq	gene	47885	47956	.	-	.	ID=gene-ReamoMt91;Dbxref=GeneID:801089;Name=trnQ(uug);gbkey=Gene;gene=trnQ(uug);gene_biotype=tRNA;locus_tag=ReamoMt91
+NC_001823.1	RefSeq	tRNA	47885	47956	.	-	.	ID=rna-ReamoMt91;Parent=gene-ReamoMt91;Dbxref=GeneID:801089;anticodon=(pos:complement(47922..47924));codons=CAA;gbkey=tRNA;gene=trnQ(uug);locus_tag=ReamoMt91;product=tRNA-Gln
+NC_001823.1	RefSeq	exon	47885	47956	.	-	.	ID=exon-ReamoMt91-1;Parent=rna-ReamoMt91;Dbxref=GeneID:801089;anticodon=(pos:complement(47922..47924));codons=CAA;gbkey=tRNA;gene=trnQ(uug);locus_tag=ReamoMt91;product=tRNA-Gln
+NC_001823.1	RefSeq	gene	47964	48037	.	+	.	ID=gene-ReamoMt92;Dbxref=GeneID:801130;Name=trnI(gau);gbkey=Gene;gene=trnI(gau);gene_biotype=tRNA;locus_tag=ReamoMt92
+NC_001823.1	RefSeq	tRNA	47964	48037	.	+	.	ID=rna-ReamoMt92;Parent=gene-ReamoMt92;Dbxref=GeneID:801130;anticodon=(pos:47998..48000);codons=AUC;gbkey=tRNA;gene=trnI(gau);locus_tag=ReamoMt92;product=tRNA-Ile
+NC_001823.1	RefSeq	exon	47964	48037	.	+	.	ID=exon-ReamoMt92-1;Parent=rna-ReamoMt92;Dbxref=GeneID:801130;anticodon=(pos:47998..48000);codons=AUC;gbkey=tRNA;gene=trnI(gau);locus_tag=ReamoMt92;product=tRNA-Ile
+NC_001823.1	RefSeq	gene	48042	48114	.	-	.	ID=gene-ReamoMt93;Dbxref=GeneID:801128;Name=trnG(gcc);gbkey=Gene;gene=trnG(gcc);gene_biotype=tRNA;locus_tag=ReamoMt93
+NC_001823.1	RefSeq	tRNA	48042	48114	.	-	.	ID=rna-ReamoMt93;Parent=gene-ReamoMt93;Dbxref=GeneID:801128;anticodon=(pos:complement(48079..48081));codons=GGC;gbkey=tRNA;gene=trnG(gcc);locus_tag=ReamoMt93;product=tRNA-Gly
+NC_001823.1	RefSeq	exon	48042	48114	.	-	.	ID=exon-ReamoMt93-1;Parent=rna-ReamoMt93;Dbxref=GeneID:801128;anticodon=(pos:complement(48079..48081));codons=GGC;gbkey=tRNA;gene=trnG(gcc);locus_tag=ReamoMt93;product=tRNA-Gly
+NC_001823.1	RefSeq	gene	48233	49831	.	-	.	ID=gene-ReamoMp50;Dbxref=GeneID:801109;Name=rpoD;gbkey=Gene;gene=rpoD;gene_biotype=protein_coding;locus_tag=ReamoMp50
+NC_001823.1	RefSeq	CDS	48233	49831	.	-	0	ID=cds-NP_044794.1;Parent=gene-ReamoMp50;Dbxref=GenBank:NP_044794.1,GeneID:801109;Name=NP_044794.1;gbkey=CDS;gene=rpoD;locus_tag=ReamoMp50;product=transcription initiation factor sigma;protein_id=NP_044794.1;transl_table=11
+NC_001823.1	RefSeq	gene	49858	49930	.	+	.	ID=gene-ReamoMt94;Dbxref=GeneID:801117;Name=trnH(gug);gbkey=Gene;gene=trnH(gug);gene_biotype=tRNA;locus_tag=ReamoMt94
+NC_001823.1	RefSeq	tRNA	49858	49930	.	+	.	ID=rna-ReamoMt94;Parent=gene-ReamoMt94;Dbxref=GeneID:801117;anticodon=(pos:49891..49893);codons=CAC;gbkey=tRNA;gene=trnH(gug);locus_tag=ReamoMt94;product=tRNA-His
+NC_001823.1	RefSeq	exon	49858	49930	.	+	.	ID=exon-ReamoMt94-1;Parent=rna-ReamoMt94;Dbxref=GeneID:801117;anticodon=(pos:49891..49893);codons=CAC;gbkey=tRNA;gene=trnH(gug);locus_tag=ReamoMt94;product=tRNA-His
+NC_001823.1	RefSeq	gene	49941	52094	.	-	.	ID=gene-ReamoMp51;Dbxref=GeneID:801142;Name=orf717;gbkey=Gene;gene=orf717;gene_biotype=protein_coding;gene_synonym=ymf93;locus_tag=ReamoMp51
+NC_001823.1	RefSeq	CDS	49941	52094	.	-	0	ID=cds-NP_044795.1;Parent=gene-ReamoMp51;Dbxref=GenBank:NP_044795.1,GeneID:801142;Name=NP_044795.1;gbkey=CDS;gene=orf717;locus_tag=ReamoMp51;product=Orf717;protein_id=NP_044795.1;transl_table=11
+NC_001823.1	RefSeq	gene	52120	52554	.	+	.	ID=gene-ReamoMp52;Dbxref=GeneID:801072;Name=sdh3;gbkey=Gene;gene=sdh3;gene_biotype=protein_coding;locus_tag=ReamoMp52
+NC_001823.1	RefSeq	CDS	52120	52554	.	+	0	ID=cds-NP_044796.1;Parent=gene-ReamoMp52;Dbxref=GenBank:NP_044796.1,GeneID:801072;Name=NP_044796.1;gbkey=CDS;gene=sdh3;locus_tag=ReamoMp52;product=succinate:ubiquinone oxidoreductase subunit 3;protein_id=NP_044796.1;transl_table=11
+NC_001823.1	RefSeq	gene	52586	52948	.	+	.	ID=gene-ReamoMp53;Dbxref=GeneID:801073;Name=sdh4;gbkey=Gene;gene=sdh4;gene_biotype=protein_coding;locus_tag=ReamoMp53
+NC_001823.1	RefSeq	CDS	52586	52948	.	+	0	ID=cds-NP_044797.1;Parent=gene-ReamoMp53;Dbxref=GenBank:NP_044797.1,GeneID:801073;Name=NP_044797.1;gbkey=CDS;gene=sdh4;locus_tag=ReamoMp53;product=succinate:ubiquinone oxidoreductase subunit 4;protein_id=NP_044797.1;transl_table=11
+NC_001823.1	RefSeq	gene	52996	53715	.	+	.	ID=gene-ReamoMp54;Dbxref=GeneID:801067;Name=sdh2;gbkey=Gene;gene=sdh2;gene_biotype=protein_coding;gene_synonym=sdhB;locus_tag=ReamoMp54
+NC_001823.1	RefSeq	CDS	52996	53715	.	+	0	ID=cds-NP_044798.1;Parent=gene-ReamoMp54;Dbxref=GenBank:NP_044798.1,GeneID:801067;Name=NP_044798.1;gbkey=CDS;gene=sdh2;locus_tag=ReamoMp54;product=succinate:ubiquinone oxidoreductase subunit 2;protein_id=NP_044798.1;transl_table=11
+NC_001823.1	RefSeq	gene	53809	54117	.	+	.	ID=gene-ReamoMp55;Dbxref=GeneID:801143;Name=nad4L;gbkey=Gene;gene=nad4L;gene_biotype=protein_coding;locus_tag=ReamoMp55
+NC_001823.1	RefSeq	CDS	53809	54117	.	+	0	ID=cds-NP_044799.1;Parent=gene-ReamoMp55;Dbxref=GenBank:NP_044799.1,GeneID:801143;Name=NP_044799.1;gbkey=CDS;gene=nad4L;locus_tag=ReamoMp55;product=NADH dehydrogenase subunit 4L;protein_id=NP_044799.1;transl_table=11
+NC_001823.1	RefSeq	gene	54122	56134	.	+	.	ID=gene-ReamoMp56;Dbxref=GeneID:801079;Name=nad5;gbkey=Gene;gene=nad5;gene_biotype=protein_coding;locus_tag=ReamoMp56
+NC_001823.1	RefSeq	CDS	54122	56134	.	+	0	ID=cds-NP_044800.1;Parent=gene-ReamoMp56;Dbxref=GenBank:NP_044800.1,GeneID:801079;Name=NP_044800.1;gbkey=CDS;gene=nad5;locus_tag=ReamoMp56;product=NADH dehydrogenase subunit 5;protein_id=NP_044800.1;transl_table=11
+NC_001823.1	RefSeq	gene	56265	57746	.	+	.	ID=gene-ReamoMp57;Dbxref=GeneID:801066;Name=nad4;gbkey=Gene;gene=nad4;gene_biotype=protein_coding;locus_tag=ReamoMp57
+NC_001823.1	RefSeq	CDS	56265	57746	.	+	0	ID=cds-NP_044801.1;Parent=gene-ReamoMp57;Dbxref=GenBank:NP_044801.1,GeneID:801066;Name=NP_044801.1;gbkey=CDS;gene=nad4;locus_tag=ReamoMp57;product=NADH dehydrogenase subunit 4;protein_id=NP_044801.1;transl_table=11
+NC_001823.1	RefSeq	gene	57883	59379	.	+	.	ID=gene-ReamoMp58;Dbxref=GeneID:801119;Name=nad2;gbkey=Gene;gene=nad2;gene_biotype=protein_coding;locus_tag=ReamoMp58
+NC_001823.1	RefSeq	CDS	57883	59379	.	+	0	ID=cds-NP_044802.1;Parent=gene-ReamoMp58;Dbxref=GenBank:NP_044802.1,GeneID:801119;Name=NP_044802.1;gbkey=CDS;gene=nad2;locus_tag=ReamoMp58;product=NADH dehydrogenase subunit 2;protein_id=NP_044802.1;transl_table=11
+NC_001823.1	RefSeq	gene	59400	60038	.	+	.	ID=gene-ReamoMp59;Dbxref=GeneID:801097;Name=rps2;gbkey=Gene;gene=rps2;gene_biotype=protein_coding;locus_tag=ReamoMp59
+NC_001823.1	RefSeq	CDS	59400	60038	.	+	0	ID=cds-NP_044803.1;Parent=gene-ReamoMp59;Dbxref=GenBank:NP_044803.1,GeneID:801097;Name=NP_044803.1;gbkey=CDS;gene=rps2;locus_tag=ReamoMp59;product=ribosomal protein S2;protein_id=NP_044803.1;transl_table=11
+NC_001823.1	RefSeq	gene	60133	60882	.	+	.	ID=gene-ReamoMp60;Dbxref=GeneID:801118;Name=atp6;gbkey=Gene;gene=atp6;gene_biotype=protein_coding;locus_tag=ReamoMp60
+NC_001823.1	RefSeq	CDS	60133	60882	.	+	0	ID=cds-NP_044804.1;Parent=gene-ReamoMp60;Dbxref=GenBank:NP_044804.1,GeneID:801118;Name=NP_044804.1;gbkey=CDS;gene=atp6;locus_tag=ReamoMp60;product=ATP synthase F0 subunit 6;protein_id=NP_044804.1;transl_table=11
+NC_001823.1	RefSeq	gene	61002	61595	.	+	.	ID=gene-ReamoMp61;Dbxref=GeneID:801107;Name=atp4;gbkey=Gene;gene=atp4;gene_biotype=protein_coding;locus_tag=ReamoMp61
+NC_001823.1	RefSeq	CDS	61002	61595	.	+	0	ID=cds-NP_044805.1;Parent=gene-ReamoMp61;Dbxref=GenBank:NP_044805.1,GeneID:801107;Name=NP_044805.1;gbkey=CDS;gene=atp4;locus_tag=ReamoMp61;product=ATP synthase subunit b;protein_id=NP_044805.1;transl_table=11
+NC_001823.1	RefSeq	gene	61706	62878	.	+	.	ID=gene-ReamoMp62;Dbxref=GeneID:801120;Name=cob;gbkey=Gene;gene=cob;gene_biotype=protein_coding;locus_tag=ReamoMp62
+NC_001823.1	RefSeq	CDS	61706	62878	.	+	0	ID=cds-NP_044806.1;Parent=gene-ReamoMp62;Dbxref=GenBank:NP_044806.1,GeneID:801120;Name=NP_044806.1;gbkey=CDS;gene=cob;locus_tag=ReamoMp62;product=apocytochrome b;protein_id=NP_044806.1;transl_table=11
+NC_001823.1	RefSeq	gene	63073	63267	.	+	.	ID=gene-ReamoMp63;Dbxref=GeneID:801081;Name=tatA;gbkey=Gene;gene=tatA;gene_biotype=protein_coding;gene_synonym=ymf94;locus_tag=ReamoMp63
+NC_001823.1	RefSeq	CDS	63073	63267	.	+	0	ID=cds-NP_044807.1;Parent=gene-ReamoMp63;Dbxref=GenBank:NP_044807.1,GeneID:801081;Name=NP_044807.1;gbkey=CDS;gene=tatA;locus_tag=ReamoMp63;product=SecY-independent protein translocase component TatA;protein_id=NP_044807.1;transl_table=11
+NC_001823.1	RefSeq	gene	63438	65033	.	+	.	ID=gene-ReamoMp64;Dbxref=GeneID:801106;Name=cox1;gbkey=Gene;gene=cox1;gene_biotype=protein_coding;locus_tag=ReamoMp64
+NC_001823.1	RefSeq	CDS	63438	65033	.	+	0	ID=cds-NP_044808.1;Parent=gene-ReamoMp64;Dbxref=GenBank:NP_044808.1,GeneID:801106;Name=NP_044808.1;gbkey=CDS;gene=cox1;locus_tag=ReamoMp64;product=cytochrome c oxidase subunit 1;protein_id=NP_044808.1;transl_table=11
+NC_001823.1	RefSeq	gene	65160	65942	.	+	.	ID=gene-ReamoMp65;Dbxref=GeneID:801121;Name=cox2;gbkey=Gene;gene=cox2;gene_biotype=protein_coding;locus_tag=ReamoMp65
+NC_001823.1	RefSeq	CDS	65160	65942	.	+	0	ID=cds-NP_044809.1;Parent=gene-ReamoMp65;Dbxref=GenBank:NP_044809.1,GeneID:801121;Name=NP_044809.1;gbkey=CDS;gene=cox2;locus_tag=ReamoMp65;product=cytochrome c oxidase subunit 2;protein_id=NP_044809.1;transl_table=11
+NC_001823.1	RefSeq	gene	65987	66072	.	+	.	ID=gene-ReamoMt95;Dbxref=GeneID:801122;Name=trnS(gcu);gbkey=Gene;gene=trnS(gcu);gene_biotype=tRNA;locus_tag=ReamoMt95
+NC_001823.1	RefSeq	tRNA	65987	66072	.	+	.	ID=rna-ReamoMt95;Parent=gene-ReamoMt95;Dbxref=GeneID:801122;anticodon=(pos:66021..66023);codons=AGC;gbkey=tRNA;gene=trnS(gcu);locus_tag=ReamoMt95;product=tRNA-Ser
+NC_001823.1	RefSeq	exon	65987	66072	.	+	.	ID=exon-ReamoMt95-1;Parent=rna-ReamoMt95;Dbxref=GeneID:801122;anticodon=(pos:66021..66023);codons=AGC;gbkey=tRNA;gene=trnS(gcu);locus_tag=ReamoMt95;product=tRNA-Ser
+NC_001823.1	RefSeq	gene	66081	66153	.	+	.	ID=gene-ReamoMt96;Dbxref=GeneID:801123;Name=trnE(uuc);gbkey=Gene;gene=trnE(uuc);gene_biotype=tRNA;locus_tag=ReamoMt96
+NC_001823.1	RefSeq	tRNA	66081	66153	.	+	.	ID=rna-ReamoMt96;Parent=gene-ReamoMt96;Dbxref=GeneID:801123;anticodon=(pos:66115..66117);codons=GAA;gbkey=tRNA;gene=trnE(uuc);locus_tag=ReamoMt96;product=tRNA-Glu
+NC_001823.1	RefSeq	exon	66081	66153	.	+	.	ID=exon-ReamoMt96-1;Parent=rna-ReamoMt96;Dbxref=GeneID:801123;anticodon=(pos:66115..66117);codons=GAA;gbkey=tRNA;gene=trnE(uuc);locus_tag=ReamoMt96;product=tRNA-Glu
+NC_001823.1	RefSeq	gene	66184	66693	.	+	.	ID=gene-ReamoMp66;Dbxref=GeneID:801068;Name=orf169;gbkey=Gene;gene=orf169;gene_biotype=protein_coding;gene_synonym=ymf95;locus_tag=ReamoMp66
+NC_001823.1	RefSeq	CDS	66184	66693	.	+	0	ID=cds-NP_044810.1;Parent=gene-ReamoMp66;Dbxref=GenBank:NP_044810.1,GeneID:801068;Name=NP_044810.1;gbkey=CDS;gene=orf169;locus_tag=ReamoMp66;product=Orf169;protein_id=NP_044810.1;transl_except=(pos:66184..66186%2Caa:Met);transl_table=11
+NC_001823.1	RefSeq	gene	66708	66778	.	+	.	ID=gene-ReamoMt97;Dbxref=GeneID:1505169;Name=ReamoMt97;gbkey=Gene;gene_biotype=tRNA;locus_tag=ReamoMt97
+NC_001823.1	RefSeq	tRNA	66708	66778	.	+	.	ID=rna-ReamoMt97;Parent=gene-ReamoMt97;Dbxref=GeneID:1505169;anticodon=(pos:66740..66742);codons=UGC;gbkey=tRNA;locus_tag=ReamoMt97;product=tRNA-Cys
+NC_001823.1	RefSeq	exon	66708	66778	.	+	.	ID=exon-ReamoMt97-1;Parent=rna-ReamoMt97;Dbxref=GeneID:1505169;anticodon=(pos:66740..66742);codons=UGC;gbkey=tRNA;locus_tag=ReamoMt97;product=tRNA-Cys
+NC_001823.1	RefSeq	gene	66975	67190	.	+	.	ID=gene-ReamoMp67;Dbxref=GeneID:801141;Name=rpl31;gbkey=Gene;gene=rpl31;gene_biotype=protein_coding;locus_tag=ReamoMp67
+NC_001823.1	RefSeq	CDS	66975	67190	.	+	0	ID=cds-NP_044811.1;Parent=gene-ReamoMp67;Dbxref=GenBank:NP_044811.1,GeneID:801141;Name=NP_044811.1;gbkey=CDS;gene=rpl31;locus_tag=ReamoMp67;product=ribosomal protein L31;protein_id=NP_044811.1;transl_table=11
+NC_001823.1	RefSeq	gene	67233	67346	.	+	.	ID=gene-ReamoMr70;Dbxref=GeneID:801125;Name=rrn5;gbkey=Gene;gene=rrn5;gene_biotype=rRNA;locus_tag=ReamoMr70
+NC_001823.1	RefSeq	rRNA	67233	67346	.	+	.	ID=rna-ReamoMr70;Parent=gene-ReamoMr70;Dbxref=GeneID:801125;gbkey=rRNA;gene=rrn5;locus_tag=ReamoMr70;product=5S ribosomal RNA
+NC_001823.1	RefSeq	exon	67233	67346	.	+	.	ID=exon-ReamoMr70-1;Parent=rna-ReamoMr70;Dbxref=GeneID:801125;gbkey=rRNA;gene=rrn5;locus_tag=ReamoMr70;product=5S ribosomal RNA
+NC_001823.1	RefSeq	gene	67440	69034	.	+	.	ID=gene-ReamoMr71;Dbxref=GeneID:801145;Name=rns;gbkey=Gene;gene=rns;gene_biotype=rRNA;locus_tag=ReamoMr71
+NC_001823.1	RefSeq	rRNA	67440	69034	.	+	.	ID=rna-ReamoMr71;Parent=gene-ReamoMr71;Dbxref=GeneID:801145;gbkey=rRNA;gene=rns;locus_tag=ReamoMr71;product=small subunit ribosomal RNA
+NC_001823.1	RefSeq	exon	67440	69034	.	+	.	ID=exon-ReamoMr71-1;Parent=rna-ReamoMr71;Dbxref=GeneID:801145;gbkey=rRNA;gene=rns;locus_tag=ReamoMr71;product=small subunit ribosomal RNA
+

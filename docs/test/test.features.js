@@ -5,20 +5,16 @@
 // Initial input file to load: '', 'file', or input from input.js (e.g. 'mito')
 // const defaultMap = '';     // Empty
 // const defaultMap = 'file'; // File Choose
-// const defaultMap = 'mito_fa';
-const defaultMap = 'mito_gb';
-// const defaultMap = 'pa2';
-// const defaultMap = 'contigs';
+const defaultMap = 'sample';
+// const defaultMap = 'mito';
 
 // Deafult Options
 const prettyPrint = false;
 const showInput = true;
 const showSeqJson = true;
-const showTesJson = false;
 const showCgvJson = true;
 const showMap = true;
 const showAllText = false; // or only the first 1000 lines
-const filterSequence = true;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Initialize
@@ -40,18 +36,12 @@ clearFileInput();
 // Prism/Pretty Print
 const prettyPrintCheckbox = document.querySelector('#option-prism');
 prettyPrintCheckbox.checked = prettyPrint;
-// Filter Sequence
-const filterSeqCheckbox = document.querySelector('#option-filter-seq');
-filterSeqCheckbox.checked = filterSequence;
 // Show/Hide Input
 const showInputCheckbox = document.querySelector('#option-show-input');
 showInputCheckbox.checked = showInput;
 // Show/Hide Seq JSON
 const showSeqJsonCheckbox = document.querySelector('#option-show-seq-json');
 showSeqJsonCheckbox.checked = showSeqJson;
-// Show/Hide Teselagen JSON
-const showTesJsonCheckbox = document.querySelector('#option-show-tes-json');
-showTesJsonCheckbox.checked = showTesJson;
 // Show/Hide CGV JSON
 const showCgvJsonCheckbox = document.querySelector('#option-show-cgv-json');
 showCgvJsonCheckbox.checked = showCgvJson;
@@ -130,7 +120,6 @@ function clearText() {
   // Clear inputs and outpus
   document.getElementById('input-text').innerHTML = "Empty..."
   document.getElementById('output-seq-json').innerHTML = "Empty..."
-  document.getElementById('output-tes-json').innerHTML = "Empty..."
   document.getElementById('output-cgv-json').innerHTML = "Empty..."
   document.getElementById('map-name').innerHTML = 'Empty'
   // Clear runtimes
@@ -193,40 +182,33 @@ function loadInputFromID(id) {
 // - Fastest is going right to map (no innerHTML)
 // - When using innerHTML, it is faster when the sequence is replaced
 // - Prism.highlight is slowest step
-// Notes:
-// - async is only for anyToTeselagen
-async function runParse() {
+function runParse() {
   window.json = {}; // For debugging
   const inputTextDiv = document.getElementById('input-text');
   const outputSeqJsonDiv = document.getElementById('output-seq-json');
-  const outputTesJsonDiv = document.getElementById('output-tes-json');
   const outputCgvJsonDiv = document.getElementById('output-cgv-json');
   // Clear outputs
   outputSeqJsonDiv.innerHTML = "Loading...";
-  outputTesJsonDiv.innerHTML = "Loading...";
   outputCgvJsonDiv.innerHTML = "Loading...";
   // Using prism can be slow for large files
   const prismMode = prettyPrintCheckbox.checked;
-  const filterSeqMode = filterSeqCheckbox.checked;
 
   // Get input text
   const inputText = inputTextDiv.textContent;
   console.log("Input Text", inputText)
 
-  // Parse to seqJson
-  const seqJsonStartTime = new Date().getTime();
-  // const seqJSON = CGParse.seqToSeqJSON(inputText, {config: jsonConfig});
-  // const seqFile = new CGParse.SequenceFile(inputText, {addFeatureSequences: true});
-  const seqFile = new CGParse.SequenceFile(inputText, {maxLogCount: 1});
-  const seqJSON = seqFile.records;
-  json.seqFile = seqFile; // For debugging
+  // Parse to featureJson
+  const featureJsonStartTime = new Date().getTime();
+  const featureFile = new CGParse.FeatureFile(inputText, {maxLogCount: 1});
+  const seqJSON = featureFile.records;
+  json.featureFile = featureFile; // For debugging
   console.log(seqJSON)
-  const seqJsonRunTime = elapsedTime(seqJsonStartTime);
-  updateTime('time-seq-json', seqJsonRunTime);
+  const featureJsonRunTime = elapsedTime(featureJsonStartTime);
+  updateTime('time-seq-json', featureJsonRunTime);
   let seqString = JSON.stringify(seqJSON, null, 2);
-  if (filterSeqMode) {
-    seqString = seqString.replace(/"sequence": ".*"/g, '"sequence": "..."');
-  }
+  // if (filterSeqMode) {
+  //   seqString = seqString.replace(/"sequence": ".*"/g, '"sequence": "..."');
+  // }
   // Compact the locations array to a single line for easier viewing
   seqString = seqString.replace(/"locations":(.*?)(\s+)([}"])/smg, (match, p1, p2, p3) => {
     return `"locations": ${p1.replace(/\s+/g, '')}${p2}${p3}`;
@@ -236,68 +218,48 @@ async function runParse() {
   window.json.seq = seqJSON; // For debugging
   // return;
 
-  // Parse to teselagen JSON
-  if (showTesJsonCheckbox.checked) {
-    const tesJsonStartTime = new Date().getTime();
-    const tesJSON = await CGParse.anyToTeselagen(inputText, {inclusive1BasedStart: true, inclusive1BasedEnd: true});
-    const tesJsonRunTime = elapsedTime(tesJsonStartTime);
-    updateTime('time-tes-json', tesJsonRunTime);
-    // Convert to string (and pretty print with 2 spaces)
-    let tesString = JSON.stringify(tesJSON, null, 2);
-    if (filterSeqMode) {
-      tesString = tesString.replace(/"sequence": ".*"/g, '"sequence": "..."');
-    }
-    // outputTesJsonDiv.innerHTML = prismMode ? Prism.highlight(tesString, Prism.languages.json, 'json') : tesString;
-    outputTesJsonDiv.innerHTML = filterJSONText(tesString);
-    window.json.tes = tesJSON; // For debugging
-  }
+  // // Parse to CGView JSON
+  // let cgvJSON;
+  // let builder;
+  // if (showCgvJsonCheckbox.checked) {
+  //   const cgvJsonStartTime = new Date().getTime();
+  //   // cgvJSON = CGParse.seqJSONToCgvJSON(seqJSON, {config: jsonConfig});
+  //   builder = new CGParse.CGViewBuilder(seqFile, {logger: seqFile.logger, config: jsonConfig, includeQualifiers: true, maxLogCount: 2});
+  //   // cgvJSON = seqFile.toCGViewJSON({config: jsonConfig, includeQualifiers: true, maxLogCount: 2});
+  //   cgvJSON = builder.toJSON();
 
-
-  // Parse to CGView JSON
-  let cgvJSON;
-  let builder;
-  if (showCgvJsonCheckbox.checked) {
-    const cgvJsonStartTime = new Date().getTime();
-    // cgvJSON = CGParse.seqJSONToCgvJSON(seqJSON, {config: jsonConfig});
-    builder = new CGParse.CGViewBuilder(seqFile, {logger: seqFile.logger, config: jsonConfig, includeQualifiers: true, maxLogCount: 2});
-    // cgvJSON = seqFile.toCGViewJSON({config: jsonConfig, includeQualifiers: true, maxLogCount: 2});
-    cgvJSON = builder.toJSON();
-
-    const cgvJsonRunTime = elapsedTime(cgvJsonStartTime);
-    updateTime('time-cgv-json', cgvJsonRunTime);
-    // Convert to string (and pretty print with 2 spaces)
-    if (builder.passed && cgvJSON) {
-      let cgvString = JSON.stringify(cgvJSON, null, 2);
-      if (filterSeqMode) {
-        cgvString = cgvString.replace(/"seq": ".*"/g, '"seq": "..."');
-      }
-      outputCgvJsonDiv.innerHTML = prismMode ? Prism.highlight(cgvString, Prism.languages.json, 'json') : cgvString;
-    }
-    window.json.cgv = cgvJSON; // For debugging
-  }
+  //   const cgvJsonRunTime = elapsedTime(cgvJsonStartTime);
+  //   updateTime('time-cgv-json', cgvJsonRunTime);
+  //   // Convert to string (and pretty print with 2 spaces)
+  //   if (builder.passed && cgvJSON) {
+  //     let cgvString = JSON.stringify(cgvJSON, null, 2);
+  //     if (filterSeqMode) {
+  //       cgvString = cgvString.replace(/"seq": ".*"/g, '"seq": "..."');
+  //     }
+  //     outputCgvJsonDiv.innerHTML = prismMode ? Prism.highlight(cgvString, Prism.languages.json, 'json') : cgvString;
+  //   }
+  //   window.json.cgv = cgvJSON; // For debugging
+  // }
 
   // MESSAGES
   // let messages = "";
-  // tesJSON.forEach((tes, index) => {
-  //   const status = tes.success ? 'PASS' : 'FAIL';
-  //   messages += `Sequence ${index + 1} [${status}]: ${tes?.parsedSequence?.name}\n`;
-  // });
   const logDiv = document.getElementById('log-text');
   // const messages = seqFile.logger.history({showTimestamps: false});
   // const messages = seqFile.logger.history({showIcons: true});
-  const messages = builder.logger.history({showIcons: true});
+  // const messages = builder.logger.history({showIcons: true});
   // const messages = seqFile.logger.history();
+  const messages = featureFile.logger.history({showIcons: true});
   console.log(messages)
   logDiv.innerHTML = messages;
 
-  // Load Map with JSON
-  if (cgvJSON) {
-    cgv.io.loadJSON(cgvJSON);
-    const mapName = document.getElementById('map-name');
-    mapName.innerHTML = cgv.name;
-    cgv.draw();
-    myResize();
-  }
+  // // Load Map with JSON
+  // if (cgvJSON) {
+  //   cgv.io.loadJSON(cgvJSON);
+  //   const mapName = document.getElementById('map-name');
+  //   mapName.innerHTML = cgv.name;
+  //   cgv.draw();
+  //   myResize();
+  // }
 }
 
 function filterJSONText(text) {
@@ -335,9 +297,6 @@ showInputCheckbox.addEventListener('click', (e) => {
 showSeqJsonCheckbox.addEventListener('click', (e) => {
   updatePageLayout();
 });
-showTesJsonCheckbox.addEventListener('click', (e) => {
-  updatePageLayout();
-});
 showCgvJsonCheckbox.addEventListener('click', (e) => {
   updatePageLayout();
 });
@@ -350,11 +309,8 @@ function updatePageLayout() {
   const inputDiv = document.querySelector('.section-input');
   inputDiv.style.display = showInputCheckbox.checked ? 'flex' : 'none';
   // Sequence JSON
-  const seqJsonDiv = document.querySelector('.section-seq-json');
-  seqJsonDiv.style.display = showSeqJsonCheckbox.checked ? 'flex' : 'none';
-  // Teselagen JSON
-  const tesJsonDiv = document.querySelector('.section-tes-json');
-  tesJsonDiv.style.display = showTesJsonCheckbox.checked ? 'flex' : 'none';
+  const featureJsonDiv = document.querySelector('.section-feature-json');
+  featureJsonDiv.style.display = showSeqJsonCheckbox.checked ? 'flex' : 'none';
   // CGView JSON
   const cgvJsonDiv = document.querySelector('.section-cgv-json');
   cgvJsonDiv.style.display = showCgvJsonCheckbox.checked ? 'flex' : 'none';
