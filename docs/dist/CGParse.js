@@ -13,7 +13,7 @@ var CGParse = (function () {
   // - add groups to group logs together for formatting and filtering
   // Logging levels: log, info, warn, error
   // Log messages can be a simgle message or an array of messages
-  // - When an array of messages is provided, if the cound is more than maxLogCount
+  // - When an array of messages is provided, if the count is more than maxLogCount
   //   then only the first maxLogCount messages are shown.
   class Logger {
 
@@ -67,7 +67,8 @@ var CGParse = (function () {
     // Private methods
     ///////////////////////////////////////////////////////////////////////////
 
-    // level: warn, error, info, log
+    // - messages: a single message or an array of messages
+    // - level: warn, error, info, log
     _log(messages, level, options={}) {
       const timestamp = this._formatTime(new Date());
       messages = (Array.isArray(messages)) ? messages : [messages];
@@ -1718,6 +1719,23 @@ var CGParse = (function () {
       return this.options.nameKeys || ['Name', 'Alias', 'gene', 'locus_tag', 'product', 'note', 'db_xref', 'ID'];
     }
 
+    _fail(message, errorCode='unknown') {
+      this.file._fail(message, errorCode);
+    }
+
+    // Returns true if the line matches the GFF3 format
+    // - line: the first non-empty/non-comment line of the file
+    static lineMatches(line) {
+      const fields = line.split('\t').map((field) => field.trim());
+      if (fields.length !== 9) {
+        return false;
+      } else if (isNaN(fields[3]) || isNaN(fields[4])) {
+        return false;
+      }
+      return true;
+
+    }
+
     // Parse the GFF3 file
     parse(fileText, options={}) {
       const records = [];
@@ -1827,16 +1845,6 @@ var CGParse = (function () {
       return null;
     }
 
-    // TEMP
-    // MOVE TO HELPERS
-    _fail(message, errorCode='unknown') {
-      this.file._faile(message, errorCode);
-      // this.logger.error(message);
-      // // this._success = false;
-      // this._status = 'failed';
-      // this._errorCodes.add(errorCode);
-    }
-
 
   }
 
@@ -1866,6 +1874,29 @@ var CGParse = (function () {
 
     get nameKeys() {
       return this.options.nameKeys || ['Name', 'Alias', 'gene', 'locus_tag', 'product', 'note', 'db_xref', 'ID'];
+    }
+
+    _fail(message, errorCode='unknown') {
+      this.file._fail(message, errorCode);
+    }
+
+    // Returns true if the line matches the GTF3 format
+    // - line: the first non-empty/non-comment line of the file
+    static lineMatches(line) {
+      const adjustedLine = line.replace(/\s+#[^"]+$/, '');
+      const fields = adjustedLine.split('\t').map((field) => field.trim());
+      const attributes = fields[8]?.split('; ') || [];
+      if (fields.length !== 9) {
+        return false;
+      } else if (isNaN(fields[3]) || isNaN(fields[4])) {
+        return false;
+      } else if (attributes.length < 2) {
+        // requried to have at least 2 attributes
+        return false;
+      } else if (!attributes[0].startsWith('gene_id')) {
+        return false;
+      }
+      return true;
     }
 
     parse(fileText, options={}) {
@@ -1985,16 +2016,157 @@ var CGParse = (function () {
       return null;
     }
 
-    // TEMP
-    // MOVE TO HELPERS
-    _fail(message, errorCode='unknown') {
-      this.file._faile(message, errorCode);
-      // this.logger.error(message);
-      // // this._success = false;
-      // this._status = 'failed';
-      // this._errorCodes.add(errorCode);
+  }
+
+  // NOTES:
+  // - Bed is a 0-based format. The chromStart field is 0-based and the chromEnd field is 1-based.
+
+  class BEDFeatureFile {
+
+    constructor(file, options={}) {
+        this._file = file;
+        this._options = options;
+        this.logger = options.logger || new Logger();
     }
 
+    get file() {
+        return this._file;
+    }
+
+    get options() {
+        return this._options;
+    }
+
+    get fileFormat() {
+        return 'bed';
+    }
+
+    get displayFileFormat() {
+        return 'BED';
+    }
+
+    _fail(message, errorCode='unknown') {
+      this.file._fail(message, errorCode);
+    }
+
+    // Returns true if the line matches the BED format
+    // - line: the first non-empty/non-comment line of the file
+    // fields: 2, 3, 5, 7, 8, 10 when present should be numbers
+    static lineMatches(line) {
+      const fields = line.split('\t').map((field) => field.trim());
+      if (fields.length < 3) {
+        return false;
+      } else if (fields.length === 10 || fields.length === 11) {
+        // BED10 and BED11 are not permitted
+        return false;
+      } else if (isNaN(fields[1]) || isNaN(fields[2])) {
+        return false;
+      } else if (fields.length >= 5 && isNaN(fields[4])) {
+        return false;
+      } else if (fields.length >= 7 && isNaN(fields[6])) {
+        return false;
+      } else if (fields.length >= 8 && isNaN(fields[7])) {
+        return false;
+      } else if (fields.length >= 10 && isNaN(fields[9])) {
+        return false;
+      }
+
+      return true;
+    }
+
+    parse(fileText, options={}) {
+      const records = [];
+      const lines = fileText.split('\n');
+      let line;
+      for (line of lines) {
+        if (line.startsWith('#')) ; else if (line.trim() === '') ; else {
+          // This is a feature line
+          const record = this._parseLine(line);
+          if (record) {
+            records.push(record);
+          }
+        }
+      }
+      this.logger.info(`- Parsed ${records.length} record`);
+      return records;
+    }
+
+    // TODO
+    // - Provide warnging for thickStart/thickEnd
+    // - Should we check the number of fields and confirm they are all the same?
+    _parseLine(line) {
+      const fields = line.split('\t').map((field) => field.trim());
+      if (fields.length < 3) {
+        this._fail(`- Line does not have at least 3 fields: ${line}`);
+        // this.logger.warn(`- Skipping line: ${line}`);
+        return null;
+      }
+      // Bsic fields
+      const record = {
+        contig: fields[0],
+        // Convert start to 1-based
+        start: parseInt(fields[1]) + 1,
+        stop: parseInt(fields[2]),
+        name: fields[3] || 'Uknown',
+      };
+      // Score
+      const score = parseFloat(fields[4]);
+      if (!isNaN(score)) {
+        record.score = score;
+      }
+      // Strand
+      if (fields[5]) {
+        record.strand = fields[5];
+      }
+      // ThickStart and ThickEnd
+      // TODO ERROR CODES
+      // THIS error code should explain that we do not use thickStart/thickEnd so this information is lost
+      if (fields[6]) {
+        const thickStart = parseInt(fields[6]);
+        // thickStart is 0-based so we add 1 here
+        if ((thickStart + 1) !== record.start) {
+          this.logger.warn(`- thickStart is not the same as start: ${line}`);
+        }
+      }
+      if (fields[7]) {
+        const thickEnd = parseInt(fields[7]);
+        if (thickEnd !== record.stop) {
+          this.logger.warn(`- thickEnd is not the same as stop: ${line}`);
+        }
+      }
+      // Blocks (requires fields 10, 11, 12)
+      if (fields[11]) {
+        const blockCount = parseInt(fields[9]);
+        if (blockCount > 1) {
+          // blockSizes and blockStarts may have dangling commas
+          const blockSizes = fields[10].replace(/,$/, '').split(',').map((size) => parseInt(size));
+          // blockStarts are 0-based so we add 1 here
+          const blockStarts = fields[11].replace(/,$/, '').split(',').map((start) => parseInt(start) + 1);
+          if (blockCount !== blockSizes.length || blockCount !== blockStarts.length) {
+            // ERROR CODE
+            this.logger.warn(`- Block count does not match block sizes and starts: ${line}`);
+            console.log(blockCount, blockSizes, blockStarts);
+          } else if (blockStarts[0] !== 1) {
+            // ERROR CODE
+            this.logger.warn(`- Block start does not match start: ${line}`);
+          } else if ((blockStarts[blockStarts.length - 1] + blockSizes[blockStarts.length - 1] + record.start - 2) !== record.stop) {
+            // ERROR CODE
+            this.logger.warn(`- Block end does not match stop: ${line}`);
+          } else {
+            // Add blocks to locations
+            record.locations = [];
+            for (let i = 0; i < blockCount; i++) {
+              record.locations.push([
+                record.start + blockStarts[i] - 1,
+                record.start + blockStarts[i] + blockSizes[i] - 2
+              ]);
+            }
+          }
+        }
+      }
+
+      return record;
+    }
 
   }
 
@@ -2025,7 +2197,7 @@ var CGParse = (function () {
     static FILE_FORMAT_DELEGATES = {
       'gff3': GFF3FeatureFile,
       'gtf': GTFFeatureFile,
-      // 'bed': BedFeatureFile,
+      'bed': BEDFeatureFile,
       // 'csv': CSVFeatureFile,
     };
 
@@ -2039,6 +2211,7 @@ var CGParse = (function () {
     // - logger: logger object
     // - maxLogCount: number (undefined means no limit) [Default: undefined]
     constructor(inputText, options={}) {
+      this.options = options;
       const convertedText = convertLineEndingsToLF(inputText);
       this.logger = options.logger || new Logger();
       options.logger = this.logger;
@@ -2098,7 +2271,7 @@ var CGParse = (function () {
     set inputFormat(format) {
       const fileFormats = Object.keys(FeatureFile.formatDelegateMap);
       if (fileFormats.includes(format)) {
-        this._delegate = new FeatureFile.formatDelegateMap[format](this);
+        this._delegate = new FeatureFile.formatDelegateMap[format](this, this.options);
       } else {
         throw `File format '${format}' must be one of the following: ${fileFormats.join(', ')}`;
       }
@@ -2134,11 +2307,13 @@ var CGParse = (function () {
       let detectedFormat;
       // filter lines to remove blank lines and lines with starting with '#'
       const lines = fileText.split('\n').filter((line) => line.trim() !== '' && !line.startsWith('#'));
+      const firstLine = lines[0];
       if (fileText.match(/^##gff-version 3/)) {
         detectedFormat = 'gff3';
-      } else if (lines[0].split('\t').length === 9) {
-        // TODO: check for "; " vs ";" in attributes
+      } else if (GTFFeatureFile.lineMatches(firstLine)) {
         detectedFormat = 'gtf';
+      } else if (BEDFeatureFile.lineMatches(firstLine)) {
+        detectedFormat = 'bed';
       } else {
         detectedFormat = 'unknown';
       }
@@ -2221,7 +2396,6 @@ var CGParse = (function () {
     }
 
 
-
     /////////////////////////////////////////////////////////////////////////////
     // PARSERS
     /////////////////////////////////////////////////////////////////////////////
@@ -2247,195 +2421,213 @@ var CGParse = (function () {
     // GFF3
     /////////////////////////////////////////////////////////////////////////////
 
-    _parseGFF3(fileText, options={}) {
-      const records = [];
-      const lines = fileText.split('\n');
-      let line;
-      for (line of lines) {
-        if (line.startsWith('##')) ; else if (line.startsWith('#')) ; else if (line.trim() === '') ; else {
-          // This is a feature line
-          const record = this._parseGFF3Line(line);
-          if (record) {
-            records.push(record);
-          }
-        }
-      }
-      this.logger.info(`- Parsed ${records.length} record`);
-      return records;
-    }
+    // _parseGFF3(fileText, options={}) {
+    //   const records = [];
+    //   const lines = fileText.split('\n');
+    //   let line;
+    //   for (line of lines) {
+    //     if (line.startsWith('##')) {
+    //       // This is a meta line
+    //       // Do nothing
+    //     } else if (line.startsWith('#')) {
+    //       // This is a comment line
+    //       // Do nothing
+    //     } else if (line.trim() === '') {
+    //       // This is an empty line
+    //       // Do nothing
+    //     } else {
+    //       // This is a feature line
+    //       const record = this._parseGFF3Line(line);
+    //       if (record) {
+    //         records.push(record);
+    //       }
+    //     }
+    //   }
+    //   this.logger.info(`- Parsed ${records.length} record`);
+    //   return records;
+    // }
 
-    // TODO
-    // - replace values with undefined if they are "."
-    // - lines with the same ID should be combined into a single record
-    // - cgv feature name could come from Name or ID
-    // - deal with features that wrap around the contig
-    //   - requires Is_circular attribute for region
-    //   - stop will be larger than seq length to indicate wrapping
-    _parseGFF3Line(line) {
-      const fields = line.split('\t').map((field) => field.trim());
-      if (fields.length < 9) {
-        this._fail(`- Line does not have 9 fields: ${line}`);
-        // this.logger.error(`- Line does not have 9 fields: ${line}`);
-        return null;
-      }
-      const record = {
-        contig: fields[0],
-        source: fields[1],
-        type: this._parseType(fields[2]),
-        start: parseInt(fields[3]),
-        stop: parseInt(fields[4]),
-        score: fields[5],
-        strand: fields[6],
-        phase: fields[7],
-        attributes: this._parseAttributes(fields[8]),
-        qualifiers: {},
-      };
-      const qualifiers = this._extractQualifiers(record);
-      if (Object.keys(qualifiers).length > 0) {
-        record.qualifiers = qualifiers;
-      }
-      record.name = this._extractName(record, this.nameKeys);
-      return record;
-    }
+    // // TODO
+    // // - replace values with undefined if they are "."
+    // // - lines with the same ID should be combined into a single record
+    // // - cgv feature name could come from Name or ID
+    // // - deal with features that wrap around the contig
+    // //   - requires Is_circular attribute for region
+    // //   - stop will be larger than seq length to indicate wrapping
+    // _parseGFF3Line(line) {
+    //   const fields = line.split('\t').map((field) => field.trim());
+    //   if (fields.length < 9) {
+    //     this._fail(`- Line does not have 9 fields: ${line}`);
+    //     // this.logger.error(`- Line does not have 9 fields: ${line}`);
+    //     return null;
+    //   }
+    //   const record = {
+    //     contig: fields[0],
+    //     source: fields[1],
+    //     type: this._parseType(fields[2]),
+    //     start: parseInt(fields[3]),
+    //     stop: parseInt(fields[4]),
+    //     score: fields[5],
+    //     strand: fields[6],
+    //     phase: fields[7],
+    //     attributes: this._parseAttributes(fields[8]),
+    //     qualifiers: {},
+    //   };
+    //   const qualifiers = this._extractQualifiers(record);
+    //   if (Object.keys(qualifiers).length > 0) {
+    //     record.qualifiers = qualifiers;
+    //   }
+    //   record.name = this._extractName(record, this.nameKeys);
+    //   return record;
+    // }
 
-    _parseType(type) {
-      const soTerm = SO_TERMS[type];
-      return soTerm || type;
-    }
+    // _parseType(type) {
+    //   const soTerm = helpers.SO_TERMS[type];
+    //   return soTerm || type;
+    // }
 
-    // Attributes with predefined meaning: ID, Name, Alias, Parent, Note, Dbxref, Is_circular, Target, Gap, Derives_from, Ontology_term
-    _parseAttributes(attributeString) {
-      const attributes = {};
-      const fields = attributeString.split(';');
-      let field;
-      for (field of fields) {
-        const [key, value] = field.split('=');
-        attributes[key] = value.trim();
-      }
-      return attributes;
-    }
+    // // Attributes with predefined meaning: ID, Name, Alias, Parent, Note, Dbxref, Is_circular, Target, Gap, Derives_from, Ontology_term
+    // _parseAttributes(attributeString) {
+    //   const attributes = {};
+    //   const fields = attributeString.split(';');
+    //   let field;
+    //   for (field of fields) {
+    //     const [key, value] = field.split('=');
+    //     attributes[key] = value.trim();
+    //   }
+    //   return attributes;
+    // }
 
-    _extractQualifiers(record) {
-      const attributes = record.attributes || {};
-      const qualifiers = {};
-      const keys = Object.keys(attributes);
-      let key;
-      for (key of keys) {
-        if (QUALIFIERS.includes(key)) {
-          qualifiers[key] = attributes[key];
-          // qualifiers.push({ key, value: attributes[key] });
-        } else if (key === 'Dbxref') {
-          qualifiers['db_xref'] = attributes[key];
-        } else if (key === 'Note') {
-          this._addQualifierNote(qualifiers, attributes[key]);
-        } else if (key === 'codons') {
-          this._addQualifierNote(qualifiers, `codon recognized: ${attributes[key]}`);
-        }
-      }
-      return qualifiers;
-    }
+    // _extractQualifiers(record) {
+    //   const attributes = record.attributes || {};
+    //   const qualifiers = {};
+    //   const keys = Object.keys(attributes);
+    //   let key;
+    //   for (key of keys) {
+    //     if (helpers.QUALIFIERS.includes(key)) {
+    //       qualifiers[key] = attributes[key];
+    //       // qualifiers.push({ key, value: attributes[key] });
+    //     } else if (key === 'Dbxref') {
+    //       qualifiers['db_xref'] = attributes[key];
+    //     } else if (key === 'Note') {
+    //       this._addQualifierNote(qualifiers, attributes[key]);
+    //     } else if (key === 'codons') {
+    //       this._addQualifierNote(qualifiers, `codon recognized: ${attributes[key]}`);
+    //     }
+    //   }
+    //   return qualifiers;
+    // }
 
-    _addQualifierNote(qualifiers, note) {
-      // qualifiers = record.qualifiers;
-      if (!qualifiers.note) {
-        qualifiers.note = note;
-      } else {
-        qualifiers.note += `; ${note}`;
-      }
-    }
+    // _addQualifierNote(qualifiers, note) {
+    //   // qualifiers = record.qualifiers;
+    //   if (!qualifiers.note) {
+    //     qualifiers.note = note;
+    //   } else {
+    //     qualifiers.note += `; ${note}`
+    //   }
+    // }
 
-    _extractName(record, nameKeys) {
-      const attributes = record.attributes || {};
-      let key;
-      for (key of nameKeys) {
-        if (attributes[key]) {
-          return attributes[key];
-        }
-      }
-      return null;
-    }
+    // _extractName(record, nameKeys) {
+    //   const attributes = record.attributes || {};
+    //   let key;
+    //   for (key of nameKeys) {
+    //     if (attributes[key]) {
+    //       return attributes[key];
+    //     }
+    //   }
+    //   return null;
+    // }
 
     /////////////////////////////////////////////////////////////////////////////
     // GTF
     /////////////////////////////////////////////////////////////////////////////
 
-    _parseGTF(fileText, options={}) {
-      const records = [];
-      const lines = fileText.split('\n');
-      let line;
-      for (line of lines) {
-        if (line.startsWith('##')) ; else if (line.startsWith('#')) ; else if (line.trim() === '') ; else {
-          // This is a feature line
-          const record = this._parseGTFLine(line);
-          if (record) {
-            records.push(record);
-          }
-        }
-      }
-      this.logger.info(`- Parsed ${records.length} record`);
-      return records;
-    }
+    // _parseGTF(fileText, options={}) {
+    //   const records = [];
+    //   const lines = fileText.split('\n');
+    //   let line;
+    //   for (line of lines) {
+    //     if (line.startsWith('##')) {
+    //       // This is a meta line
+    //       // Do nothing
+    //     } else if (line.startsWith('#')) {
+    //       // This is a comment line
+    //       // Do nothing
+    //     } else if (line.trim() === '') {
+    //       // This is an empty line
+    //       // Do nothing
+    //     } else {
+    //       // This is a feature line
+    //       const record = this._parseGTFLine(line);
+    //       if (record) {
+    //         records.push(record);
+    //       }
+    //     }
+    //   }
+    //   this.logger.info(`- Parsed ${records.length} record`);
+    //   return records;
+    // }
 
-    // TODO:
-    // - may need to remove comments at the end of lines '#'
-    _parseGTFLine(line) {
-      const fields = line.split('\t').map((field) => field.trim());
-      if (fields.length < 9) {
-        this._fail(`- Line does not have 9 fields: ${line}`);
-        // this.logger.warn(`- Skipping line: ${line}`);
-        return null;
-      }
-      const record = {
-        contig: fields[0],
-        source: fields[1],
-        type: this._parseType(fields[2]),
-        start: parseInt(fields[3]),
-        stop: parseInt(fields[4]),
-        score: fields[5],
-        strand: fields[6],
-        phase: fields[7],
-        attributes: this._parseGTFAttributes(fields[8]),
-        qualifiers: {},
-      };
-      const qualifiers = this._extractQualifiers(record);
-      if (Object.keys(qualifiers).length > 0) {
-        record.qualifiers = qualifiers;
-      }
-      record.name = this._extractName(record, this.nameKeys);
-      return record;
-    }
+    // // TODO:
+    // // - may need to remove comments at the end of lines '#'
+    // _parseGTFLine(line) {
+    //   const fields = line.split('\t').map((field) => field.trim());
+    //   if (fields.length < 9) {
+    //     this._fail(`- Line does not have 9 fields: ${line}`);
+    //     // this.logger.warn(`- Skipping line: ${line}`);
+    //     return null;
+    //   }
+    //   const record = {
+    //     contig: fields[0],
+    //     source: fields[1],
+    //     type: this._parseType(fields[2]),
+    //     start: parseInt(fields[3]),
+    //     stop: parseInt(fields[4]),
+    //     score: fields[5],
+    //     strand: fields[6],
+    //     phase: fields[7],
+    //     attributes: this._parseGTFAttributes(fields[8]),
+    //     qualifiers: {},
+    //   };
+    //   const qualifiers = this._extractQualifiers(record);
+    //   if (Object.keys(qualifiers).length > 0) {
+    //     record.qualifiers = qualifiers;
+    //   }
+    //   record.name = this._extractName(record, this.nameKeys);
+    //   return record;
+    // }
 
-    // Attributes with predefined meaning: gene_id, transcript_ID
-    _parseGTFAttributes(attributeString) {
-      const attributes = {};
-      const fields = attributeString.split('; ');
-      // HERE: use regex to split key values. value may be in quotes
-      for (let field of fields) {
-        let match = field.match(/\s*(\S+)\s+"([^"]+)"/);
-        if (match) {
-          const key = match[1];
-          const value = match[2];
-          if (attributes[key]) {
-            if (Array.isArray(attributes[key])) {
-              attributes[key].push(value);
-            } else {
-              attributes[key] = [attributes[key], value];
-            }
-          } else {
-            attributes[key] = value;
-          }
-        }
-      }
-      return attributes;
-    }
+    // // Attributes with predefined meaning: gene_id, transcript_ID
+    // _parseGTFAttributes(attributeString) {
+    //   const attributes = {};
+    //   const fields = attributeString.split('; ');
+    //   // HERE: use regex to split key values. value may be in quotes
+    //   for (let field of fields) {
+    //     let match = field.match(/\s*(\S+)\s+"([^"]+)"/);
+    //     if (match) {
+    //       const key = match[1];
+    //       const value = match[2];
+    //       if (attributes[key]) {
+    //         if (Array.isArray(attributes[key])) {
+    //           attributes[key].push(value);
+    //         } else {
+    //           attributes[key] = [attributes[key], value];
+    //         }
+    //       } else {
+    //         attributes[key] = value;
+    //       }
+    //     }
+    //   }
+    //   return attributes;
+    // }
 
     /////////////////////////////////////////////////////////////////////////////
     // METHODS
     /////////////////////////////////////////////////////////////////////////////
 
+    // Sets the status to failed and logs an error message
     _fail(message, errorCode='unknown') {
       this.logger.error(message);
-      // this._success = false;
       this._status = 'failed';
       this._errorCodes.add(errorCode);
     }

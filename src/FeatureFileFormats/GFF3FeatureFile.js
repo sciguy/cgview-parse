@@ -29,6 +29,23 @@ class GFF3FeatureFile {
     return this.options.nameKeys || ['Name', 'Alias', 'gene', 'locus_tag', 'product', 'note', 'db_xref', 'ID'];
   }
 
+  _fail(message, errorCode='unknown') {
+    this.file._fail(message, errorCode);
+  }
+
+  // Returns true if the line matches the GFF3 format
+  // - line: the first non-empty/non-comment line of the file
+  static lineMatches(line) {
+    const fields = line.split('\t').map((field) => field.trim());
+    if (fields.length !== 9) {
+      return false;
+    } else if (isNaN(fields[3]) || isNaN(fields[4])) {
+      return false;
+    }
+    return true;
+
+  }
+
   // Parse the GFF3 file
   parse(fileText, options={}) {
     const records = [];
@@ -145,16 +162,6 @@ class GFF3FeatureFile {
       }
     }
     return null;
-  }
-
-  // TEMP
-  // MOVE TO HELPERS
-  _fail(message, errorCode='unknown') {
-    this.file._faile(message, errorCode);
-    // this.logger.error(message);
-    // // this._success = false;
-    // this._status = 'failed';
-    // this._errorCodes.add(errorCode);
   }
 
 

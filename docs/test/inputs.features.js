@@ -19,4 +19,24 @@ inputs = {
     type: 'gtf',
     url: '../inputs/feature_files/NZ_CP007470.gtf',
   },
+  bed3: {
+    name: 'BED3',
+    type: 'bed',
+    url: '../inputs/feature_files/BED/bed3.bed',
+  },
+  bed6: {
+    name: 'BED6',
+    type: 'bed',
+    url: '../inputs/feature_files/BED/bed6.bed',
+  },
+  bed9: {
+    name: 'BED9',
+    type: 'bed',
+    url: '../inputs/feature_files/BED/bed9.bed',
+  },
+  bed12: {
+    name: 'BED12',
+    type: 'bed',
+    url: '../inputs/feature_files/BED/bed12.bed',
+  },
 }

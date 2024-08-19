@@ -29,6 +29,29 @@ class GTFFeatureFile {
     return this.options.nameKeys || ['Name', 'Alias', 'gene', 'locus_tag', 'product', 'note', 'db_xref', 'ID'];
   }
 
+  _fail(message, errorCode='unknown') {
+    this.file._fail(message, errorCode);
+  }
+
+  // Returns true if the line matches the GTF3 format
+  // - line: the first non-empty/non-comment line of the file
+  static lineMatches(line) {
+    const adjustedLine = line.replace(/\s+#[^"]+$/, '');
+    const fields = adjustedLine.split('\t').map((field) => field.trim());
+    const attributes = fields[8]?.split('; ') || [];
+    if (fields.length !== 9) {
+      return false;
+    } else if (isNaN(fields[3]) || isNaN(fields[4])) {
+      return false;
+    } else if (attributes.length < 2) {
+      // requried to have at least 2 attributes
+      return false;
+    } else if (!attributes[0].startsWith('gene_id')) {
+      return false;
+    }
+    return true;
+  }
+
   parse(fileText, options={}) {
     const records = [];
     const lines = fileText.split('\n');
@@ -154,17 +177,6 @@ class GTFFeatureFile {
     }
     return null;
   }
-
-  // TEMP
-  // MOVE TO HELPERS
-  _fail(message, errorCode='unknown') {
-    this.file._faile(message, errorCode);
-    // this.logger.error(message);
-    // // this._success = false;
-    // this._status = 'failed';
-    // this._errorCodes.add(errorCode);
-  }
-
 
 }
 

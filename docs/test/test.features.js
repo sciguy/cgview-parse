@@ -5,7 +5,8 @@
 // Initial input file to load: '', 'file', or input from input.js (e.g. 'mito')
 // const defaultMap = '';     // Empty
 // const defaultMap = 'file'; // File Choose
-const defaultMap = 'sample';
+// const defaultMap = 'sample';
+const defaultMap = 'bed12';
 // const defaultMap = 'mito';
 
 // Deafult Options
@@ -106,7 +107,9 @@ inputSelect.addEventListener('change', (e) => {
     clearText();
     clearFileInput();
   }
-  loadInputFromID(id);
+  setTimeout(() => {
+    loadInputFromID(id);
+  }, 100);
 });
 
 // Clear the file input when the file section is closed

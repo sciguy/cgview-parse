@@ -10,7 +10,7 @@
 // - add groups to group logs together for formatting and filtering
 // Logging levels: log, info, warn, error
 // Log messages can be a simgle message or an array of messages
-// - When an array of messages is provided, if the cound is more than maxLogCount
+// - When an array of messages is provided, if the count is more than maxLogCount
 //   then only the first maxLogCount messages are shown.
 class Logger {
 
@@ -64,7 +64,8 @@ class Logger {
   // Private methods
   ///////////////////////////////////////////////////////////////////////////
 
-  // level: warn, error, info, log
+  // - messages: a single message or an array of messages
+  // - level: warn, error, info, log
   _log(messages, level, options={}) {
     const timestamp = this._formatTime(new Date());
     messages = (Array.isArray(messages)) ? messages : [messages];
