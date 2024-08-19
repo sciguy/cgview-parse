@@ -112,12 +112,19 @@
               <div><input id='option-prism' type='checkbox' checked /> Pretty Print <span class='muted'>(r)</span></div>
               <div><input id='option-show-map' type='checkbox' checked /> Show Map</div>
               <div><input id='option-show-input' type='checkbox' checked /> Show Input</div>
-              <div><input id='option-show-all-text' type='checkbox' checked /> Show All Text <span class='muted'>(seq)</span></div>
+              <div><input id='option-show-all-text' type='checkbox' checked /> Show All Text <span class='muted'>(feat)</span></div>
             </div>
             <div>
               <div><input id='option-show-seq-json' type='checkbox' checked /> Show Sequence JSON</div>
               <div><input id='option-show-cgv-json' type='checkbox' checked /> Show CGView JSON</div>
               <div><input id='option-filter-seq' type='checkbox' checked /> Filter Sequence <span class='muted'>(r)</span></div>
+              <select id='format-select' class='form-select form-select-sm'>
+                <option value='auto'>Auto</option>
+                <option value='gff3'>GFF3</option>
+                <option value='gtf'>GTF</option>
+                <option value='bed'>BED</option>
+              </select>
+
             </div>
           </div>
         </div>

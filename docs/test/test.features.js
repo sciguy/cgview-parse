@@ -9,6 +9,12 @@
 const defaultMap = 'bed12';
 // const defaultMap = 'mito';
 
+// const defaultFormat = 'auto';
+const defaultFormat = 'bed';
+// const defaultFormat = 'gff3';
+// const defaultFormat = 'gtf';
+
+
 // Deafult Options
 const prettyPrint = false;
 const showInput = true;
@@ -112,6 +118,10 @@ inputSelect.addEventListener('change', (e) => {
   }, 100);
 });
 
+// Format Select
+const formatSelect = document.getElementById('format-select');
+formatSelect.value = defaultFormat || 'auto';
+
 // Clear the file input when the file section is closed
 function clearFileInput() {
   const fileInput = document.getElementById('file-input');
@@ -200,9 +210,11 @@ function runParse() {
   const inputText = inputTextDiv.textContent;
   console.log("Input Text", inputText)
 
+  const selectedFormat = formatSelect.value;
+
   // Parse to featureJson
   const featureJsonStartTime = new Date().getTime();
-  const featureFile = new CGParse.FeatureFile(inputText, {maxLogCount: 1});
+  const featureFile = new CGParse.FeatureFile(inputText, {format: selectedFormat, maxLogCount: 1});
   const seqJSON = featureFile.records;
   json.featureFile = featureFile; // For debugging
   console.log(seqJSON)
