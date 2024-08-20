@@ -14,10 +14,15 @@ inputs = {
     type: 'gff3',
     url: '../inputs/feature_files/NZ_CP007470.gff3',
   },
+  sample_gtf: {
+    name: 'H. influenzae (GTF) [NZ_CP007470]',
+    type: 'gtf',
+    url: '../inputs/feature_files/GTF/sample.gtf',
+  },
   hinflu_gtf: {
     name: 'H. influenzae (GTF) [NZ_CP007470]',
     type: 'gtf',
-    url: '../inputs/feature_files/NZ_CP007470.gtf',
+    url: '../inputs/feature_files/GTF/NZ_CP007470.gtf',
   },
   bed3: {
     name: 'BED3',

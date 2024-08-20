@@ -8,8 +8,10 @@ class BEDFeatureFile {
 
   constructor(file, options={}) {
       this._file = file;
+      this._errors = {};
       this._options = options;
       this.logger = options.logger || new Logger();
+      this._lineCount = 0;
   }
 
   get file() {
@@ -26,6 +28,22 @@ class BEDFeatureFile {
 
   get displayFileFormat() {
       return 'BED';
+  }
+
+  get lineCount() {
+    return this._lineCount;
+  }
+
+  // Returns an object with keys for the error codes and values for the error messages
+  // - errorTypes:
+  //   - thickStartNotMatchingStart
+  //   - thickEndNotMatchingStop
+  get errors() {
+    return this._errors || {};
+  }
+
+  _warn(message, errorCode='unknown') {
+    this.file._warn(message, errorCode);
   }
 
   _fail(message, errorCode='unknown') {
@@ -57,6 +75,15 @@ class BEDFeatureFile {
     return true;
   }
 
+  addError(errorCode, message) {
+    const errors = this.errors;
+    if (errors[errorCode]) {
+      errors[errorCode].push(message);
+    } else {
+      errors[errorCode] = [message];
+    }
+  }
+
   parse(fileText, options={}) {
     const records = [];
     const lines = fileText.split('\n');
@@ -84,6 +111,7 @@ class BEDFeatureFile {
   // - Provide warnging for thickStart/thickEnd
   // - Should we check the number of fields and confirm they are all the same?
   _parseLine(line) {
+    this._lineCount++;
     const fields = line.split('\t').map((field) => field.trim());
     if (fields.length < 3) {
       this._fail(`- Line does not have at least 3 fields: ${line}`);
@@ -108,19 +136,17 @@ class BEDFeatureFile {
       record.strand = fields[5];
     }
     // ThickStart and ThickEnd
-    // TODO ERROR CODES
-    // THIS error code should explain that we do not use thickStart/thickEnd so this information is lost
     if (fields[6]) {
       const thickStart = parseInt(fields[6]);
       // thickStart is 0-based so we add 1 here
       if ((thickStart + 1) !== record.start) {
-        this.logger.warn(`- thickStart is not the same as start: ${line}`);
+        this.addError('thickStartNotMatchingStart', `- thickStart is not the same as start: ${line}`);
       }
     }
     if (fields[7]) {
       const thickEnd = parseInt(fields[7]);
       if (thickEnd !== record.stop) {
-        this.logger.warn(`- thickEnd is not the same as stop: ${line}`);
+        this.addError('thickEndNotMatchingEnd', `- thickEnd is not the same as stop: ${line}`);
       }
     }
     // Blocks (requires fields 10, 11, 12)
@@ -155,6 +181,33 @@ class BEDFeatureFile {
     }
 
     return record;
+  }
+
+  validateRecords(records) {
+    const errors = this.errors;
+    // ThickStart and ThickEnd Warnings
+    const thickStartErrors = errors['thickStartNotMatchingStart'] || [];
+    if (thickStartErrors.length) {
+      this._warn(`- Features where thickStart != start: ${thickStartErrors.length}`);
+    }
+    const thickEndErrors = errors['thickEndNotMatchingEnd'] || [];
+    if (thickEndErrors.length) {
+      this._warn(`- Features where thickEnd != stop: ${thickStartErrors.length}`);
+    }
+    if (thickStartErrors.length || thickEndErrors.length) {
+      this._warn(`- NOTE: thickStart and thickEnd are ignored by this parser`);
+    }
+
+    // Missing Starts and Stops
+    const missingStarts = records.filter((record) => isNaN(record.start));
+    if (missingStarts.length) {
+      this._fail(`- Records missing Starts: ${missingStarts.length.toLocaleString().padStart(5)}`);
+    }
+    const missingStops = records.filter((record) => isNaN(record.stop));
+    if (missingStops.length) {
+      this._fail(`- Records missing Stops: ${missingStops.length.toLocaleString().padStart(6)}`);
+    }
+
   }
 
 }

@@ -72,7 +72,7 @@ class FeatureFile {
     const convertedText = helpers.convertLineEndingsToLF(inputText);
     this.logger = options.logger || new Logger();
     options.logger = this.logger;
-    const providedFormat = options.format || 'auto';
+    let providedFormat = options.format || 'auto';
     if (options.maxLogCount) {
       this.logger.maxLogCount = options.maxLogCount;
     }
@@ -80,6 +80,7 @@ class FeatureFile {
     this._success = true
     this._status = 'success'
     this._records = [];
+    // FIXME either use these or remove it
     this._errorCodes = new Set();
 
     this.nameKeys = options.nameKeys || ['Name', 'Alias', 'gene', 'locus_tag', 'product', 'note', 'db_xref', 'ID'];
@@ -89,15 +90,19 @@ class FeatureFile {
     } else if (helpers.isBinary(convertedText)) {
       this._fail('Parsing Failed: Input contains non-text characters. Is this binary data?', 'binary');
     } else {
+      // File Format
+      this.logger.info("Checking File Format...");
       this.logger.info('- Format Provided: ' + providedFormat.padStart(12));
-      this.inputFormat = this.detectFormat(convertedText, providedFormat);
-      this.logger.info('- Format Detected: ' + this.inputFormat.padStart(12));
+      const detectedFormat = this.detectFormat(convertedText);
+      this.logger.info('- Format Detected: ' + detectedFormat.padStart(12));
+      this.inputFormat = this.chooseFormat(providedFormat, detectedFormat);
+      // Names
       if (['gtf', 'gff3'].includes(this.inputFormat)) {
         this.logger.info("- Name extraction keys (GFF3/GTF): " + this.nameKeys.join(', '));
       }
-      this._records = this._parse(convertedText, options);
-      this.logger.info('- Done parsing feature file');
-      // this._validateRecords(this._records);
+      // Parse
+      this._records = this.parseWrapper(convertedText, options);
+      this.validateRecordsWrapper(this._records, options);
       this.parseSummary();
     }
     this.logger.break();
@@ -109,9 +114,10 @@ class FeatureFile {
 
 
   /////////////////////////////////////////////////////////////////////////////
-  // Properties
+  // Status
   /////////////////////////////////////////////////////////////////////////////
 
+  // Should be one of: 'success', 'warnings', 'fail'
   get status() {
     return this._status;
   }
@@ -120,9 +126,34 @@ class FeatureFile {
     return this.status == 'success';
   }
 
-  static get formatDelegateMap() {
-    return FeatureFile.FILE_FORMAT_DELEGATES;
+  get passed() {
+    return this.status === 'success' || this.status === 'warnings';
   }
+
+  _warn(message) {
+    this.logger.warn(message);
+    if (this.status !== 'fail') {
+      this._status = 'warnings';
+    }
+  }
+
+  // Sets the status to failed and logs an error message
+  _fail(message, errorCode='unknown') {
+    this.logger.error(message);
+    this._status = 'failed';
+    this._errorCodes.add(errorCode);
+  }
+
+  // Returns an array of unique error codes
+  // Codes: unknown, binary, empty
+  get errorCodes() {
+    return Array.from(this._errorCodes);
+  }
+
+
+  /////////////////////////////////////////////////////////////////////////////
+  // FILE FORMAT
+  /////////////////////////////////////////////////////////////////////////////
 
   // The file format being parsed: 'auto', 'gff3', 'bed', 'csv', 'gtf', 'uknonwn'
   get inputFormat() {
@@ -138,33 +169,11 @@ class FeatureFile {
     }
   }
 
-  // { inputFormat, featureCount, success }
-  get summary() {
-    return this._summary;
-  }
-
-  // Returns an array of unique error codes
-  // Codes: unknown, binary, empty
-  get errorCodes() {
-    return Array.from(this._errorCodes);
-  }
-
-  get delegate() {
-    return this._delegate;
-  }
-
-  /////////////////////////////////////////////////////////////////////////////
-  // DETERMINE FILE FORMAT
-  /////////////////////////////////////////////////////////////////////////////
-
   // Options:
   // - fileText: contents of the file (string)
   // - providedFormat: the format provided by the user (string)
   //   - 'auto', 'gff3', 'bed', 'csv', 'gtf'
-  // - if a format other than 'auto' is provided, that format will be returned
-  //   - however, if the format doesn't match the file, a warning will be logged
-  //   - if the provided format is unknown, 'auto' will be used and a warning will be logged
-  detectFormat(fileText, providedFormat='auto') {
+  detectFormat(fileText) {
     let detectedFormat;
     // filter lines to remove blank lines and lines with starting with '#'
     const lines = fileText.split('\n').filter((line) => line.trim() !== '' && !line.startsWith('#'));
@@ -178,21 +187,30 @@ class FeatureFile {
     } else {
       detectedFormat = 'unknown';
     }
-    if (FeatureFile.FORMATS.includes(providedFormat)) {
-      if (providedFormat !== 'auto') {
-        if (providedFormat !== detectedFormat) {
-          this.logger.warn(`- Provided format '${providedFormat}' does not match detected format '${detectedFormat}'`);
-        }
-        return providedFormat;
-      } else {
-        if (detectedFormat === 'unknown') {
-          this._fail(`- File Format Unknown: autodection failed. Try explicitly setting the format.`);
-        }
-        return detectedFormat;
+
+    return detectedFormat;
+  }
+
+  // Choose the format to use based on the provided format and the detected format
+  // - if a format other than 'auto' is provided, that format will be returned
+  //   - however, if the format doesn't match the file, a warning will be logged
+  //   - if the provided format is unknown, 'auto' will be used and a warning will be logged
+  chooseFormat(providedFormat, detectedFormat) {
+    if (FeatureFile.FORMATS.includes(providedFormat) && (providedFormat !== 'auto')) {
+      if (providedFormat !== detectedFormat) {
+        this._warn(`- Using Provided format '${providedFormat}'; Does not match detected format '${detectedFormat}'`);
       }
+      return providedFormat;
+    } else {
+      // Either they provided an invalide format or 'auto'
+      if (detectedFormat === 'unknown') {
+        this._fail(`- File Format Unknown: AutoDection Failed. Try explicitly setting the format.`);
+      } else if (providedFormat !== 'auto') {
+        // Invalid format provided
+        this.logger.warn(`- Unknown format '${providedFormat}' -> Using '${detectedFormat}'`);
+      }
+      return detectedFormat;
     }
-
-
   }
 
   /////////////////////////////////////////////////////////////////////////////
@@ -217,6 +235,11 @@ class FeatureFile {
   // SUMMARY
   /////////////////////////////////////////////////////////////////////////////
 
+  // { inputFormat, featureCount, success }
+  get summary() {
+    return this._summary;
+  }
+
   parseSummary() {
     const records = this.records;
 
@@ -225,10 +248,12 @@ class FeatureFile {
     this.logger.break('--------------------------------------------\n')
     this.logger.info('Parsing Summary:');
     this.logger.info(`- Input File Format: ${format.padStart(10)}`);
-    this.logger.info(`- Feature Lines: ${'LINE COUNT'.padStart(14)}`);
+    this.logger.info(`- Feature Lines: ${this.lineCount.toLocaleString().padStart(14)}`);
     this.logger.info(`- Feature Count: ${records.length.toLocaleString().padStart(14)}`);
     if (this.success) {
       this.logger.info('- Status: ' + 'Success'.padStart(21), {icon: 'success'});
+    } else if (this.status === 'warnings') {
+      this.logger.warn('- Status: ' + 'Warnings'.padStart(21), {icon: 'warn'});
     } else {
       this.logger.error('- Status: ' + 'FAILED'.padStart(21), {icon: 'fail'});
     }
@@ -246,8 +271,15 @@ class FeatureFile {
   }
 
   /////////////////////////////////////////////////////////////////////////////
-  // DELEGATE METHODS
+  // DELEGATES
   /////////////////////////////////////////////////////////////////////////////
+  get delegate() {
+    return this._delegate;
+  }
+
+  static get formatDelegateMap() {
+    return FeatureFile.FILE_FORMAT_DELEGATES;
+  }
 
   get fileFormat() {
     return this.delegate.fileFormat;
@@ -257,30 +289,53 @@ class FeatureFile {
     return this.delegate.displayFileFormat;
   }
 
+  // Keep track of the number of feature lines in the file
+  // Some of these may be joined together to form a single record
+  get lineCount() {
+    return this.delegate.lineCount;
+  }
+
   parse(fileText, options) {
-    return this.delegate.parse(text);
+    return this.delegate.parse(fileText, options);
+  }
+
+  validateRecords(records, options) {
+      this.delegate.validateRecords(records, options);
   }
 
   /////////////////////////////////////////////////////////////////////////////
-  // PARSERS
+  // PARSE AND VALIDATION WRAPPERS
   /////////////////////////////////////////////////////////////////////////////
 
-  _parse(fileText, options={}) {
+  parseWrapper(fileText, options={}) {
     let records = [];
-    this.logger.info("Parsing feature file...");
-    records = this.delegate.parse(fileText, options);
+    this.logger.info(`Parsing ${this.displayFileFormat} Feature File...`);
+    try {
+      records = this.parse(fileText, options);
+      const recordsWithLocationsCount = records.filter((record) => Array.isArray(record.locations)).length;
+      this.logger.info(`- Features with >1 location: ${recordsWithLocationsCount.toLocaleString().padStart(2)}`);
+      this.logger.info('- Done parsing feature file');
+    } catch (error) {
+      this._fail('- Failed: An error occurred while parsing the file.', 'parsing');
+      this.logger.error(`- ERROR: ${error.message}`);
+    }
+
     return records;
   }
 
-  /////////////////////////////////////////////////////////////////////////////
-  // METHODS
-  /////////////////////////////////////////////////////////////////////////////
-
-  // Sets the status to failed and logs an error message
-  _fail(message, errorCode='unknown') {
-    this.logger.error(message);
-    this._status = 'failed';
-    this._errorCodes.add(errorCode);
+  validateRecordsWrapper(records, options={}) {
+    this.logger.info(`Validating Records ...`);
+    try {
+      this.validateRecords(records, options);
+      if (this.success) {
+        this.logger.info('- Validations Passed', {icon: 'success'});
+      } else {
+        this.logger.error('- Validations Failed');
+      }
+    } catch (error) {
+      this._fail('- Failed: An error occurred while validating the records.', 'validating');
+      this.logger.error(`- ERROR: ${error.message}`);
+    }
   }
 
 }

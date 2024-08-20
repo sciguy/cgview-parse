@@ -61,8 +61,11 @@ export default class CGViewBuilder {
   }
 
   // Should be one of: 'success', 'warnings', 'fail'
+  get status() {
+    return this._status;
+  }
+
   get success() {
-    // return this._success;
     return this.status === 'success';
   }
 
@@ -70,13 +73,8 @@ export default class CGViewBuilder {
     return this.status === 'success' || this.status === 'warnings';
   }
 
-  get status() {
-    return this._status;
-  }
-
   _fail(message) {
     this.logger.error(message);
-    // this._success = false;
     this._status = 'fail';
   }
 

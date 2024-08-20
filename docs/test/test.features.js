@@ -6,21 +6,23 @@
 // const defaultMap = '';     // Empty
 // const defaultMap = 'file'; // File Choose
 // const defaultMap = 'sample';
-const defaultMap = 'bed12';
+const defaultMap = 'sample_gtf';
+// const defaultMap = 'bed12';
 // const defaultMap = 'mito';
 
-// const defaultFormat = 'auto';
-const defaultFormat = 'bed';
+const defaultFormat = 'auto';
+// const defaultFormat = 'bed';
 // const defaultFormat = 'gff3';
 // const defaultFormat = 'gtf';
+// const defaultFormat = 'csv';
 
 
 // Deafult Options
 const prettyPrint = false;
 const showInput = true;
-const showSeqJson = true;
-const showCgvJson = true;
-const showMap = true;
+const showFeatJson = true;
+const showCgvJson = false;
+const showMap = false;
 const showAllText = false; // or only the first 1000 lines
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -48,7 +50,7 @@ const showInputCheckbox = document.querySelector('#option-show-input');
 showInputCheckbox.checked = showInput;
 // Show/Hide Seq JSON
 const showSeqJsonCheckbox = document.querySelector('#option-show-seq-json');
-showSeqJsonCheckbox.checked = showSeqJson;
+showSeqJsonCheckbox.checked = showFeatJson;
 // Show/Hide CGV JSON
 const showCgvJsonCheckbox = document.querySelector('#option-show-cgv-json');
 showCgvJsonCheckbox.checked = showCgvJson;

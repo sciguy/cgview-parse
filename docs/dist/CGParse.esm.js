@@ -455,8 +455,11 @@ class CGViewBuilder {
   }
 
   // Should be one of: 'success', 'warnings', 'fail'
+  get status() {
+    return this._status;
+  }
+
   get success() {
-    // return this._success;
     return this.status === 'success';
   }
 
@@ -464,13 +467,8 @@ class CGViewBuilder {
     return this.status === 'success' || this.status === 'warnings';
   }
 
-  get status() {
-    return this._status;
-  }
-
   _fail(message) {
     this.logger.error(message);
-    // this._success = false;
     this._status = 'fail';
   }
 
@@ -1694,6 +1692,7 @@ class GFF3FeatureFile {
       this._file = file;
       this._options = options;
       this.logger = options.logger || new Logger();
+      this._lineCount = 0;
   }
 
   get file() {
@@ -1710,6 +1709,10 @@ class GFF3FeatureFile {
 
   get displayFileFormat() {
       return 'GFF3';
+  }
+
+  get lineCount() {
+    return this._lineCount;
   }
 
   get nameKeys() {
@@ -1747,8 +1750,12 @@ class GFF3FeatureFile {
         }
       }
     }
-    this.logger.info(`- Parsed ${records.length} record`);
-    return records;
+    this.logger.info(`- Note: Records with the same 'ID' will be joined into a single record.`);
+    this.logger.info(`- Parsed Feature Lines: ${records.length.toLocaleString().padStart(7)}`);
+    const joinedRecords = this._joinRecords(records);
+    this.logger.info(`- Total Features: ${joinedRecords.length.toLocaleString().padStart(13)}`);
+
+    return joinedRecords;
   }
 
   // TODO
@@ -1759,6 +1766,7 @@ class GFF3FeatureFile {
   //   - requires Is_circular attribute for region
   //   - stop will be larger than seq length to indicate wrapping
   _parseLine(line) {
+    this._lineCount++;
     const fields = line.split('\t').map((field) => field.trim());
     if (fields.length < 9) {
       this._fail(`- Line does not have 9 fields: ${line}`);
@@ -1842,6 +1850,65 @@ class GFF3FeatureFile {
     return null;
   }
 
+  // Records are joined if they have the same ID
+  // TODO: if CDS have the same parent gene, they should be joined
+  _joinRecords(records) {
+    const joinedRecords = [];
+    const recordMap = {};
+    let record;
+    for (record of records) {
+      if (record.attributes.ID) {
+        const id = record.attributes.ID;
+        if (recordMap[id]) {
+          recordMap[id].push(record);
+        } else {
+          recordMap[id] = [record];
+        }
+      } else {
+        joinedRecords.push(record);
+      }
+    }
+    const ids = Object.keys(recordMap);
+    for (let id of ids) {
+      const records = recordMap[id];
+      if (records.length === 1) {
+        joinedRecords.push(records[0]);
+      } else {
+        const joinedRecord = this._joinRecordGroup(records);
+        joinedRecords.push(joinedRecord);
+      }
+    }
+    return joinedRecords;
+  }
+
+  _joinRecordGroup(records) {
+    if (records.length === 1) { return records[0]; }
+    // Sort records by start position
+    records.sort((a, b) => a.start - b.start);
+
+    // Start with first record as the base
+    const joinedRecord = {...records[0]};
+
+    // Join locations
+    const locations = [];
+    for (let record of records) {
+      locations.push([record.start, record.stop]);
+    }
+    joinedRecord.locations = locations;
+    joinedRecord.stop = records[records.length - 1][1];
+
+    // Merge qualifiers and attributes
+    for (let record of records) {
+      joinedRecord.qualifiers = {...joinedRecord.qualifiers, ...record.qualifiers};
+      joinedRecord.attributes = {...joinedRecord.attributes, ...record.attributes};
+    }
+
+    return joinedRecord;
+  }
+
+  validateRecords(records) {
+    this.errors;
+  }
 
 }
 
@@ -1851,6 +1918,7 @@ class GTFFeatureFile {
       this._file = file;
       this._options = options;
       this.logger = options.logger || new Logger();
+      this._lineCount = 0;
   }
 
   get file() {
@@ -1869,6 +1937,11 @@ class GTFFeatureFile {
       return 'GTF';
   }
 
+  get lineCount() {
+    return this._lineCount;
+  }
+
+
   get nameKeys() {
     return this.options.nameKeys || ['Name', 'Alias', 'gene', 'locus_tag', 'product', 'note', 'db_xref', 'ID'];
   }
@@ -1877,7 +1950,7 @@ class GTFFeatureFile {
     this.file._fail(message, errorCode);
   }
 
-  // Returns true if the line matches the GTF3 format
+  // Returns true if the line matches the GTF format
   // - line: the first non-empty/non-comment line of the file
   static lineMatches(line) {
     const adjustedLine = line.replace(/\s+#[^"]+$/, '');
@@ -1909,8 +1982,13 @@ class GTFFeatureFile {
         }
       }
     }
-    this.logger.info(`- Parsed ${records.length} record`);
-    return records;
+    this.logger.info(`- Note: Records with the same 'transcript_id' will be joined into a single record.`);
+    this.logger.info(`- Parsed Feature Lines: ${records.length.toLocaleString().padStart(7)}`);
+    const joinedRecords = this._joinRecords(records);
+    // const joinedRecords = records;
+    this.logger.info(`- Total Features: ${joinedRecords.length.toLocaleString().padStart(13)}`);
+
+    return joinedRecords;
   }
 
   // TODO
@@ -1918,6 +1996,7 @@ class GTFFeatureFile {
   // - lines with the same ID should be combined into a single record
   // - may need to remove comments at the end of lines '#'
   _parseLine(line) {
+    this._lineCount++;
     const fields = line.split('\t').map((field) => field.trim());
     if (fields.length < 9) {
       this._fail(`- Line does not have 9 fields: ${line}`);
@@ -2013,6 +2092,66 @@ class GTFFeatureFile {
     return null;
   }
 
+  // Records are joined if they have the same ID
+  // TODO: if CDS have the same parent gene, they should be joined
+  _joinRecords(records) {
+    const joinedRecords = [];
+    const recordMap = {};
+    let record;
+    for (record of records) {
+      if (record.attributes.transcript_id) {
+        const id = record.attributes.transcript_id;
+        if (recordMap[id]) {
+          recordMap[id].push(record);
+        } else {
+          recordMap[id] = [record];
+        }
+      } else {
+        joinedRecords.push(record);
+      }
+    }
+    const ids = Object.keys(recordMap);
+    for (let id of ids) {
+      const records = recordMap[id];
+      if (records.length === 1) {
+        joinedRecords.push(records[0]);
+      } else {
+        const joinedRecord = this._joinRecordGroup(records);
+        joinedRecords.push(joinedRecord);
+      }
+    }
+    return joinedRecords;
+  }
+
+  _joinRecordGroup(records) {
+    if (records.length === 1) { return records[0]; }
+    // Sort records by start position
+    records.sort((a, b) => a.start - b.start);
+
+    // Start with first record as the base
+    const joinedRecord = {...records[0]};
+
+    // Join locations
+    const locations = [];
+    for (let record of records) {
+      locations.push([record.start, record.stop]);
+    }
+    joinedRecord.locations = locations;
+    joinedRecord.stop = records[records.length - 1][1];
+
+    // Merge qualifiers and attributes
+    for (let record of records) {
+      joinedRecord.qualifiers = {...joinedRecord.qualifiers, ...record.qualifiers};
+      joinedRecord.attributes = {...joinedRecord.attributes, ...record.attributes};
+    }
+
+    return joinedRecord;
+  }
+
+  validateRecords(records) {
+    this.errors;
+  }
+
 }
 
 // NOTES:
@@ -2022,8 +2161,10 @@ class BEDFeatureFile {
 
   constructor(file, options={}) {
       this._file = file;
+      this._errors = {};
       this._options = options;
       this.logger = options.logger || new Logger();
+      this._lineCount = 0;
   }
 
   get file() {
@@ -2040,6 +2181,22 @@ class BEDFeatureFile {
 
   get displayFileFormat() {
       return 'BED';
+  }
+
+  get lineCount() {
+    return this._lineCount;
+  }
+
+  // Returns an object with keys for the error codes and values for the error messages
+  // - errorTypes:
+  //   - thickStartNotMatchingStart
+  //   - thickEndNotMatchingStop
+  get errors() {
+    return this._errors || {};
+  }
+
+  _warn(message, errorCode='unknown') {
+    this.file._warn(message, errorCode);
   }
 
   _fail(message, errorCode='unknown') {
@@ -2071,6 +2228,15 @@ class BEDFeatureFile {
     return true;
   }
 
+  addError(errorCode, message) {
+    const errors = this.errors;
+    if (errors[errorCode]) {
+      errors[errorCode].push(message);
+    } else {
+      errors[errorCode] = [message];
+    }
+  }
+
   parse(fileText, options={}) {
     const records = [];
     const lines = fileText.split('\n');
@@ -2092,6 +2258,7 @@ class BEDFeatureFile {
   // - Provide warnging for thickStart/thickEnd
   // - Should we check the number of fields and confirm they are all the same?
   _parseLine(line) {
+    this._lineCount++;
     const fields = line.split('\t').map((field) => field.trim());
     if (fields.length < 3) {
       this._fail(`- Line does not have at least 3 fields: ${line}`);
@@ -2116,19 +2283,17 @@ class BEDFeatureFile {
       record.strand = fields[5];
     }
     // ThickStart and ThickEnd
-    // TODO ERROR CODES
-    // THIS error code should explain that we do not use thickStart/thickEnd so this information is lost
     if (fields[6]) {
       const thickStart = parseInt(fields[6]);
       // thickStart is 0-based so we add 1 here
       if ((thickStart + 1) !== record.start) {
-        this.logger.warn(`- thickStart is not the same as start: ${line}`);
+        this.addError('thickStartNotMatchingStart', `- thickStart is not the same as start: ${line}`);
       }
     }
     if (fields[7]) {
       const thickEnd = parseInt(fields[7]);
       if (thickEnd !== record.stop) {
-        this.logger.warn(`- thickEnd is not the same as stop: ${line}`);
+        this.addError('thickEndNotMatchingEnd', `- thickEnd is not the same as stop: ${line}`);
       }
     }
     // Blocks (requires fields 10, 11, 12)
@@ -2163,6 +2328,33 @@ class BEDFeatureFile {
     }
 
     return record;
+  }
+
+  validateRecords(records) {
+    const errors = this.errors;
+    // ThickStart and ThickEnd Warnings
+    const thickStartErrors = errors['thickStartNotMatchingStart'] || [];
+    if (thickStartErrors.length) {
+      this._warn(`- Features where thickStart != start: ${thickStartErrors.length}`);
+    }
+    const thickEndErrors = errors['thickEndNotMatchingEnd'] || [];
+    if (thickEndErrors.length) {
+      this._warn(`- Features where thickEnd != stop: ${thickStartErrors.length}`);
+    }
+    if (thickStartErrors.length || thickEndErrors.length) {
+      this._warn(`- NOTE: thickStart and thickEnd are ignored by this parser`);
+    }
+
+    // Missing Starts and Stops
+    const missingStarts = records.filter((record) => isNaN(record.start));
+    if (missingStarts.length) {
+      this._fail(`- Records missing Starts: ${missingStarts.length.toLocaleString().padStart(5)}`);
+    }
+    const missingStops = records.filter((record) => isNaN(record.stop));
+    if (missingStops.length) {
+      this._fail(`- Records missing Stops: ${missingStops.length.toLocaleString().padStart(6)}`);
+    }
+
   }
 
 }
@@ -2213,7 +2405,7 @@ class FeatureFile {
     const convertedText = convertLineEndingsToLF(inputText);
     this.logger = options.logger || new Logger();
     options.logger = this.logger;
-    const providedFormat = options.format || 'auto';
+    let providedFormat = options.format || 'auto';
     if (options.maxLogCount) {
       this.logger.maxLogCount = options.maxLogCount;
     }
@@ -2221,6 +2413,7 @@ class FeatureFile {
     this._success = true;
     this._status = 'success';
     this._records = [];
+    // FIXME either use these or remove it
     this._errorCodes = new Set();
 
     this.nameKeys = options.nameKeys || ['Name', 'Alias', 'gene', 'locus_tag', 'product', 'note', 'db_xref', 'ID'];
@@ -2230,15 +2423,19 @@ class FeatureFile {
     } else if (isBinary(convertedText)) {
       this._fail('Parsing Failed: Input contains non-text characters. Is this binary data?', 'binary');
     } else {
+      // File Format
+      this.logger.info("Checking File Format...");
       this.logger.info('- Format Provided: ' + providedFormat.padStart(12));
-      this.inputFormat = this.detectFormat(convertedText, providedFormat);
-      this.logger.info('- Format Detected: ' + this.inputFormat.padStart(12));
+      const detectedFormat = this.detectFormat(convertedText);
+      this.logger.info('- Format Detected: ' + detectedFormat.padStart(12));
+      this.inputFormat = this.chooseFormat(providedFormat, detectedFormat);
+      // Names
       if (['gtf', 'gff3'].includes(this.inputFormat)) {
         this.logger.info("- Name extraction keys (GFF3/GTF): " + this.nameKeys.join(', '));
       }
-      this._records = this._parse(convertedText, options);
-      this.logger.info('- Done parsing feature file');
-      // this._validateRecords(this._records);
+      // Parse
+      this._records = this.parseWrapper(convertedText, options);
+      this.validateRecordsWrapper(this._records, options);
       this.parseSummary();
     }
     this.logger.break();
@@ -2250,9 +2447,10 @@ class FeatureFile {
 
 
   /////////////////////////////////////////////////////////////////////////////
-  // Properties
+  // Status
   /////////////////////////////////////////////////////////////////////////////
 
+  // Should be one of: 'success', 'warnings', 'fail'
   get status() {
     return this._status;
   }
@@ -2261,9 +2459,34 @@ class FeatureFile {
     return this.status == 'success';
   }
 
-  static get formatDelegateMap() {
-    return FeatureFile.FILE_FORMAT_DELEGATES;
+  get passed() {
+    return this.status === 'success' || this.status === 'warnings';
   }
+
+  _warn(message) {
+    this.logger.warn(message);
+    if (this.status !== 'fail') {
+      this._status = 'warnings';
+    }
+  }
+
+  // Sets the status to failed and logs an error message
+  _fail(message, errorCode='unknown') {
+    this.logger.error(message);
+    this._status = 'failed';
+    this._errorCodes.add(errorCode);
+  }
+
+  // Returns an array of unique error codes
+  // Codes: unknown, binary, empty
+  get errorCodes() {
+    return Array.from(this._errorCodes);
+  }
+
+
+  /////////////////////////////////////////////////////////////////////////////
+  // FILE FORMAT
+  /////////////////////////////////////////////////////////////////////////////
 
   // The file format being parsed: 'auto', 'gff3', 'bed', 'csv', 'gtf', 'uknonwn'
   get inputFormat() {
@@ -2279,33 +2502,11 @@ class FeatureFile {
     }
   }
 
-  // { inputFormat, featureCount, success }
-  get summary() {
-    return this._summary;
-  }
-
-  // Returns an array of unique error codes
-  // Codes: unknown, binary, empty
-  get errorCodes() {
-    return Array.from(this._errorCodes);
-  }
-
-  get delegate() {
-    return this._delegate;
-  }
-
-  /////////////////////////////////////////////////////////////////////////////
-  // DETERMINE FILE FORMAT
-  /////////////////////////////////////////////////////////////////////////////
-
   // Options:
   // - fileText: contents of the file (string)
   // - providedFormat: the format provided by the user (string)
   //   - 'auto', 'gff3', 'bed', 'csv', 'gtf'
-  // - if a format other than 'auto' is provided, that format will be returned
-  //   - however, if the format doesn't match the file, a warning will be logged
-  //   - if the provided format is unknown, 'auto' will be used and a warning will be logged
-  detectFormat(fileText, providedFormat='auto') {
+  detectFormat(fileText) {
     let detectedFormat;
     // filter lines to remove blank lines and lines with starting with '#'
     const lines = fileText.split('\n').filter((line) => line.trim() !== '' && !line.startsWith('#'));
@@ -2319,21 +2520,30 @@ class FeatureFile {
     } else {
       detectedFormat = 'unknown';
     }
-    if (FeatureFile.FORMATS.includes(providedFormat)) {
-      if (providedFormat !== 'auto') {
-        if (providedFormat !== detectedFormat) {
-          this.logger.warn(`- Provided format '${providedFormat}' does not match detected format '${detectedFormat}'`);
-        }
-        return providedFormat;
-      } else {
-        if (detectedFormat === 'unknown') {
-          this._fail(`- File Format Unknown: autodection failed. Try explicitly setting the format.`);
-        }
-        return detectedFormat;
+
+    return detectedFormat;
+  }
+
+  // Choose the format to use based on the provided format and the detected format
+  // - if a format other than 'auto' is provided, that format will be returned
+  //   - however, if the format doesn't match the file, a warning will be logged
+  //   - if the provided format is unknown, 'auto' will be used and a warning will be logged
+  chooseFormat(providedFormat, detectedFormat) {
+    if (FeatureFile.FORMATS.includes(providedFormat) && (providedFormat !== 'auto')) {
+      if (providedFormat !== detectedFormat) {
+        this._warn(`- Using Provided format '${providedFormat}'; Does not match detected format '${detectedFormat}'`);
       }
+      return providedFormat;
+    } else {
+      // Either they provided an invalide format or 'auto'
+      if (detectedFormat === 'unknown') {
+        this._fail(`- File Format Unknown: AutoDection Failed. Try explicitly setting the format.`);
+      } else if (providedFormat !== 'auto') {
+        // Invalid format provided
+        this.logger.warn(`- Unknown format '${providedFormat}' -> Using '${detectedFormat}'`);
+      }
+      return detectedFormat;
     }
-
-
   }
 
   /////////////////////////////////////////////////////////////////////////////
@@ -2358,6 +2568,11 @@ class FeatureFile {
   // SUMMARY
   /////////////////////////////////////////////////////////////////////////////
 
+  // { inputFormat, featureCount, success }
+  get summary() {
+    return this._summary;
+  }
+
   parseSummary() {
     const records = this.records;
 
@@ -2366,10 +2581,12 @@ class FeatureFile {
     this.logger.break('--------------------------------------------\n');
     this.logger.info('Parsing Summary:');
     this.logger.info(`- Input File Format: ${format.padStart(10)}`);
-    this.logger.info(`- Feature Lines: ${'LINE COUNT'.padStart(14)}`);
+    this.logger.info(`- Feature Lines: ${this.lineCount.toLocaleString().padStart(14)}`);
     this.logger.info(`- Feature Count: ${records.length.toLocaleString().padStart(14)}`);
     if (this.success) {
       this.logger.info('- Status: ' + 'Success'.padStart(21), {icon: 'success'});
+    } else if (this.status === 'warnings') {
+      this.logger.warn('- Status: ' + 'Warnings'.padStart(21), {icon: 'warn'});
     } else {
       this.logger.error('- Status: ' + 'FAILED'.padStart(21), {icon: 'fail'});
     }
@@ -2387,8 +2604,15 @@ class FeatureFile {
   }
 
   /////////////////////////////////////////////////////////////////////////////
-  // DELEGATE METHODS
+  // DELEGATES
   /////////////////////////////////////////////////////////////////////////////
+  get delegate() {
+    return this._delegate;
+  }
+
+  static get formatDelegateMap() {
+    return FeatureFile.FILE_FORMAT_DELEGATES;
+  }
 
   get fileFormat() {
     return this.delegate.fileFormat;
@@ -2398,30 +2622,53 @@ class FeatureFile {
     return this.delegate.displayFileFormat;
   }
 
+  // Keep track of the number of feature lines in the file
+  // Some of these may be joined together to form a single record
+  get lineCount() {
+    return this.delegate.lineCount;
+  }
+
   parse(fileText, options) {
-    return this.delegate.parse(text);
+    return this.delegate.parse(fileText, options);
+  }
+
+  validateRecords(records, options) {
+      this.delegate.validateRecords(records, options);
   }
 
   /////////////////////////////////////////////////////////////////////////////
-  // PARSERS
+  // PARSE AND VALIDATION WRAPPERS
   /////////////////////////////////////////////////////////////////////////////
 
-  _parse(fileText, options={}) {
+  parseWrapper(fileText, options={}) {
     let records = [];
-    this.logger.info("Parsing feature file...");
-    records = this.delegate.parse(fileText, options);
+    this.logger.info(`Parsing ${this.displayFileFormat} Feature File...`);
+    try {
+      records = this.parse(fileText, options);
+      const recordsWithLocationsCount = records.filter((record) => Array.isArray(record.locations)).length;
+      this.logger.info(`- Features with >1 location: ${recordsWithLocationsCount.toLocaleString().padStart(2)}`);
+      this.logger.info('- Done parsing feature file');
+    } catch (error) {
+      this._fail('- Failed: An error occurred while parsing the file.', 'parsing');
+      this.logger.error(`- ERROR: ${error.message}`);
+    }
+
     return records;
   }
 
-  /////////////////////////////////////////////////////////////////////////////
-  // METHODS
-  /////////////////////////////////////////////////////////////////////////////
-
-  // Sets the status to failed and logs an error message
-  _fail(message, errorCode='unknown') {
-    this.logger.error(message);
-    this._status = 'failed';
-    this._errorCodes.add(errorCode);
+  validateRecordsWrapper(records, options={}) {
+    this.logger.info(`Validating Records ...`);
+    try {
+      this.validateRecords(records, options);
+      if (this.success) {
+        this.logger.info('- Validations Passed', {icon: 'success'});
+      } else {
+        this.logger.error('- Validations Failed');
+      }
+    } catch (error) {
+      this._fail('- Failed: An error occurred while validating the records.', 'validating');
+      this.logger.error(`- ERROR: ${error.message}`);
+    }
   }
 
 }

@@ -91,6 +91,15 @@ main {
   line-height: 1.5;;
 }
 
+.note-text {
+  font-family: monospace;
+  font-size: 10px;
+  color: gray;
+  margin: 5px;
+  white-space: pre;
+  /* line-height: 1.5;; */
+}
+
 #reparse-btn {
   position: absolute;
   top: 0px;
@@ -106,6 +115,18 @@ main {
 }
 #reparse-btn:hover {
   background-color: #DDD;
+}
+
+#format-select {
+  font-size: 10px;
+  padding: 0px 5px;
+  font-weight: bold;
+  border: 1px solid #DDD;
+  border-radius: 3px;
+  position: absolute;
+  width: 90px;
+  top: 0px;
+  left: 5px;
 }
 
 #open-in-proksee-btn {

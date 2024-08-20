@@ -7,6 +7,7 @@ class GTFFeatureFile {
       this._file = file;
       this._options = options;
       this.logger = options.logger || new Logger();
+      this._lineCount = 0;
   }
 
   get file() {
@@ -25,6 +26,11 @@ class GTFFeatureFile {
       return 'GTF';
   }
 
+  get lineCount() {
+    return this._lineCount;
+  }
+
+
   get nameKeys() {
     return this.options.nameKeys || ['Name', 'Alias', 'gene', 'locus_tag', 'product', 'note', 'db_xref', 'ID'];
   }
@@ -33,7 +39,7 @@ class GTFFeatureFile {
     this.file._fail(message, errorCode);
   }
 
-  // Returns true if the line matches the GTF3 format
+  // Returns true if the line matches the GTF format
   // - line: the first non-empty/non-comment line of the file
   static lineMatches(line) {
     const adjustedLine = line.replace(/\s+#[^"]+$/, '');
@@ -74,8 +80,13 @@ class GTFFeatureFile {
         }
       }
     }
-    this.logger.info(`- Parsed ${records.length} record`);
-    return records;
+    this.logger.info(`- Note: Records with the same 'transcript_id' will be joined into a single record.`);
+    this.logger.info(`- Parsed Feature Lines: ${records.length.toLocaleString().padStart(7)}`);
+    const joinedRecords = this._joinRecords(records);
+    // const joinedRecords = records;
+    this.logger.info(`- Total Features: ${joinedRecords.length.toLocaleString().padStart(13)}`);
+
+    return joinedRecords;
   }
 
   // TODO
@@ -83,6 +94,7 @@ class GTFFeatureFile {
   // - lines with the same ID should be combined into a single record
   // - may need to remove comments at the end of lines '#'
   _parseLine(line) {
+    this._lineCount++;
     const fields = line.split('\t').map((field) => field.trim());
     if (fields.length < 9) {
       this._fail(`- Line does not have 9 fields: ${line}`);
@@ -176,6 +188,66 @@ class GTFFeatureFile {
       }
     }
     return null;
+  }
+
+  // Records are joined if they have the same ID
+  // TODO: if CDS have the same parent gene, they should be joined
+  _joinRecords(records) {
+    const joinedRecords = [];
+    const recordMap = {};
+    let record;
+    for (record of records) {
+      if (record.attributes.transcript_id) {
+        const id = record.attributes.transcript_id;
+        if (recordMap[id]) {
+          recordMap[id].push(record);
+        } else {
+          recordMap[id] = [record];
+        }
+      } else {
+        joinedRecords.push(record);
+      }
+    }
+    const ids = Object.keys(recordMap);
+    for (let id of ids) {
+      const records = recordMap[id];
+      if (records.length === 1) {
+        joinedRecords.push(records[0]);
+      } else {
+        const joinedRecord = this._joinRecordGroup(records);
+        joinedRecords.push(joinedRecord);
+      }
+    }
+    return joinedRecords;
+  }
+
+  _joinRecordGroup(records) {
+    if (records.length === 1) { return records[0]; }
+    // Sort records by start position
+    records.sort((a, b) => a.start - b.start);
+
+    // Start with first record as the base
+    const joinedRecord = {...records[0]};
+
+    // Join locations
+    const locations = [];
+    for (let record of records) {
+      locations.push([record.start, record.stop]);
+    }
+    joinedRecord.locations = locations;
+    joinedRecord.stop = records[records.length - 1][1];
+
+    // Merge qualifiers and attributes
+    for (let record of records) {
+      joinedRecord.qualifiers = {...joinedRecord.qualifiers, ...record.qualifiers};
+      joinedRecord.attributes = {...joinedRecord.attributes, ...record.attributes};
+    }
+
+    return joinedRecord;
+  }
+
+  validateRecords(records) {
+    const errors = this.errors;
   }
 
 }

@@ -1,7 +1,11 @@
 import FeatureFile from '../src/FeatureFile.js';
+import GFF3FeatureFile from '../src/FeatureFileFormats/GFF3FeatureFile.js';
+import GTFFeatureFile from '../src/FeatureFileFormats/GTFFeatureFile.js';
 
 describe('FeatureFile', () => {
   let featureFile = new FeatureFile("");
+  let gff3FeatureFile = new GFF3FeatureFile(featureFile);
+  let gtfFeatureFile = new GTFFeatureFile(featureFile);
 
   /////////////////////////////////////////////////
   // Detect Format
@@ -34,12 +38,12 @@ chr123	Twinscan	CDS	380	401	.	+	0	gene_id "001"; transcript_id "001.1";
   describe('_parseType', () => {
     test('- return input if not an SO Term', () => {
       const input = "gene";
-      const format = featureFile._parseType(input);
+      const format = gff3FeatureFile._parseType(input);
       expect(format).toBe("gene");
     });
     test('- return SO Term conversion', () => {
       const input = "SO:0000316";
-      const format = featureFile._parseType(input);
+      const format = gff3FeatureFile._parseType(input);
       expect(format).toBe("CDS");
     });
   });
@@ -47,7 +51,7 @@ chr123	Twinscan	CDS	380	401	.	+	0	gene_id "001"; transcript_id "001.1";
   describe('_parseAttributes', () => {
     test('- return attributes object', () => {
       const input = "ID=gene00001;Name=EDEN";
-      const attributes = featureFile._parseAttributes(input);
+      const attributes = gff3FeatureFile._parseAttributes(input);
       expect(attributes).toEqual({ID: "gene00001", Name: "EDEN"});
     });
   });
@@ -55,9 +59,9 @@ chr123	Twinscan	CDS	380	401	.	+	0	gene_id "001"; transcript_id "001.1";
   describe('_extractQualifiers', () => {
     test('- return qualifiers object', () => {
       const input = "ID=NC_001823.1;Dbxref=ATCC:50394,taxon:48483;Name=MT;gbkey=Src;genome=mitochondrion;mol_type=genomic DNA";
-      const attributes = featureFile._parseAttributes(input);
+      const attributes = gff3FeatureFile._parseAttributes(input);
       const record = {attributes};
-      const output = featureFile._extractQualifiers(record);
+      const output = gff3FeatureFile._extractQualifiers(record);
       // FIXME: when/are we splitting the values into an ARRAY!
       // expect(output).toEqual({db_xref: ["ATCC:50394", "taxon:48483"], mol_type: "genomic DNA"});
       expect(output).toEqual({db_xref: "ATCC:50394,taxon:48483", mol_type: "genomic DNA"});
@@ -68,17 +72,36 @@ chr123	Twinscan	CDS	380	401	.	+	0	gene_id "001"; transcript_id "001.1";
     test('- and new note to qualifiers', () => {
       const input = "My Note";
       const qualifiers = {};
-      featureFile._addQualifierNote(qualifiers, input);
+      gff3FeatureFile._addQualifierNote(qualifiers, input);
       expect(qualifiers).toEqual({note: "My Note"});
     });
 
     test('- and additional note to qualifiers', () => {
       const input = "My New Note";
       const qualifiers = {note: "My Note"};
-      featureFile._addQualifierNote(qualifiers, input);
+      gff3FeatureFile._addQualifierNote(qualifiers, input);
       expect(qualifiers).toEqual({note: "My Note; My New Note"});
     });
   });
+
+  describe('_joinRecordGroup', () => {
+    test('- join records and create locations', () => {
+      const input = [
+        {name: "gene", start: 1000, stop: 9000, strand: "+", attributes: {ID: "gene00001"}},
+        {name: "gene", start: 2000, stop: 19000, strand: "+", attributes: {ID: "gene00001"}},
+      ];
+      const output = gff3FeatureFile._joinRecordGroup(input);
+      expect(output.locations).toEqual([[1000, 9000], [2000, 19000]]);
+    });
+
+    test('- and additional note to qualifiers', () => {
+      const input = "My New Note";
+      const qualifiers = {note: "My Note"};
+      gff3FeatureFile._addQualifierNote(qualifiers, input);
+      expect(qualifiers).toEqual({note: "My Note; My New Note"});
+    });
+  });
+
 
 
 
@@ -89,7 +112,7 @@ chr123	Twinscan	CDS	380	401	.	+	0	gene_id "001"; transcript_id "001.1";
   describe('_parseGTFAttributes', () => {
     test('- return attributes object', () => {
       const input = 'gene_id "NTHI477_RS00005"; transcript_id "trans_1"; db_xref "RFAM:1"; db_xref "RFAM:2"';
-      const attributes = featureFile._parseGTFAttributes(input);
+      const attributes = gtfFeatureFile._parseGTFAttributes(input);
       expect(attributes).toEqual({gene_id: "NTHI477_RS00005", transcript_id: "trans_1", db_xref: ['RFAM:1','RFAM:2']});
     });
   });
