@@ -7,6 +7,7 @@
 // const defaultMap = 'file'; // File Choose
 // const defaultMap = 'sample';
 const defaultMap = 'sample_gtf';
+// const defualtMap = 'arabidopsis_gtf';
 // const defaultMap = 'bed12';
 // const defaultMap = 'mito';
 
@@ -89,16 +90,34 @@ const jsonConfig = {
 // Add maps from maps.js to Select
 // Using global variable 'inputs' from inputs.js
 const inputSelect = document.getElementById('map-select');
+const groups = { bed: 'BED', gff3: 'GFF3', gtf: 'GTF', csv: 'CSV' };
+const order = ['gff3', 'gtf', 'bed', 'csv'];
+const optionsByGroup = {};
+for (const inputKey of Object.keys(inputs)) {
+  const input = inputs[inputKey];
+  const selected = (inputKey === defaultMap) ? 'selected' : '';
+  const option = `<option value='${inputKey}' ${selected}>${input.name}</option>`;
+  if (optionsByGroup[input.type]) {
+    optionsByGroup[input.type].push(option);
+  } else {
+    optionsByGroup[input.type] = [option];
+  }
+}
+
+let optionGroups = "";
+for (const group of order) {
+  if (!optionsByGroup[group]) { continue; }
+  const groupOptions = optionsByGroup[group].join('\n');
+  optionGroups += `<optgroup label="${groups[group]}">${groupOptions}</optgroup>`;
+}
+
 let options = `
   <option value='' disabled ${(defaultMap == '') ? 'selected' : ''}>Select an input...</option>
   <option disabled>─────────</option>
   <option value='file' ${(defaultMap == 'file') ? 'selected' : ''}>Open a file...</option>
   <option disabled>─────────</option>
+  ${optionGroups}
 `;
-for (const input of Object.keys(inputs)) {
-  const selected = (input === defaultMap) ? 'selected' : '';
-  options += `<option value='${input}' ${selected}>${inputs[input].name}</option>`;
-}
 
 // Choose a predefined file or show the file input section
 // Load map when select changes

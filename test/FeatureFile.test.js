@@ -92,13 +92,8 @@ chr123	Twinscan	CDS	380	401	.	+	0	gene_id "001"; transcript_id "001.1";
       ];
       const output = gff3FeatureFile._joinRecordGroup(input);
       expect(output.locations).toEqual([[1000, 9000], [2000, 19000]]);
-    });
-
-    test('- and additional note to qualifiers', () => {
-      const input = "My New Note";
-      const qualifiers = {note: "My Note"};
-      gff3FeatureFile._addQualifierNote(qualifiers, input);
-      expect(qualifiers).toEqual({note: "My Note; My New Note"});
+      expect(output.start).toBe(1000);
+      expect(output.stop).toBe(19000);
     });
   });
 
@@ -116,6 +111,47 @@ chr123	Twinscan	CDS	380	401	.	+	0	gene_id "001"; transcript_id "001.1";
       expect(attributes).toEqual({gene_id: "NTHI477_RS00005", transcript_id: "trans_1", db_xref: ['RFAM:1','RFAM:2']});
     });
   });
+
+
+  describe('_joinRecordGroup', () => {
+
+    test('- join records and create locations', () => {
+      const input = [
+        {name: "CDS", start: 100, stop: 200, strand: "+", attributes: {ID: "gene00001"}},
+        {name: "CDS", start: 300, stop: 400, strand: "+", attributes: {ID: "gene00001"}},
+        // {name: "start_codoon", start: 100, stop: 102, strand: "+", attributes: {ID: "gene00001"}},
+        // {name: "stop_codoon", start: 400, stop: 402, strand: "+", attributes: {ID: "gene00001"}},
+      ];
+      const output = gtfFeatureFile._joinRecordGroup(input);
+      expect(output.locations).toEqual([[100, 200], [300, 400]]);
+      expect(output.start).toBe(100);
+      expect(output.stop).toBe(400);
+    });
+
+    test('- ignore start_codon and add stop_codon', () => {
+      const input = [
+        {type: "CDS", start: 100, stop: 200, strand: "+", attributes: {ID: "gene00001"}},
+        {type: "CDS", start: 300, stop: 400, strand: "+", attributes: {ID: "gene00001"}},
+        {type: "start_codon", start: 100, stop: 102, strand: "+", attributes: {ID: "gene00001"}},
+        {type: "stop_codon", start: 401, stop: 403, strand: "+", attributes: {ID: "gene00001"}},
+      ];
+      const output = gtfFeatureFile._joinRecordGroup(input);
+      expect(output.locations).toEqual([[100, 200], [300, 400], [401, 403]]);
+    });
+
+    test('- ignore start_codon and add stop_codon (-ve) strand', () => {
+      const input = [
+        {type: "CDS", start: 100, stop: 200, strand: "-", attributes: {ID: "gene00001"}},
+        {type: "CDS", start: 300, stop: 400, strand: "-", attributes: {ID: "gene00001"}},
+        {type: "start_codon", start: 398, stop: 400, strand: "-", attributes: {ID: "gene00001"}},
+        {type: "stop_codon", start: 97, stop: 99, strand: "-", attributes: {ID: "gene00001"}},
+      ];
+      const output = gtfFeatureFile._joinRecordGroup(input);
+      expect(output.locations).toEqual([[97, 99], [100, 200], [300, 400]]);
+    });
+
+  });
+
 
 
 

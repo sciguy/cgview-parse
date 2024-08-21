@@ -1895,7 +1895,7 @@ class GFF3FeatureFile {
       locations.push([record.start, record.stop]);
     }
     joinedRecord.locations = locations;
-    joinedRecord.stop = records[records.length - 1][1];
+    joinedRecord.stop = locations[locations.length - 1][1];
 
     // Merge qualifiers and attributes
     for (let record of records) {
@@ -1982,7 +1982,7 @@ class GTFFeatureFile {
         }
       }
     }
-    this.logger.info(`- Note: Records with the same 'transcript_id' will be joined into a single record.`);
+    this.logger.info(`- Note: Records (CDS, start/stop_codon) with the same 'transcript_id' will be joined into a single CDS record.`);
     this.logger.info(`- Parsed Feature Lines: ${records.length.toLocaleString().padStart(7)}`);
     const joinedRecords = this._joinRecords(records);
     // const joinedRecords = records;
@@ -2093,18 +2093,23 @@ class GTFFeatureFile {
   }
 
   // Records are joined if they have the same ID
-  // TODO: if CDS have the same parent gene, they should be joined
+  // Only join CDS/start_codon/stop_codon records if they have the same transcript_id
+  // NOTE:
+  // - The "start_codon" feature is up to 3bp long in total and is included in the coordinates for the "CDS" features.
+  // - The "stop_codon" feature similarly is up to 3bp long and is excluded from the coordinates for the "3UTR" features, if used.
+  // - Start/Stop codons can be split across distict features (multiple lines)
   _joinRecords(records) {
     const joinedRecords = [];
     const recordMap = {};
+    const groupTypes = ['CDS', 'start_codon', 'stop_codon'];
     let record;
     for (record of records) {
-      if (record.attributes.transcript_id) {
-        const id = record.attributes.transcript_id;
-        if (recordMap[id]) {
-          recordMap[id].push(record);
+      const transcriptID = record.attributes.transcript_id;
+      if (transcriptID && groupTypes.includes(record.type)) {
+        if (recordMap[transcriptID]) {
+          recordMap[transcriptID].push(record);
         } else {
-          recordMap[id] = [record];
+          recordMap[transcriptID] = [record];
         }
       } else {
         joinedRecords.push(record);
@@ -2123,13 +2128,28 @@ class GTFFeatureFile {
     return joinedRecords;
   }
 
+  // Groups should only contain CDS, start_codon, and stop_codon records
+  // Skip start_codon records
+  // Add stop_codon records
   _joinRecordGroup(records) {
     if (records.length === 1) { return records[0]; }
     // Sort records by start position
     records.sort((a, b) => a.start - b.start);
 
+    // Remove start_codon records (they should already be included in the CDS records)
+    // TODO: add warning if start_codon is not included in CDS
+    records = records.filter((record) => record.type !== 'start_codon');
+
     // Start with first record as the base
     const joinedRecord = {...records[0]};
+
+    if (joinedRecord.type !== 'CDS') {
+      if (records.some((record) => record.type === 'CDS')) {
+        joinedRecord.type = 'CDS';
+      } else {
+        this.logger.warn(`- No CDS records for this group: ${records  }`);
+      }
+    }
 
     // Join locations
     const locations = [];
@@ -2137,7 +2157,7 @@ class GTFFeatureFile {
       locations.push([record.start, record.stop]);
     }
     joinedRecord.locations = locations;
-    joinedRecord.stop = records[records.length - 1][1];
+    joinedRecord.stop = locations[locations.length - 1][1];
 
     // Merge qualifiers and attributes
     for (let record of records) {
@@ -2359,13 +2379,14 @@ class BEDFeatureFile {
 
 }
 
-// NEXT:
-// - Catch errors in main parser and then privde gernal failure error message: 
-//   "GFF3 Parsing Failed: An error occurred while parsing the file."
+// This will be the main interface to parseing Feature Files. 
+// For each feature file type (e.g. GFF3, GTF, BED, CSV, etc.)
+// we will have delagates that will parse the file and return an array of
+// of joined features.
 
 
 // FeatureFile class reads a feature file (GFF3, BED, CSV, GTF) and returns an array of records
-// One for each feature. 
+// One for each feature. Some records (e.g. CDS) may be joined together if they have the same ID.
 
 // File Delegates (based on fileFormat)
 // Each file format has it's own delegate that is responsible for
@@ -2376,8 +2397,6 @@ class BEDFeatureFile {
 // - fileFormat (getter): e.g. 'gff3', 'bed', 'csv', 'gtf'
 // - displayFileFormat (getter): e.g. 'GFF3', 'BED', 'CSV', 'GTF'
 // = nameKeys (getter): array of strings
-
-
 
 class FeatureFile {
 
@@ -2441,9 +2460,6 @@ class FeatureFile {
     this.logger.break();
   }
 
-  // - if auto, try to determine the format
-  // - if format is provided, use that format but still try to determine if it is correct
-  // - if format doesn't match the file, return a warning
 
 
   /////////////////////////////////////////////////////////////////////////////
@@ -2615,11 +2631,11 @@ class FeatureFile {
   }
 
   get fileFormat() {
-    return this.delegate.fileFormat;
+    return this.delegate?.fileFormat || 'unknown';
   }
 
   get displayFileFormat() {
-    return this.delegate.displayFileFormat;
+    return this.delegate?.displayFileFormat || 'Unknown';
   }
 
   // Keep track of the number of feature lines in the file

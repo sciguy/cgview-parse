@@ -1,7 +1,24 @@
 # General Notes about feature conversion
 - This can be adapted to a help page on Proksee
 
+# Feature Tool Options
+- GFF3/GTF
+  - Feature names
+  - Inexclude Types: exclude gene, source, exons (same as builder)
+  - InExclude Qualifiers: None
+  - InExclude Extra attributes as meta data: None
+- BED
+  - Uses name column if present
+  - Option could be to name blank feature "Unknown"
+  - Type for these features: Default "CDS"
+- CSV
+  - Column options (see idea below)
+  - InExclude Types: exclude gene, source, exons (same as builder): IF THERE IS A TYPE COLUMN
+  - One of the possible columns could be attributes and if so it should follow GFF3 format
+    - Then (if present), we can have InExcludes for Qualifiers & Extra Attributes
+
 # Ideas
+- We should ignore source from files and use are oen system
 - In proksee when processing general CSV/TSV file:
   - Show list of columns (with or without optional header) 
     - A preview of the first couple of lines

@@ -1,13 +1,7 @@
-// NEXT:
-// - Catch errors in main parser and then privde gernal failure error message: 
-//   "GFF3 Parsing Failed: An error occurred while parsing the file."
-
 // This will be the main interface to parseing Feature Files. 
 // For each feature file type (e.g. GFF3, GTF, BED, CSV, etc.)
-// we will have delagates that will parse the file and return a FeatureFile object.
-
-// Check out gff-js utils for parsing GFF3 files:
-// https://github.com/GMOD/gff-js/blob/master/src/util.ts
+// we will have delagates that will parse the file and return an array of
+// of joined features.
 
 // RESOURCES:
 // Overview of GFF/GTF formmats and the changes overtime:
@@ -21,7 +15,9 @@
 // - https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md
 // BED
 // - https://samtools.github.io/hts-specs/BEDv1.pdf
-
+// Other Parsers
+// - gff-js utils for parsing GFF3 files (I didn't use this)
+// - https://github.com/GMOD/gff-js/blob/master/src/util.ts
 
 import Logger from './Logger.js';
 import GFF3FeatureFile from './FeatureFileFormats/GFF3FeatureFile.js';
@@ -32,7 +28,7 @@ import BEDFeatureFile from './FeatureFileFormats/BEDFeatureFile.js';
 import * as helpers from './Helpers.js';
 
 // FeatureFile class reads a feature file (GFF3, BED, CSV, GTF) and returns an array of records
-// One for each feature. 
+// One for each feature. Some records (e.g. CDS) may be joined together if they have the same ID.
 
 // File Delegates (based on fileFormat)
 // Each file format has it's own delegate that is responsible for
@@ -43,8 +39,6 @@ import * as helpers from './Helpers.js';
 // - fileFormat (getter): e.g. 'gff3', 'bed', 'csv', 'gtf'
 // - displayFileFormat (getter): e.g. 'GFF3', 'BED', 'CSV', 'GTF'
 // = nameKeys (getter): array of strings
-
-
 
 class FeatureFile {
 
@@ -108,9 +102,6 @@ class FeatureFile {
     this.logger.break();
   }
 
-  // - if auto, try to determine the format
-  // - if format is provided, use that format but still try to determine if it is correct
-  // - if format doesn't match the file, return a warning
 
 
   /////////////////////////////////////////////////////////////////////////////
@@ -282,11 +273,11 @@ class FeatureFile {
   }
 
   get fileFormat() {
-    return this.delegate.fileFormat;
+    return this.delegate?.fileFormat || 'unknown';
   }
 
   get displayFileFormat() {
-    return this.delegate.displayFileFormat;
+    return this.delegate?.displayFileFormat || 'Unknown';
   }
 
   // Keep track of the number of feature lines in the file

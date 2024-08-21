@@ -2,22 +2,27 @@ inputs = {
   sample: {
     name: 'Sample GFF3',
     type: 'gff3',
-    url: '../inputs/feature_files/sample.gff3',
+    url: '../inputs/feature_files/GFF3/sample.gff3',
   },
   mito: {
     name: 'Mitochondia (GFF3) [NC_001823]',
     type: 'gff3',
-    url: '../inputs/feature_files/NC_001823.gff3',
+    url: '../inputs/feature_files/GFF3/NC_001823.gff3',
   },
   hinflu_gff3: {
     name: 'H. influenzae (GFF3) [NZ_CP007470]',
     type: 'gff3',
-    url: '../inputs/feature_files/NZ_CP007470.gff3',
+    url: '../inputs/feature_files/GFF3/NZ_CP007470.gff3',
   },
   sample_gtf: {
-    name: 'H. influenzae (GTF) [NZ_CP007470]',
+    name: 'Sample GTF',
     type: 'gtf',
     url: '../inputs/feature_files/GTF/sample.gtf',
+  },
+  arabidopsis_gtf: {
+    name: 'Arabidopsis (Sample) GTF',
+    type: 'gtf',
+    url: '../inputs/feature_files/GTF/arabidopsis_sample.gtf',
   },
   hinflu_gtf: {
     name: 'H. influenzae (GTF) [NZ_CP007470]',

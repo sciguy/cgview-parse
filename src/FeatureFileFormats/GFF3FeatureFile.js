@@ -219,7 +219,7 @@ class GFF3FeatureFile {
       locations.push([record.start, record.stop]);
     }
     joinedRecord.locations = locations;
-    joinedRecord.stop = records[records.length - 1][1];
+    joinedRecord.stop = locations[locations.length - 1][1];
 
     // Merge qualifiers and attributes
     for (let record of records) {
