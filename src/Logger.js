@@ -94,11 +94,12 @@ class Logger {
 
   _formatMessage(logItem, options={}) {
     let message = "";
+    const showTimestamps = this._optionFor('showTimestamps', options);
     if (this._optionFor('showIcons', options)) {
       const icon = logItem.icon || logItem.level;
-      message += this._icon(icon) + "";
+      message += this._icon(icon) + (showTimestamps ? '' : ' ');
     }
-    if (this._optionFor('showTimestamps', options)) {
+    if (showTimestamps) {
       message += `[${logItem.timestamp}] `;
     }
     message += logItem.message;

@@ -97,11 +97,12 @@ var CGParse = (function () {
 
     _formatMessage(logItem, options={}) {
       let message = "";
+      const showTimestamps = this._optionFor('showTimestamps', options);
       if (this._optionFor('showIcons', options)) {
         const icon = logItem.icon || logItem.level;
-        message += this._icon(icon) + "";
+        message += this._icon(icon) + (showTimestamps ? '' : ' ');
       }
-      if (this._optionFor('showTimestamps', options)) {
+      if (showTimestamps) {
         message += `[${logItem.timestamp}] `;
       }
       message += logItem.message;
@@ -150,8 +151,10 @@ var CGParse = (function () {
   // CGPARSE HELPERS
   // ----------------------------------------------------------------------------
 
+
   // All GenBank/EMBL Qualifiers
   const QUALIFIERS = [ "allele", "altitude", "anticodon", "artificial_location", "bio_material", "bound_moiety", "cell_line", "cell_type", "chromosome", "circular_RNA", "citation", "clone", "clone_lib", "codon_start", "collected_by", "collection_date", "compare", "country", "cultivar", "culture_collection", "db_xref", "dev_stage", "direction", "EC_number", "ecotype", "environmental_sample", "estimated_length", "exception", "experiment", "focus", "frequency", "function", "gap_type", "gene", "gene_synonym", "germline", "haplogroup", "haplotype", "host", "identified_by", "inference", "isolate", "isolation_source", "lab_host", "lat_lon", "linkage_evidence", "locus_tag", "macronuclear", "map", "mating_type", "metagenome_source", "mobile_element_type", "mod_base", "mol_type", "ncRNA_class", "note", "number", "old_locus_tag", "operon", "organelle", "organism", "partial", "PCR_conditions", "PCR_primers", "phenotype", "plasmid", "pop_variant", "product", "protein_id", "proviral", "pseudo", "pseudogene", "rearranged", "ination_class", "tory_class", "replace", "ribosomal_slippage", "rpt_family", "rpt_type", "rpt_unit_range", "rpt_unit_seq", "satellite", "segment", "serotype", "serovar", "sex", "specimen_voucher", "standard_name", "strain", "sub_clone", "submitter_seqid", "sub_species", "sub_strain", "tag_peptide", "tissue_lib", "tissue_type", "transgenic", "translation", "transl_except", "transl_table", "trans_splicing", "type_material", "variety"];
+
   // Sequence Ontology Terms (add more as needed)
   const SO_TERMS = {
     "SO:0000704": "gene",
@@ -225,33 +228,8 @@ var CGParse = (function () {
     } while (currentIds.indexOf(id) > -1);
     return id;
   }
-  // Basic testing shows that Method #2 is faster
-  // Using E.Coli PA2 as a test case:
-  // Times are for full parsing of the file
-  // Method #1: ~500ms
-  // Method #2: ~420ms
-  function reverse(string) {
-    // Method #1
-    // return string.split("").reverse().join("");
-    // Method #2
-    let reversed = '';
-    for (let i = string.length - 1; i >= 0; i--) {
-      reversed += string[i];
-    }
-    return reversed;
-  }
-
-  // export function isASCII(text) {
-  //   // const isBinary = !/^[\x00-\x7F]*$/.test(text);
-  //   const isBinary = /[\x00-\x08\x0E-\x1F\x7F]/.test(text); 
-  //   console.log("IS BINARY? ", isBinary)
-  //   return !isBinary;
-  //   // return /^[\x00-\x7F]*$/.test(text);
-  //   // return !/^[\x00-\x08\x0E-\x1F\x7F]*$/.test(text);
-  //   // return /^[\x00]*$/.test(text);
-  // }
-
   // ChatGPT special
+  // Uses Heuristic to determine binary vs text
   function isBinary(text) {
     const CHUNK_SIZE = 512; // Number of bytes to read
     let isBinary = false;
@@ -287,6 +265,26 @@ var CGParse = (function () {
     return isBinary;
   }
 
+
+  // ----------------------------------------------------------------------------
+  // SEQUENCE METHODS
+  // ----------------------------------------------------------------------------
+
+  // Basic testing shows that Method #2 is faster
+  // Using E.Coli PA2 as a test case:
+  // Times are for full parsing of the file
+  // Method #1: ~500ms
+  // Method #2: ~420ms
+  function reverse(string) {
+    // Method #1
+    // return string.split("").reverse().join("");
+    // Method #2
+    let reversed = '';
+    for (let i = string.length - 1; i >= 0; i--) {
+      reversed += string[i];
+    }
+    return reversed;
+  }
 
   // May not be very fast
   // https://medium.com/@marco.amato/playing-with-javascript-performances-and-dna-cb0270ad37c1
@@ -328,6 +326,7 @@ var CGParse = (function () {
       return type;
     }
 
+    // Given a sequence, return an array of unique characters that are not IUPAC characters
     function findNonIUPACCharacters(seq, type) {
       const seqType = type.toLowerCase();
       let chars;
@@ -371,6 +370,9 @@ var CGParse = (function () {
     }
     return count;
   }
+  // ----------------------------------------------------------------------------
+  // OLD METHODS (FOR REFERENECE)
+  // ----------------------------------------------------------------------------
   // - regex is pretty damn slow: ~700ms (adds ~500ms to Ecoli PA2 parsing time from 190ms to 700ms)
   // export function countCharactersInSequence(sequence, characters) {
   //   const regString = `[${characters}]`
@@ -398,6 +400,8 @@ var CGParse = (function () {
   //   }
   //   return count;
   // }
+  // ----------------------------------------------------------------------------
+  // ----------------------------------------------------------------------------
 
   // INPUT:
   // - SequenceFile or string of sequence file (e.g. GenBank, FASTA) that can be converted to SequenceFile
@@ -2382,10 +2386,15 @@ var CGParse = (function () {
 
   }
 
-  // This will be the main interface to parseing Feature Files. 
+  // This will be the main interface to parsing Feature Files. 
   // For each feature file type (e.g. GFF3, GTF, BED, CSV, etc.)
   // we will have delagates that will parse the file and return an array of
   // of joined features.
+  // The returned features are not exactly CGView feature yet, but they are
+  // in a format that can be easily converted to CGView features with FeatureBuilder.
+  // This raw format contains all the attributes from GFF3 and GTF files.
+  // Any attributes that are qualifiers, will also be available
+  // in the 'qualifiers' object.
 
 
   // FeatureFile class reads a feature file (GFF3, BED, CSV, GTF) and returns an array of records
@@ -2435,7 +2444,7 @@ var CGParse = (function () {
       this._success = true;
       this._status = 'success';
       this._records = [];
-      // FIXME either use these or remove it
+      // codes: unknown, binary, empty, unknown_format
       this._errorCodes = new Set();
 
       this.nameKeys = options.nameKeys || ['Name', 'Alias', 'gene', 'locus_tag', 'product', 'note', 'db_xref', 'ID'];
@@ -2451,6 +2460,9 @@ var CGParse = (function () {
         const detectedFormat = this.detectFormat(convertedText);
         this.logger.info('- Format Detected: ' + detectedFormat.padStart(12));
         this.inputFormat = this.chooseFormat(providedFormat, detectedFormat);
+        // Do not continue if the format is unknown
+        if (!this.success) { return; }
+
         // Names
         if (['gtf', 'gff3'].includes(this.inputFormat)) {
           this.logger.info("- Name extraction keys (GFF3/GTF): " + this.nameKeys.join(', '));
@@ -2517,7 +2529,7 @@ var CGParse = (function () {
       if (fileFormats.includes(format)) {
         this._delegate = new FeatureFile.formatDelegateMap[format](this, this.options);
       } else {
-        throw `File format '${format}' must be one of the following: ${fileFormats.join(', ')}`;
+        this._fail(`File format '${format}' must be one of the following: ${fileFormats.join(', ')}`);
       }
     }
 
@@ -2556,7 +2568,7 @@ var CGParse = (function () {
       } else {
         // Either they provided an invalide format or 'auto'
         if (detectedFormat === 'unknown') {
-          this._fail(`- File Format Unknown: AutoDection Failed. Try explicitly setting the format.`);
+          this._fail(`- File Format Unknown: AutoDection Failed. Try explicitly setting the format.`, 'unknown_format');
         } else if (providedFormat !== 'auto') {
           // Invalid format provided
           this.logger.warn(`- Unknown format '${providedFormat}' -> Using '${detectedFormat}'`);

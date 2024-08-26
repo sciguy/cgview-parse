@@ -1,7 +1,12 @@
-// This will be the main interface to parseing Feature Files. 
+// This will be the main interface to parsing Feature Files. 
 // For each feature file type (e.g. GFF3, GTF, BED, CSV, etc.)
 // we will have delagates that will parse the file and return an array of
 // of joined features.
+// The returned features are not exactly CGView feature yet, but they are
+// in a format that can be easily converted to CGView features with FeatureBuilder.
+// This raw format contains all the attributes from GFF3 and GTF files.
+// Any attributes that are qualifiers, will also be available
+// in the 'qualifiers' object.
 
 // RESOURCES:
 // Overview of GFF/GTF formmats and the changes overtime:
@@ -74,7 +79,7 @@ class FeatureFile {
     this._success = true
     this._status = 'success'
     this._records = [];
-    // FIXME either use these or remove it
+    // codes: unknown, binary, empty, unknown_format
     this._errorCodes = new Set();
 
     this.nameKeys = options.nameKeys || ['Name', 'Alias', 'gene', 'locus_tag', 'product', 'note', 'db_xref', 'ID'];
@@ -90,6 +95,9 @@ class FeatureFile {
       const detectedFormat = this.detectFormat(convertedText);
       this.logger.info('- Format Detected: ' + detectedFormat.padStart(12));
       this.inputFormat = this.chooseFormat(providedFormat, detectedFormat);
+      // Do not continue if the format is unknown
+      if (!this.success) { return; }
+
       // Names
       if (['gtf', 'gff3'].includes(this.inputFormat)) {
         this.logger.info("- Name extraction keys (GFF3/GTF): " + this.nameKeys.join(', '));
@@ -156,7 +164,7 @@ class FeatureFile {
     if (fileFormats.includes(format)) {
       this._delegate = new FeatureFile.formatDelegateMap[format](this, this.options)
     } else {
-      throw `File format '${format}' must be one of the following: ${fileFormats.join(', ')}`;
+      this._fail(`File format '${format}' must be one of the following: ${fileFormats.join(', ')}`);
     }
   }
 
@@ -195,7 +203,7 @@ class FeatureFile {
     } else {
       // Either they provided an invalide format or 'auto'
       if (detectedFormat === 'unknown') {
-        this._fail(`- File Format Unknown: AutoDection Failed. Try explicitly setting the format.`);
+        this._fail(`- File Format Unknown: AutoDection Failed. Try explicitly setting the format.`, 'unknown_format');
       } else if (providedFormat !== 'auto') {
         // Invalid format provided
         this.logger.warn(`- Unknown format '${providedFormat}' -> Using '${detectedFormat}'`);

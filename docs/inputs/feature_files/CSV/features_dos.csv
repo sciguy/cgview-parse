@@ -1,0 +1,4 @@
+name,type,start,stop,strand
+CR,NC Region,1,202,+
+trnF,tRNA,203,271,+
+rrnS,rRNA,272,1235,+
