@@ -75,9 +75,11 @@ class GFF3FeatureFile {
       }
     }
     this.logger.info(`- Note: Records with the same 'ID' will be joined into a single record.`);
-    this.logger.info(`- Parsed Feature Lines: ${records.length.toLocaleString().padStart(7)}`);
+    // this.logger.info(`- Parsed Feature Lines: ${records.length.toLocaleString().padStart(7)}`);
+    this.logger.info('- Parsed Feature Lines: ', { padded: records.length });
     const joinedRecords = this._joinRecords(records);
-    this.logger.info(`- Total Features: ${joinedRecords.length.toLocaleString().padStart(13)}`);
+    // this.logger.info(`- Total Features: ${joinedRecords.length.toLocaleString().padStart(13)}`);
+    this.logger.info('- Total Features: ', { padded: joinedRecords.length });
 
     return joinedRecords;
   }

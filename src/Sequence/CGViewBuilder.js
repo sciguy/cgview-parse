@@ -32,7 +32,7 @@ export default class CGViewBuilder extends Status {
     super(options);
     // this.input = input;
     this.version = "1.6.0";
-    this.options = options;
+    // this.options = options;
 
     // this.includeFeatures = options.includeFeatures || true;
     this.includeFeatures = (options.includeFeatures === undefined) ? true : options.includeFeatures;
@@ -40,7 +40,6 @@ export default class CGViewBuilder extends Status {
     this.includeQualifiers = options.includeQualifiers || false;
     this.excludeQualifiers = options.excludeQualifiers || [];
     this.includeCaption = (options.includeCaption === undefined) ? true : options.includeCaption;
-    // this.defaultTypesToSkip = ['gene', 'source', 'exon'];
 
     this.seqFile = this._parseInput(input);
     this.inputType = this.seqFile.inputType
@@ -130,7 +129,8 @@ export default class CGViewBuilder extends Status {
     let skippedFeatures = Object.values(this._skippedFeaturesByType).reduce((a, b) => a + b, 0);
     skippedFeatures += this._skippedComplexFeatures.length;
     skippedFeatures += this._skippedLocationlessFeatures.length;
-    this.logger.break('--------------------------------------------\n')
+    // this.logger.break('--------------------------------------------\n')
+    this.logger.divider();
     this.logger.info('CGView JSON Summary:');
     this.logger.info(`- Map Name: ${json.name.padStart(19)}`);
     this.logger.info(`- Contig Count: ${contigCount.toLocaleString().padStart(15)}`);
@@ -139,14 +139,16 @@ export default class CGViewBuilder extends Status {
     this.logger.info(`- Legend Count: ${legendCount.toLocaleString().padStart(15)}`);
     this.logger.info(`- Features Included: ${featureCount.toLocaleString().padStart(10)}`);
     this.logger.info(`- Features Skipped: ${skippedFeatures.toLocaleString().padStart(11)}`);
-    if (this.success) {
-      this.logger.info('- Status: ' + 'Success'.padStart(21), {icon: 'success'});
-    } else if (this.status === 'warnings') {
-      this.logger.warn('- Status: ' + 'Warnings'.padStart(21), {icon: 'warn'});
-    } else {
-      this.logger.error('- Status: ' + 'FAILED'.padStart(21), {icon: 'fail'});
-    }
-    this.logger.break('--------------------------------------------\n')
+    this.logStatusLine()
+    // if (this.success) {
+    //   this.logger.info('- Status: ' + 'Success'.padStart(21), {icon: 'success'});
+    // } else if (this.status === 'warnings') {
+    //   this.logger.warn('- Status: ' + 'Warnings'.padStart(21), {icon: 'warn'});
+    // } else {
+    //   this.logger.error('- Status: ' + 'FAILED'.padStart(21), {icon: 'fail'});
+    // }
+    // this.logger.break('--------------------------------------------\n')
+    this.logger.divider();
   }
 
   _summarizeSkippedFeatures() {
@@ -176,7 +178,6 @@ export default class CGViewBuilder extends Status {
       this._warn(messages);
     }
   }
-
   // Add config to JSON. Note that no validation of the config is done.
   _addConfigToJSON(json, config) {
     const configKeys = config ? Object.keys(config) : ['none'];

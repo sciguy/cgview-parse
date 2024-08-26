@@ -2,12 +2,14 @@ import Logger from "./Support/Logger.js";
 import SequenceFile from "./Sequence/SequenceFile.js";
 import CGViewBuilder from "./Sequence/CGViewBuilder.js";
 import FeatureFile from "./Features/FeatureFile.js";
+import FeatureBuilder from "./Features/FeatureBuilder.js";
 
 const CGParse = {}
 CGParse.Logger = Logger;
 CGParse.SequenceFile = SequenceFile;
 CGParse.CGViewBuilder = CGViewBuilder;
 CGParse.FeatureFile = FeatureFile;
+CGParse.FeatureBuilder = FeatureBuilder;
 
 export default CGParse;
 

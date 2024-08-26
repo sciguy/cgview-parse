@@ -68,7 +68,7 @@ class FeatureFile extends Status {
   // - maxLogCount: number (undefined means no limit) [Default: undefined]
   constructor(inputText, options={}) {
     super(options);
-    this.options = options;
+    // this.options = options;
     const convertedText = helpers.convertLineEndingsToLF(inputText);
     let providedFormat = options.format || 'auto';
 
@@ -83,9 +83,11 @@ class FeatureFile extends Status {
     } else {
       // File Format
       this.logger.info("Checking File Format...");
-      this.logger.info('- Format Provided: ' + providedFormat.padStart(12));
+      // this.logger.info('- Format Provided: ' + providedFormat.padStart(12));
+      this.logger.info('- Format Provided: ', { padded: providedFormat });
       const detectedFormat = this.detectFormat(convertedText);
-      this.logger.info('- Format Detected: ' + detectedFormat.padStart(12));
+      // this.logger.info('- Format Detected: ' + detectedFormat.padStart(12));
+      this.logger.info('- Format Detected: ', { padded: detectedFormat });
       this.inputFormat = this.chooseFormat(providedFormat, detectedFormat);
       // Do not continue if the format is unknown
       if (!this.success) { return; }
@@ -197,19 +199,25 @@ class FeatureFile extends Status {
 
     const format = this.displayFileFormat || this.inputFormat.toUpperCase();
 
-    this.logger.break('--------------------------------------------\n')
+    // this.logger.break('--------------------------------------------\n')
+    this.logger.divider();
     this.logger.info('Parsing Summary:');
-    this.logger.info(`- Input File Format: ${format.padStart(10)}`);
-    this.logger.info(`- Feature Lines: ${this.lineCount.toLocaleString().padStart(14)}`);
-    this.logger.info(`- Feature Count: ${records.length.toLocaleString().padStart(14)}`);
-    if (this.success) {
-      this.logger.info('- Status: ' + 'Success'.padStart(21), {icon: 'success'});
-    } else if (this.status === 'warnings') {
-      this.logger.warn('- Status: ' + 'Warnings'.padStart(21), {icon: 'warn'});
-    } else {
-      this.logger.error('- Status: ' + 'FAILED'.padStart(21), {icon: 'fail'});
-    }
-    this.logger.break('--------------------------------------------\n')
+    // this.logger.info(`- Input File Format: ${format.padStart(10)}`);
+    this.logger.info(`- Input File Format:`, { padded: format });
+    // this.logger.info(`- Feature Lines: ${this.lineCount.toLocaleString().padStart(14)}`);
+    this.logger.info(`- Feature Lines:`, { padded: this.lineCount });
+    // this.logger.info(`- Feature Count: ${records.length.toLocaleString().padStart(14)}`);
+    this.logger.info(`- Feature Count:`, { padded: records.length });
+    this.logStatusLine()
+    // if (this.success) {
+    //   this.logger.info('- Status: ' + 'Success'.padStart(21), {icon: 'success'});
+    // } else if (this.status === 'warnings') {
+    //   this.logger.warn('- Status: ' + 'Warnings'.padStart(21), {icon: 'warn'});
+    // } else {
+    //   this.logger.error('- Status: ' + 'FAILED'.padStart(21), {icon: 'fail'});
+    // }
+    // this.logger.break('--------------------------------------------\n')
+    this.logger.divider();
 
     this._summary = {
       inputFormat: this.inputFormat,
@@ -225,6 +233,7 @@ class FeatureFile extends Status {
   /////////////////////////////////////////////////////////////////////////////
   // DELEGATES
   /////////////////////////////////////////////////////////////////////////////
+
   get delegate() {
     return this._delegate;
   }
@@ -265,7 +274,9 @@ class FeatureFile extends Status {
     try {
       records = this.parse(fileText, options);
       const recordsWithLocationsCount = records.filter((record) => Array.isArray(record.locations)).length;
-      this.logger.info(`- Features with >1 location: ${recordsWithLocationsCount.toLocaleString().padStart(2)}`);
+      console.log('recordsWithLocationsCount', recordsWithLocationsCount);
+      // this.logger.info(`- Features with >1 location: ${recordsWithLocationsCount.toLocaleString().padStart(2)}`);
+      this.logger.info('- Features with >1 location: ', { padded: recordsWithLocationsCount });
       this.logger.info('- Done parsing feature file');
     } catch (error) {
       this._fail('- Failed: An error occurred while parsing the file.', 'parsing');

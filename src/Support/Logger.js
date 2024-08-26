@@ -3,6 +3,9 @@
 // - showTimestamps [Default: true]: Add time stamps
 // - showIcons: Add level as icon: warn, info, etc
 // - maxLogCount: Maximum number of similar log messages to keep
+// - lineLength: Number of characters to pad each line [Default: 48]
+//   - lines are not wrapped
+//   - this is for dividers and padded text
 // NOTE:
 // - logToConsole and showTimestamps can be overridden in each log call
 //   as well as the history
@@ -20,6 +23,7 @@ class Logger {
     this.showTimestamps = (options.showTimestamps === undefined) ? true : options.showTimestamps;
     this.showIcons = (options.showIcons === undefined) ? false : options.showIcons;
     this.maxLogCount = (options.maxLogCount === undefined) ? false : options.maxLogCount;
+    this.lineLength = options.lineLength || 48;
     this.logs = [];
   }
 
@@ -43,6 +47,15 @@ class Logger {
     this._log(messages, 'error', options);
   }
 
+  // Add a diver to the logs (e.g. a line of dashes)
+  // divider: the character to use for the divider
+  divider(divider="-") {
+    const line = divider.repeat(this.lineLength) + '\n';
+    const logItem = { type: 'break', break: line };
+    this.logs.push(logItem);
+  }
+
+  // Add a break to the logs (e.g. a a return or a line of text)
   break(divider="\n") {
     const logItem = { type: 'break', break: divider };
     this.logs.push(logItem);
@@ -66,6 +79,9 @@ class Logger {
 
   // - messages: a single message or an array of messages
   // - level: warn, error, info, log
+  // - options:
+  //   - logToConsole, showTimestamps, showIcons, maxLogCount, lineLength: override default options (see constructor)
+  //   - padded: text or number that should be padded to the right of each line (based on lineLength)
   _log(messages, level, options={}) {
     const timestamp = this._formatTime(new Date());
     messages = (Array.isArray(messages)) ? messages : [messages];
@@ -73,10 +89,10 @@ class Logger {
     let messageLimitReached;
     for (const [index, message] of messages.entries()) {
       if (maxLogCount && index >= maxLogCount && index !== messages.length - 1) {
-        const padding = messages[0].match(/^\s*/)[0];
-        messageLimitReached = `${padding}- Only showing first ${maxLogCount}: ${messages.length - maxLogCount} more not shown (${messages.length.toLocaleString()} total)`;
+        const listPadding = messages[0].match(/^\s*/)[0];
+        messageLimitReached = `${listPadding}- Only showing first ${maxLogCount}: ${messages.length - maxLogCount} more not shown (${messages.length.toLocaleString()} total)`;
       }
-      const logItem = { type: 'message', message: (messageLimitReached || message), level, timestamp, icon: options.icon };
+      const logItem = { type: 'message', message: (messageLimitReached || message), level, timestamp, icon: options.icon, padded: options.padded };
       this.logs.push(logItem);
       this._consoleMessage(logItem, options);
       if (messageLimitReached) { break; }
@@ -95,14 +111,30 @@ class Logger {
   _formatMessage(logItem, options={}) {
     let message = "";
     const showTimestamps = this._optionFor('showTimestamps', options);
-    if (this._optionFor('showIcons', options)) {
+    // Icons
+    const showIcons = this._optionFor('showIcons', options);
+    if (showIcons) {
       const icon = logItem.icon || logItem.level;
       message += this._icon(icon) + (showTimestamps ? '' : ' ');
     }
+    // Timestamp
     if (showTimestamps) {
       message += `[${logItem.timestamp}] `;
     }
+    // Message
     message += logItem.message;
+    // Padded Text
+    if (logItem.padded !== undefined) {
+      const lineLength = this._optionFor('lineLength', options);
+      let padding = lineLength - message.length;
+      // Weirdness with emoji lengths. Adjust as needed.
+      if (showIcons && logItem.icon == 'success') {
+        padding = padding - 1;
+      }
+      const paddedText = `${logItem.padded.toLocaleString().padStart(padding)}`;
+      message += paddedText;
+    }
+
     return message
   }
 

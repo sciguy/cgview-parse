@@ -81,10 +81,12 @@ class GTFFeatureFile {
       }
     }
     this.logger.info(`- Note: Records (CDS, start/stop_codon) with the same 'transcript_id' will be joined into a single CDS record.`);
-    this.logger.info(`- Parsed Feature Lines: ${records.length.toLocaleString().padStart(7)}`);
+    // this.logger.info(`- Parsed Feature Lines: ${records.length.toLocaleString().padStart(7)}`);
+    this.logger.info('- Parsed Feature Lines: ', { padded: records.length });
     const joinedRecords = this._joinRecords(records);
     // const joinedRecords = records;
-    this.logger.info(`- Total Features: ${joinedRecords.length.toLocaleString().padStart(13)}`);
+    // this.logger.info(`- Total Features: ${joinedRecords.length.toLocaleString().padStart(13)}`);
+    this.logger.info('- Total Features: ', { padded: joinedRecords.length });
 
     return joinedRecords;
   }

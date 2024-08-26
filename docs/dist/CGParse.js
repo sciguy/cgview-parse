@@ -6,6 +6,9 @@ var CGParse = (function () {
   // - showTimestamps [Default: true]: Add time stamps
   // - showIcons: Add level as icon: warn, info, etc
   // - maxLogCount: Maximum number of similar log messages to keep
+  // - lineLength: Number of characters to pad each line [Default: 48]
+  //   - lines are not wrapped
+  //   - this is for dividers and padded text
   // NOTE:
   // - logToConsole and showTimestamps can be overridden in each log call
   //   as well as the history
@@ -23,6 +26,7 @@ var CGParse = (function () {
       this.showTimestamps = (options.showTimestamps === undefined) ? true : options.showTimestamps;
       this.showIcons = (options.showIcons === undefined) ? false : options.showIcons;
       this.maxLogCount = (options.maxLogCount === undefined) ? false : options.maxLogCount;
+      this.lineLength = options.lineLength || 48;
       this.logs = [];
     }
 
@@ -46,6 +50,15 @@ var CGParse = (function () {
       this._log(messages, 'error', options);
     }
 
+    // Add a diver to the logs (e.g. a line of dashes)
+    // divider: the character to use for the divider
+    divider(divider="-") {
+      const line = divider.repeat(this.lineLength) + '\n';
+      const logItem = { type: 'break', break: line };
+      this.logs.push(logItem);
+    }
+
+    // Add a break to the logs (e.g. a a return or a line of text)
     break(divider="\n") {
       const logItem = { type: 'break', break: divider };
       this.logs.push(logItem);
@@ -69,6 +82,9 @@ var CGParse = (function () {
 
     // - messages: a single message or an array of messages
     // - level: warn, error, info, log
+    // - options:
+    //   - logToConsole, showTimestamps, showIcons, maxLogCount, lineLength: override default options (see constructor)
+    //   - padded: text or number that should be padded to the right of each line (based on lineLength)
     _log(messages, level, options={}) {
       const timestamp = this._formatTime(new Date());
       messages = (Array.isArray(messages)) ? messages : [messages];
@@ -76,10 +92,10 @@ var CGParse = (function () {
       let messageLimitReached;
       for (const [index, message] of messages.entries()) {
         if (maxLogCount && index >= maxLogCount && index !== messages.length - 1) {
-          const padding = messages[0].match(/^\s*/)[0];
-          messageLimitReached = `${padding}- Only showing first ${maxLogCount}: ${messages.length - maxLogCount} more not shown (${messages.length.toLocaleString()} total)`;
+          const listPadding = messages[0].match(/^\s*/)[0];
+          messageLimitReached = `${listPadding}- Only showing first ${maxLogCount}: ${messages.length - maxLogCount} more not shown (${messages.length.toLocaleString()} total)`;
         }
-        const logItem = { type: 'message', message: (messageLimitReached || message), level, timestamp, icon: options.icon };
+        const logItem = { type: 'message', message: (messageLimitReached || message), level, timestamp, icon: options.icon, padded: options.padded };
         this.logs.push(logItem);
         this._consoleMessage(logItem, options);
         if (messageLimitReached) { break; }
@@ -98,14 +114,30 @@ var CGParse = (function () {
     _formatMessage(logItem, options={}) {
       let message = "";
       const showTimestamps = this._optionFor('showTimestamps', options);
-      if (this._optionFor('showIcons', options)) {
+      // Icons
+      const showIcons = this._optionFor('showIcons', options);
+      if (showIcons) {
         const icon = logItem.icon || logItem.level;
         message += this._icon(icon) + (showTimestamps ? '' : ' ');
       }
+      // Timestamp
       if (showTimestamps) {
         message += `[${logItem.timestamp}] `;
       }
+      // Message
       message += logItem.message;
+      // Padded Text
+      if (logItem.padded !== undefined) {
+        const lineLength = this._optionFor('lineLength', options);
+        let padding = lineLength - message.length;
+        // Weirdness with emoji lengths. Adjust as needed.
+        if (showIcons && logItem.icon == 'success') {
+          padding = padding - 1;
+        }
+        const paddedText = `${logItem.padded.toLocaleString().padStart(padding)}`;
+        message += paddedText;
+      }
+
       return message
     }
 
@@ -156,6 +188,8 @@ var CGParse = (function () {
     // - maxLogCount: number (undefined means no limit) [Default: undefined]
     constructor(options = {}) {
 
+      this._options = options;
+
       // Logger
       this.logger = options.logger || new Logger();
       options.logger = this.logger;
@@ -165,7 +199,6 @@ var CGParse = (function () {
       this.logger.info(`Date: ${new Date().toUTCString()}`);
 
       // Initialize status
-      this._success = true;
       this._status = 'success';
       this._errorCodes = new Set();
     }
@@ -175,15 +208,22 @@ var CGParse = (function () {
     // Properties
     /////////////////////////////////////////////////////////////////////////////
 
+    get options() {
+      return this._options;
+    }
+
+    // Parsing status
     // Should be one of: 'success', 'warnings', 'fail'
     get status() {
       return this._status;
     }
 
+    // Parsing is successful
     get success() {
-      return this.status == 'success';
+      return this.status === 'success';
     }
 
+    // Parsing has passed with success or warnings
     get passed() {
       return this.status === 'success' || this.status === 'warnings';
     }
@@ -194,6 +234,8 @@ var CGParse = (function () {
       return Array.from(this._errorCodes);
     }
 
+    // Parsing has failed
+    // Optional error code can be provided to help identify the error
     _fail(message, errorCode='unknown') {
       this.logger.error(message);
       this._status = 'failed';
@@ -204,6 +246,16 @@ var CGParse = (function () {
       this.logger.warn(message);
       if (this.status !== 'fail') {
         this._status = 'warnings';
+      }
+    }
+
+    logStatusLine() {
+      if (this.success) {
+        this.logger.info('- Status: ', { padded: 'Success', icon: 'success' });
+      } else if (this.status === 'warnings') {
+        this.logger.warn('- Status: ', { padded: 'Warnings', icon: 'warn' });
+      } else {
+        this.logger.error('- Status: ', { padded: 'FAILED', icon: 'fail' });
       }
     }
 
@@ -500,7 +552,7 @@ var CGParse = (function () {
       super(options);
       // this.input = input;
       this.version = "1.6.0";
-      this.options = options;
+      // this.options = options;
 
       // this.includeFeatures = options.includeFeatures || true;
       this.includeFeatures = (options.includeFeatures === undefined) ? true : options.includeFeatures;
@@ -508,7 +560,6 @@ var CGParse = (function () {
       this.includeQualifiers = options.includeQualifiers || false;
       this.excludeQualifiers = options.excludeQualifiers || [];
       this.includeCaption = (options.includeCaption === undefined) ? true : options.includeCaption;
-      // this.defaultTypesToSkip = ['gene', 'source', 'exon'];
 
       this.seqFile = this._parseInput(input);
       this.inputType = this.seqFile.inputType;
@@ -598,7 +649,8 @@ var CGParse = (function () {
       let skippedFeatures = Object.values(this._skippedFeaturesByType).reduce((a, b) => a + b, 0);
       skippedFeatures += this._skippedComplexFeatures.length;
       skippedFeatures += this._skippedLocationlessFeatures.length;
-      this.logger.break('--------------------------------------------\n');
+      // this.logger.break('--------------------------------------------\n')
+      this.logger.divider();
       this.logger.info('CGView JSON Summary:');
       this.logger.info(`- Map Name: ${json.name.padStart(19)}`);
       this.logger.info(`- Contig Count: ${contigCount.toLocaleString().padStart(15)}`);
@@ -607,14 +659,16 @@ var CGParse = (function () {
       this.logger.info(`- Legend Count: ${legendCount.toLocaleString().padStart(15)}`);
       this.logger.info(`- Features Included: ${featureCount.toLocaleString().padStart(10)}`);
       this.logger.info(`- Features Skipped: ${skippedFeatures.toLocaleString().padStart(11)}`);
-      if (this.success) {
-        this.logger.info('- Status: ' + 'Success'.padStart(21), {icon: 'success'});
-      } else if (this.status === 'warnings') {
-        this.logger.warn('- Status: ' + 'Warnings'.padStart(21), {icon: 'warn'});
-      } else {
-        this.logger.error('- Status: ' + 'FAILED'.padStart(21), {icon: 'fail'});
-      }
-      this.logger.break('--------------------------------------------\n');
+      this.logStatusLine();
+      // if (this.success) {
+      //   this.logger.info('- Status: ' + 'Success'.padStart(21), {icon: 'success'});
+      // } else if (this.status === 'warnings') {
+      //   this.logger.warn('- Status: ' + 'Warnings'.padStart(21), {icon: 'warn'});
+      // } else {
+      //   this.logger.error('- Status: ' + 'FAILED'.padStart(21), {icon: 'fail'});
+      // }
+      // this.logger.break('--------------------------------------------\n')
+      this.logger.divider();
     }
 
     _summarizeSkippedFeatures() {
@@ -644,7 +698,6 @@ var CGParse = (function () {
         this._warn(messages);
       }
     }
-
     // Add config to JSON. Note that no validation of the config is done.
     _addConfigToJSON(json, config) {
       const configKeys = config ? Object.keys(config) : ['none'];
@@ -1006,7 +1059,7 @@ var CGParse = (function () {
       super(options);
       const convertedText = convertLineEndingsToLF(inputText);
       this.nameKeys = options.nameKeys || ['gene', 'locus_tag', 'product', 'note', 'db_xref'];
-      this.logger.info(`Date: ${new Date().toUTCString()}`);
+      // this.logger.info(`Date: ${new Date().toUTCString()}`);
 
       this._records = [];
 
@@ -1073,19 +1126,22 @@ var CGParse = (function () {
       const features = records.map((record) => record.features).flat();
       const seqLength = records.map((record) => record.length).reduce((a, b) => a + b, 0);
 
-      this.logger.break('--------------------------------------------\n');
+      // this.logger.break('--------------------------------------------\n')
+      this.logger.divider();
       this.logger.info('Parsing Summary:');
       this.logger.info(`- Input file type: ${this.inputType.padStart(12)}`);
       this.logger.info(`- Sequence Type: ${this.sequenceType.padStart(14)}`);
       this.logger.info(`- Sequence Count: ${records.length.toLocaleString().padStart(13)}`);
       this.logger.info(`- Feature Count: ${features.length.toLocaleString().padStart(14)}`);
       this.logger.info('- Total Length (bp): ' + `${seqLength.toLocaleString()}`.padStart(10));
-      if (this.success) {
-        this.logger.info('- Status: ' + 'Success'.padStart(21), {icon: 'success'});
-      } else {
-        this.logger.error('- Status: ' + 'FAILED'.padStart(21), {icon: 'fail'});
-      }
-      this.logger.break('--------------------------------------------\n');
+      this.logStatusLine();
+      // if (this.success) {
+      //   this.logger.info('- Status: ' + 'Success'.padStart(21), {icon: 'success'});
+      // } else {
+      //   this.logger.error('- Status: ' + 'FAILED'.padStart(21), {icon: 'fail'});
+      // }
+      // this.logger.break('--------------------------------------------\n')
+      this.logger.divider();
 
       this._summary = {
         inputType: this.inputType,
@@ -1754,9 +1810,11 @@ var CGParse = (function () {
         }
       }
       this.logger.info(`- Note: Records with the same 'ID' will be joined into a single record.`);
-      this.logger.info(`- Parsed Feature Lines: ${records.length.toLocaleString().padStart(7)}`);
+      // this.logger.info(`- Parsed Feature Lines: ${records.length.toLocaleString().padStart(7)}`);
+      this.logger.info('- Parsed Feature Lines: ', { padded: records.length });
       const joinedRecords = this._joinRecords(records);
-      this.logger.info(`- Total Features: ${joinedRecords.length.toLocaleString().padStart(13)}`);
+      // this.logger.info(`- Total Features: ${joinedRecords.length.toLocaleString().padStart(13)}`);
+      this.logger.info('- Total Features: ', { padded: joinedRecords.length });
 
       return joinedRecords;
     }
@@ -1986,10 +2044,12 @@ var CGParse = (function () {
         }
       }
       this.logger.info(`- Note: Records (CDS, start/stop_codon) with the same 'transcript_id' will be joined into a single CDS record.`);
-      this.logger.info(`- Parsed Feature Lines: ${records.length.toLocaleString().padStart(7)}`);
+      // this.logger.info(`- Parsed Feature Lines: ${records.length.toLocaleString().padStart(7)}`);
+      this.logger.info('- Parsed Feature Lines: ', { padded: records.length });
       const joinedRecords = this._joinRecords(records);
       // const joinedRecords = records;
-      this.logger.info(`- Total Features: ${joinedRecords.length.toLocaleString().padStart(13)}`);
+      // this.logger.info(`- Total Features: ${joinedRecords.length.toLocaleString().padStart(13)}`);
+      this.logger.info('- Total Features: ', { padded: joinedRecords.length });
 
       return joinedRecords;
     }
@@ -2371,11 +2431,13 @@ var CGParse = (function () {
       // Missing Starts and Stops
       const missingStarts = records.filter((record) => isNaN(record.start));
       if (missingStarts.length) {
-        this._fail(`- Records missing Starts: ${missingStarts.length.toLocaleString().padStart(5)}`);
+        // this._fail(`- Records missing Starts: ${missingStarts.length.toLocaleString().padStart(5)}`);
+        this._fail('- Records missing Starts: ', { padded: missingStarts.length });
       }
       const missingStops = records.filter((record) => isNaN(record.stop));
       if (missingStops.length) {
-        this._fail(`- Records missing Stops: ${missingStops.length.toLocaleString().padStart(6)}`);
+        // this._fail(`- Records missing Stops: ${missingStops.length.toLocaleString().padStart(6)}`);
+        this._fail('- Records missing Stops: ', { padded: missingStops.length });
       }
 
     }
@@ -2429,7 +2491,7 @@ var CGParse = (function () {
     // - maxLogCount: number (undefined means no limit) [Default: undefined]
     constructor(inputText, options={}) {
       super(options);
-      this.options = options;
+      // this.options = options;
       const convertedText = convertLineEndingsToLF(inputText);
       let providedFormat = options.format || 'auto';
 
@@ -2444,9 +2506,11 @@ var CGParse = (function () {
       } else {
         // File Format
         this.logger.info("Checking File Format...");
-        this.logger.info('- Format Provided: ' + providedFormat.padStart(12));
+        // this.logger.info('- Format Provided: ' + providedFormat.padStart(12));
+        this.logger.info('- Format Provided: ', { padded: providedFormat });
         const detectedFormat = this.detectFormat(convertedText);
-        this.logger.info('- Format Detected: ' + detectedFormat.padStart(12));
+        // this.logger.info('- Format Detected: ' + detectedFormat.padStart(12));
+        this.logger.info('- Format Detected: ', { padded: detectedFormat });
         this.inputFormat = this.chooseFormat(providedFormat, detectedFormat);
         // Do not continue if the format is unknown
         if (!this.success) { return; }
@@ -2558,19 +2622,25 @@ var CGParse = (function () {
 
       const format = this.displayFileFormat || this.inputFormat.toUpperCase();
 
-      this.logger.break('--------------------------------------------\n');
+      // this.logger.break('--------------------------------------------\n')
+      this.logger.divider();
       this.logger.info('Parsing Summary:');
-      this.logger.info(`- Input File Format: ${format.padStart(10)}`);
-      this.logger.info(`- Feature Lines: ${this.lineCount.toLocaleString().padStart(14)}`);
-      this.logger.info(`- Feature Count: ${records.length.toLocaleString().padStart(14)}`);
-      if (this.success) {
-        this.logger.info('- Status: ' + 'Success'.padStart(21), {icon: 'success'});
-      } else if (this.status === 'warnings') {
-        this.logger.warn('- Status: ' + 'Warnings'.padStart(21), {icon: 'warn'});
-      } else {
-        this.logger.error('- Status: ' + 'FAILED'.padStart(21), {icon: 'fail'});
-      }
-      this.logger.break('--------------------------------------------\n');
+      // this.logger.info(`- Input File Format: ${format.padStart(10)}`);
+      this.logger.info(`- Input File Format:`, { padded: format });
+      // this.logger.info(`- Feature Lines: ${this.lineCount.toLocaleString().padStart(14)}`);
+      this.logger.info(`- Feature Lines:`, { padded: this.lineCount });
+      // this.logger.info(`- Feature Count: ${records.length.toLocaleString().padStart(14)}`);
+      this.logger.info(`- Feature Count:`, { padded: records.length });
+      this.logStatusLine();
+      // if (this.success) {
+      //   this.logger.info('- Status: ' + 'Success'.padStart(21), {icon: 'success'});
+      // } else if (this.status === 'warnings') {
+      //   this.logger.warn('- Status: ' + 'Warnings'.padStart(21), {icon: 'warn'});
+      // } else {
+      //   this.logger.error('- Status: ' + 'FAILED'.padStart(21), {icon: 'fail'});
+      // }
+      // this.logger.break('--------------------------------------------\n')
+      this.logger.divider();
 
       this._summary = {
         inputFormat: this.inputFormat,
@@ -2586,6 +2656,7 @@ var CGParse = (function () {
     /////////////////////////////////////////////////////////////////////////////
     // DELEGATES
     /////////////////////////////////////////////////////////////////////////////
+
     get delegate() {
       return this._delegate;
     }
@@ -2626,7 +2697,9 @@ var CGParse = (function () {
       try {
         records = this.parse(fileText, options);
         const recordsWithLocationsCount = records.filter((record) => Array.isArray(record.locations)).length;
-        this.logger.info(`- Features with >1 location: ${recordsWithLocationsCount.toLocaleString().padStart(2)}`);
+        console.log('recordsWithLocationsCount', recordsWithLocationsCount);
+        // this.logger.info(`- Features with >1 location: ${recordsWithLocationsCount.toLocaleString().padStart(2)}`);
+        this.logger.info('- Features with >1 location: ', { padded: recordsWithLocationsCount });
         this.logger.info('- Done parsing feature file');
       } catch (error) {
         this._fail('- Failed: An error occurred while parsing the file.', 'parsing');
@@ -2653,11 +2726,175 @@ var CGParse = (function () {
 
   }
 
+  // INPUT:
+  // - FeatureFile or string of feature file (e.g. GFF3, GTF, BED, CSV) that can be converted to FeatureFile
+  // OPTIONS:
+  // - FIXME: CHANGE TO includ/excludeFeatures skipTypes: boolean (TEST) [Default: ['gene', 'source', 'exon']]
+  //   - If false, include ALL feature types in the JSON
+  // - includeFeatures: boolean [Default: true]
+  //   - If true, include ALL feature types in the JSON
+  //   - If array of strings, include only those feature type
+  //   - If false, include NO features
+  // - excludeFeatures: array of string [Default: undefined]
+  //   - include all feature types except for these
+  //   - ignored unless includeFeatures is true
+  // - includeQualifiers: boolean [Default: false]
+  //   - If true, include ALL qualifiers in the JSON
+  //   - If array of strings, include only those qualifiers
+  //   - If false, include NO qualifiers
+  // - excludeQualifiers: array of string [Default: undefined]
+  //   - include all qualifiers except for these
+  //   - ignored unless includeQualifiers is true
+  // - maxLogCount: number (undefined means no limit) [Default: undefined]
+
+  class FeatureBuilder extends Status {
+
+    constructor(input, options = {}) {
+      super(options);
+      // this.options = options;
+
+      this.includeFeatures = (options.includeFeatures === undefined) ? true : options.includeFeatures;
+      this.excludeFeatures = options.excludeFeatures || ['gene', 'source', 'exon'];
+      this.includeQualifiers = options.includeQualifiers || false;
+      this.excludeQualifiers = options.excludeQualifiers || [];
+
+      this.featureFile = this._parseInput(input);
+      this.inputDisplayFormat = this.featureFile.displayFileFormat;
+      if (this.featureFile.success === true) {
+        this._json = this._build(this.featureFile.records);
+      } else {
+        this._fail('*** Cannot convert to CGView Feature JSON because parsing feature file failed ***');
+      }
+    }
+
+    toJSON() {
+      return this._json;
+    }
+
+    _parseInput(input) {
+      // console.log("Parse input")
+      if (typeof input === "string") {
+        return new FeatureFile(input, {logger: this.logger});
+      } else if (input instanceof FeatureFile) {
+        return input;
+      } else {
+        this._fail("Invalid input: must be a string (from GFF3, GTF, BED, CSV) or FeatureFile object");
+      }
+    }
+
+    _build(records) {
+      const features = [];
+      this._skippedFeaturesByType = {};
+      this._complexFeatures = [];
+      this._skippedLocationlessFeatures = [];
+      // this.logger.info(`Date: ${new Date().toUTCString()}`);
+      this.logger.info(`Converting to CGView Feature JSON...`);
+      this.logger.info('- Input Feature Count: ', { padded: records.length });
+      this.logger.info('- Input File Format: ', { padded: (this.inputDisplayFormat || 'Unknown') });
+      // Check for records
+      if (!records || records.length < 1) {
+        this._fail("Conversion Failed: No feature records provided");
+        return;
+      }
+
+      // this._summarizeSkippedFeatures()
+      // this._adjustFeatureGeneticCode(json)
+      // this._qualifiersSetup();
+      // if (this._complexFeatures.length > 0) {
+      //   this.logger.info(`- Complex Features Found: ${this._complexFeatures.length.toLocaleString()}`);
+      // }
+
+      for (const record of records) {
+        const feature = this._buildFeature(record);
+        if (feature) {
+          features.push(feature);
+        }
+      }
+      this._adjustFeatureContigNames(features);
+      this._buildSummary(features);
+      return features;
+    }
+
+    _buildFeature(record) {
+      const feature = {};
+      // Required fields
+      feature.contig = record.contig;
+      feature.start = record.start;
+      feature.stop = record.stop;
+      feature.strand = ["-1", "-", -1].includes(record.strand) ? -1 : 1;
+      feature.type = record.type;
+      // Optional fields
+      if (record.name) {
+        feature.name = record.name;
+      }
+      if (record.score) {
+        feature.score = record.score;
+      }
+      if (record.source) {
+        feature.source = record.source;
+      }
+      if (record.frame) {
+        feature.frame = record.frame;
+      }
+      if (record.qualifiers) {
+        feature.qualifiers = record.qualifiers;
+      }
+      return feature;
+    }
+
+    _buildSummary(features) {
+      this.logger.divider();
+      this.logger.info('CGView Feature JSON Summary:');
+      this.logger.info(`- Feature Count: `, { padded: features.length });
+      // this.logger.info(`- Features Included: `, { padded: features.length });
+      // this.logger.info(`- Features Skipped: `, { padded: features.length });
+      this.logStatusLine();
+      this.logger.divider();
+    }
+
+    // Adjust contig names:
+    // - replace nonstandard characters with underscores
+    // - length of contig names should be less than 37 characters
+    _adjustFeatureContigNames(features) {
+      this.logger.info('- Checking feature contig names...');
+      const contigNames = features.map((feature) => feature.contig);
+      const uniqueContigNames = [...new Set(contigNames)];
+      const adjustedContigNameResults = CGViewBuilder.adjustContigNames(uniqueContigNames);
+      const contigNameMap = {};
+      adjustedContigNameResults.reasons.forEach((reason) => {
+        contigNameMap[reason.origName] = reason.newName;
+      });
+
+      const messages = [];
+      let featuresChangedCount = 0;
+      if (adjustedContigNameResults.reasons.length > 0) {
+        // Update Feature contigs
+        for (const feature of features) {
+          if (contigNameMap[feature.contig]) {
+            feature.contig = contigNameMap[feature.contig];
+            featuresChangedCount++;
+          }
+        }
+        // Log details
+        this.logger.warn(`The following contig names (${adjustedContigNameResults.reasons.length}) were adjusted:`);
+        this.logger.warn(`Reasons: DUP (duplicate), LONG (>34), REPLACE (nonstandard characters), BLANK (empty)`);
+        for (const reason of adjustedContigNameResults.reasons) {
+          messages.push(`- ${reason.origName} -> ${reason.newName} (${reason.reason.join(', ')})`);
+        }
+        this._warn(messages);
+        this._warn(`- Features with adjusted contig names: ${featuresChangedCount}`);
+      }
+    }
+
+
+  }
+
   const CGParse = {};
   CGParse.Logger = Logger;
   CGParse.SequenceFile = SequenceFile$1;
   CGParse.CGViewBuilder = CGViewBuilder;
   CGParse.FeatureFile = FeatureFile;
+  CGParse.FeatureBuilder = FeatureBuilder;
 
   // Teselagen (For development only; Useful for comparison):
   // This should be removed for production

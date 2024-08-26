@@ -201,11 +201,13 @@ class BEDFeatureFile {
     // Missing Starts and Stops
     const missingStarts = records.filter((record) => isNaN(record.start));
     if (missingStarts.length) {
-      this._fail(`- Records missing Starts: ${missingStarts.length.toLocaleString().padStart(5)}`);
+      // this._fail(`- Records missing Starts: ${missingStarts.length.toLocaleString().padStart(5)}`);
+      this._fail('- Records missing Starts: ', { padded: missingStarts.length });
     }
     const missingStops = records.filter((record) => isNaN(record.stop));
     if (missingStops.length) {
-      this._fail(`- Records missing Stops: ${missingStops.length.toLocaleString().padStart(6)}`);
+      // this._fail(`- Records missing Stops: ${missingStops.length.toLocaleString().padStart(6)}`);
+      this._fail('- Records missing Stops: ', { padded: missingStops.length });
     }
 
   }

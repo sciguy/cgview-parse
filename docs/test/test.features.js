@@ -22,7 +22,7 @@ const defaultFormat = 'auto';
 const prettyPrint = false;
 const showInput = true;
 const showFeatJson = true;
-const showCgvJson = false;
+const showCgvJson = true;
 const showMap = false;
 const showAllText = false; // or only the first 1000 lines
 
@@ -236,54 +236,43 @@ function runParse() {
   // Parse to featureJson
   const featureJsonStartTime = new Date().getTime();
   const featureFile = new CGParse.FeatureFile(inputText, {format: selectedFormat, maxLogCount: 1});
-  const seqJSON = featureFile.records;
+  const featureJSON = featureFile.records;
   json.featureFile = featureFile; // For debugging
-  console.log(seqJSON)
+  console.log(featureJSON)
   const featureJsonRunTime = elapsedTime(featureJsonStartTime);
   updateTime('time-seq-json', featureJsonRunTime);
-  let seqString = JSON.stringify(seqJSON, null, 2);
-  // if (filterSeqMode) {
-  //   seqString = seqString.replace(/"sequence": ".*"/g, '"sequence": "..."');
-  // }
+  let seqString = JSON.stringify(featureJSON, null, 2);
   // Compact the locations array to a single line for easier viewing
   seqString = seqString.replace(/"locations":(.*?)(\s+)([}"])/smg, (match, p1, p2, p3) => {
     return `"locations": ${p1.replace(/\s+/g, '')}${p2}${p3}`;
   });
-  // outputSeqJsonDiv.innerHTML = prismMode ? Prism.highlight(seqString, Prism.languages.json, 'json') : seqString;
   outputSeqJsonDiv.innerHTML = filterJSONText(seqString);
-  window.json.seq = seqJSON; // For debugging
+  window.json.feature = featureJSON; // For debugging
   // return;
 
-  // // Parse to CGView JSON
-  // let cgvJSON;
-  // let builder;
-  // if (showCgvJsonCheckbox.checked) {
-  //   const cgvJsonStartTime = new Date().getTime();
-  //   // cgvJSON = CGParse.seqJSONToCgvJSON(seqJSON, {config: jsonConfig});
-  //   builder = new CGParse.CGViewBuilder(seqFile, {logger: seqFile.logger, config: jsonConfig, includeQualifiers: true, maxLogCount: 2});
-  //   // cgvJSON = seqFile.toCGViewJSON({config: jsonConfig, includeQualifiers: true, maxLogCount: 2});
-  //   cgvJSON = builder.toJSON();
+  // Parse to CGView Feature JSON
+  let cgvJSON;
+  let builder;
+  if (showCgvJsonCheckbox.checked) {
+    const cgvJsonStartTime = new Date().getTime();
+    // cgvJSON = CGParse.seqJSONToCgvJSON(seqJSON, {config: jsonConfig});
+    // builder = new CGParse.CGViewBuilder(seqFile, {logger: seqFile.logger, config: jsonConfig, includeQualifiers: true, maxLogCount: 2});
+    //   // cgvJSON = seqFile.toCGViewJSON({config: jsonConfig, includeQualifiers: true, maxLogCount: 2});
+    builder = new CGParse.FeatureBuilder(featureFile, {logger: featureFile.logger, includeQualifiers: true, maxLogCount: 2});
+    cgvJSON = builder.toJSON();
 
-  //   const cgvJsonRunTime = elapsedTime(cgvJsonStartTime);
-  //   updateTime('time-cgv-json', cgvJsonRunTime);
-  //   // Convert to string (and pretty print with 2 spaces)
-  //   if (builder.passed && cgvJSON) {
-  //     let cgvString = JSON.stringify(cgvJSON, null, 2);
-  //     if (filterSeqMode) {
-  //       cgvString = cgvString.replace(/"seq": ".*"/g, '"seq": "..."');
-  //     }
-  //     outputCgvJsonDiv.innerHTML = prismMode ? Prism.highlight(cgvString, Prism.languages.json, 'json') : cgvString;
-  //   }
-  //   window.json.cgv = cgvJSON; // For debugging
-  // }
+    const cgvJsonRunTime = elapsedTime(cgvJsonStartTime);
+    updateTime('time-cgv-json', cgvJsonRunTime);
+    // Convert to string (and pretty print with 2 spaces)
+    if (builder.passed && cgvJSON) {
+      let cgvString = JSON.stringify(cgvJSON, null, 2);
+      outputCgvJsonDiv.innerHTML = prismMode ? Prism.highlight(cgvString, Prism.languages.json, 'json') : cgvString;
+    }
+    window.json.cgv = cgvJSON; // For debugging
+  }
 
   // MESSAGES
-  // let messages = "";
   const logDiv = document.getElementById('log-text');
-  // const messages = seqFile.logger.history({showTimestamps: false});
-  // const messages = seqFile.logger.history({showIcons: true});
-  // const messages = builder.logger.history({showIcons: true});
-  // const messages = seqFile.logger.history();
   const messages = featureFile.logger.history({showIcons: true});
   console.log(messages)
   logDiv.innerHTML = messages;

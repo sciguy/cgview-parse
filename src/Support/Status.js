@@ -8,6 +8,8 @@ export default class Status {
   // - maxLogCount: number (undefined means no limit) [Default: undefined]
   constructor(options = {}) {
 
+    this._options = options;
+
     // Logger
     this.logger = options.logger || new Logger();
     options.logger = this.logger;
@@ -17,7 +19,6 @@ export default class Status {
     this.logger.info(`Date: ${new Date().toUTCString()}`);
 
     // Initialize status
-    this._success = true
     this._status = 'success'
     this._errorCodes = new Set();
   }
@@ -27,15 +28,22 @@ export default class Status {
   // Properties
   /////////////////////////////////////////////////////////////////////////////
 
+  get options() {
+    return this._options;
+  }
+
+  // Parsing status
   // Should be one of: 'success', 'warnings', 'fail'
   get status() {
     return this._status;
   }
 
+  // Parsing is successful
   get success() {
-    return this.status == 'success';
+    return this.status === 'success';
   }
 
+  // Parsing has passed with success or warnings
   get passed() {
     return this.status === 'success' || this.status === 'warnings';
   }
@@ -46,6 +54,8 @@ export default class Status {
     return Array.from(this._errorCodes);
   }
 
+  // Parsing has failed
+  // Optional error code can be provided to help identify the error
   _fail(message, errorCode='unknown') {
     this.logger.error(message);
     this._status = 'failed';
@@ -56,6 +66,16 @@ export default class Status {
     this.logger.warn(message);
     if (this.status !== 'fail') {
       this._status = 'warnings';
+    }
+  }
+
+  logStatusLine() {
+    if (this.success) {
+      this.logger.info('- Status: ', { padded: 'Success', icon: 'success' });
+    } else if (this.status === 'warnings') {
+      this.logger.warn('- Status: ', { padded: 'Warnings', icon: 'warn' });
+    } else {
+      this.logger.error('- Status: ', { padded: 'FAILED', icon: 'fail' });
     }
   }
 
