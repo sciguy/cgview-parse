@@ -1,6 +1,7 @@
-import Logger from './Logger.js';
+import Status from '../Support/Status.js';
+import Logger from '../Support/Logger.js';
 import SequenceFile from './SequenceFile.js';
-import * as helpers from './Helpers.js';
+import * as helpers from '../Support/Helpers.js';
 
 // INPUT:
 // - SequenceFile or string of sequence file (e.g. GenBank, FASTA) that can be converted to SequenceFile
@@ -8,40 +9,31 @@ import * as helpers from './Helpers.js';
 // - config: jsonConfig
 // - FIXME: CHANGE TO includ/excludeFeatures skipTypes: boolean (TEST) [Default: ['gene', 'source', 'exon']]
 //   - If false, include ALL feature types in the JSON
-// - includeFeatures: boolean [Defualt: true]
+// - includeFeatures: boolean [Default: true]
 //   - If true, include ALL feature types in the JSON
 //   - If array of strings, include only those feature type
 //   - If false, include NO features
-// - excludeFeatures: array of string [Defualt: undefined]
+// - excludeFeatures: array of string [Default: undefined]
 //   - include all feature types except for these
 //   - ignored unless includeFeatures is true
-// - includeQualifiers: boolean [Defualt: false]
+// - includeQualifiers: boolean [Default: false]
 //   - If true, include ALL qualifiers in the JSON
 //   - If array of strings, include only those qualifiers
 //   - If false, include NO qualifiers
-// - excludeQualifiers: array of string [Defualt: undefined]
+// - excludeQualifiers: array of string [Default: undefined]
 //   - include all qualifiers except for these
 //   - ignored unless includeQualifiers is true
-// - includeCaption: boolean [Defualt: true]
+// - includeCaption: boolean [Default: true]
 //   - NOTE: captions could come from the config (like I did for cgview_builder.rb)
-// - skipComplexLocations: boolean (not implemented yet) [Defualt: true]
-//   - need to decide how to handle these
 // - maxLogCount: number (undefined means no limit) [Default: undefined]
-
-// LOGGING (including from sequence file)
-// - start with date and version (and options: skipTypes, includeQualifiers, excludeQulifiers, skipComplexLocations)
-export default class CGViewBuilder {
+export default class CGViewBuilder extends Status {
 
   constructor(input, options = {}) {
+    super(options);
     // this.input = input;
     this.version = "1.6.0";
     this.options = options;
-    this.logger = options.logger || new Logger();
-    if (options.maxLogCount) {
-      this.logger.maxLogCount = options.maxLogCount;
-    }
-    this._success = true;
-    this._status = 'success';
+
     // this.includeFeatures = options.includeFeatures || true;
     this.includeFeatures = (options.includeFeatures === undefined) ? true : options.includeFeatures;
     this.excludeFeatures = options.excludeFeatures || ['gene', 'source', 'exon'];
@@ -54,34 +46,9 @@ export default class CGViewBuilder {
     this.inputType = this.seqFile.inputType
     this.sequenceType = this.seqFile.sequenceType
     if (this.seqFile.success === true) {
-      this._json = this._convert(this.seqFile.records);
+      this._json = this._build(this.seqFile.records);
     } else {
       this._fail('*** Cannot convert to CGView JSON because parsing sequence file failed ***');
-    }
-  }
-
-  // Should be one of: 'success', 'warnings', 'fail'
-  get status() {
-    return this._status;
-  }
-
-  get success() {
-    return this.status === 'success';
-  }
-
-  get passed() {
-    return this.status === 'success' || this.status === 'warnings';
-  }
-
-  _fail(message) {
-    this.logger.error(message);
-    this._status = 'fail';
-  }
-
-  _warn(message) {
-    this.logger.warn(message);
-    if (this.status !== 'fail') {
-      this._status = 'warnings';
     }
   }
 
@@ -97,7 +64,7 @@ export default class CGViewBuilder {
     }
   }
 
-  _convert(seqRecords) {
+  _build(seqRecords) {
     // this.logger.info(`Converting ${seqRecord.length} sequence record(s) to CGView JSON (version ${this.version})`);
     this._skippedFeaturesByType = {};
     this._skippedComplexFeatures = []; // not skipped anymore
@@ -137,7 +104,7 @@ export default class CGViewBuilder {
     json = this._removeUnusedLegends(json);
     // Add track for features (if there are any)
     json.tracks = this._buildTracks(json, this.inputType);
-    this._convertSummary(json);
+    this._buildSummary(json);
     return { cgview: json };
   }
 
@@ -153,7 +120,7 @@ export default class CGViewBuilder {
     return captions;
   }
 
-  _convertSummary(json) {
+  _buildSummary(json) {
     const contigs = json.sequence?.contigs || [];
     const contigCount = contigs.length || 0;
     const featureCount = json.features?.length || 0;

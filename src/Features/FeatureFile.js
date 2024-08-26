@@ -24,13 +24,13 @@
 // - gff-js utils for parsing GFF3 files (I didn't use this)
 // - https://github.com/GMOD/gff-js/blob/master/src/util.ts
 
-import Logger from './Logger.js';
+import Status from '../Support/Status.js';
+import Logger from '../Support/Logger.js';
 import GFF3FeatureFile from './FeatureFileFormats/GFF3FeatureFile.js';
 import GTFFeatureFile from './FeatureFileFormats/GTFFeatureFile.js';
 import BEDFeatureFile from './FeatureFileFormats/BEDFeatureFile.js';
-
 // import FeatureBuilder from './FeatureBuilder.js';
-import * as helpers from './Helpers.js';
+import * as helpers from '../Support/Helpers.js';
 
 // FeatureFile class reads a feature file (GFF3, BED, CSV, GTF) and returns an array of records
 // One for each feature. Some records (e.g. CDS) may be joined together if they have the same ID.
@@ -45,7 +45,7 @@ import * as helpers from './Helpers.js';
 // - displayFileFormat (getter): e.g. 'GFF3', 'BED', 'CSV', 'GTF'
 // = nameKeys (getter): array of strings
 
-class FeatureFile {
+class FeatureFile extends Status {
 
   static FORMATS = ['auto', 'gff3', 'bed', 'csv', 'gtf'];
 
@@ -67,20 +67,12 @@ class FeatureFile {
   // - logger: logger object
   // - maxLogCount: number (undefined means no limit) [Default: undefined]
   constructor(inputText, options={}) {
+    super(options);
     this.options = options;
     const convertedText = helpers.convertLineEndingsToLF(inputText);
-    this.logger = options.logger || new Logger();
-    options.logger = this.logger;
     let providedFormat = options.format || 'auto';
-    if (options.maxLogCount) {
-      this.logger.maxLogCount = options.maxLogCount;
-    }
-    this.logger.info(`Date: ${new Date().toUTCString()}`);
-    this._success = true
-    this._status = 'success'
+
     this._records = [];
-    // codes: unknown, binary, empty, unknown_format
-    this._errorCodes = new Set();
 
     this.nameKeys = options.nameKeys || ['Name', 'Alias', 'gene', 'locus_tag', 'product', 'note', 'db_xref', 'ID'];
 
@@ -108,45 +100,6 @@ class FeatureFile {
       this.parseSummary();
     }
     this.logger.break();
-  }
-
-
-
-  /////////////////////////////////////////////////////////////////////////////
-  // Status
-  /////////////////////////////////////////////////////////////////////////////
-
-  // Should be one of: 'success', 'warnings', 'fail'
-  get status() {
-    return this._status;
-  }
-
-  get success() {
-    return this.status == 'success';
-  }
-
-  get passed() {
-    return this.status === 'success' || this.status === 'warnings';
-  }
-
-  _warn(message) {
-    this.logger.warn(message);
-    if (this.status !== 'fail') {
-      this._status = 'warnings';
-    }
-  }
-
-  // Sets the status to failed and logs an error message
-  _fail(message, errorCode='unknown') {
-    this.logger.error(message);
-    this._status = 'failed';
-    this._errorCodes.add(errorCode);
-  }
-
-  // Returns an array of unique error codes
-  // Codes: unknown, binary, empty
-  get errorCodes() {
-    return Array.from(this._errorCodes);
   }
 
 

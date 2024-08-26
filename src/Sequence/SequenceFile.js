@@ -17,11 +17,12 @@
 // - consider changing inputType to fileType
 // - Note, feature locations that can't be parsed are not handled here. They are
 //   handled/added in the CGViewBuilder.
-import Logger from './Logger.js';
+import Status from '../Support/Status.js';
+import Logger from '../Support/Logger.js';
 import CGViewBuilder from './CGViewBuilder.js';
-import * as helpers from './Helpers.js';
+import * as helpers from '../Support/Helpers.js';
 
-class SequenceFile {
+class SequenceFile extends Status {
 
   static toCGViewJSON(inputText, options={}) {
     const logger = new Logger({logToConsole: false});
@@ -37,23 +38,12 @@ class SequenceFile {
   // - logger: logger object
   // - maxLogCount: number (undefined means no limit) [Default: undefined]
   constructor(inputText, options={}) {
-    // this.inputText;
-    // console.log("THIS IS THE NEW STUFF$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$4")
-    // console.log(/\r\n/.test(inputText));
+    super(options);
     const convertedText = helpers.convertLineEndingsToLF(inputText);
-    // console.log(/\r\n/.test(convertedText));
-    // const convertedText = inputText;
-    this.logger = options.logger || new Logger();
-    options.logger = this.logger;
-    if (options.maxLogCount) {
-      this.logger.maxLogCount = options.maxLogCount;
-    }
     this.nameKeys = options.nameKeys || ['gene', 'locus_tag', 'product', 'note', 'db_xref'];
     this.logger.info(`Date: ${new Date().toUTCString()}`);
-    this._success = true
-    this._status = 'success'
+
     this._records = [];
-    this._errorCodes = new Set();
 
     if (!convertedText || convertedText === '') {
       this._fail('Parsing Failed: No input text provided.', 'empty')
@@ -78,14 +68,6 @@ class SequenceFile {
   // Properties
   /////////////////////////////////////////////////////////////////////////////
 
-  get status() {
-    return this._status;
-  }
-
-  get success() {
-    return this.status == 'success';
-  }
-
   get inputType() {
     return this._inputType;
   }
@@ -97,12 +79,6 @@ class SequenceFile {
   // { inputType, sequenceType, sequenceCount, featureCount, totalLength, success }
   get summary() {
     return this._summary;
-  }
-
-  // Returns an array of unique error codes
-  // Codes: unknown, binary, empty
-  get errorCodes() {
-    return Array.from(this._errorCodes);
   }
 
   /////////////////////////////////////////////////////////////////////////////
@@ -660,19 +636,6 @@ class SequenceFile {
     const uniqueSeqTypes = [...new Set(seqTypes)];
     this._sequenceType = (uniqueSeqTypes.length > 1) ? 'multiple' : uniqueSeqTypes[0];
   }
-
-  _fail(message, errorCode='unknown') {
-    this.logger.error(message);
-    // this._success = false;
-    this._status = 'failed';
-    this._errorCodes.add(errorCode);
-  }
-
-  // Simple way to pluralize a phrase
-  // e.g. _pluralizeHasHave(1) => 's has'
-  // _pluralizeHasHave(count, singular, plural) {
-  //   return count === 1 ? singular : plural;
-  // }
 
   _validateRecords(records) {
     this.logger.info('Validating...');

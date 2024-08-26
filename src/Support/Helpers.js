@@ -46,6 +46,12 @@ export function convertLineEndingsToLF(text) {
   return text.replace(/\r\n?/g, '\n');
 }
 
+// Simple way to pluralize a phrase
+// e.g. _pluralizeHasHave(1) => 's has'
+// _pluralizeHasHave(count, singular, plural) {
+//   return count === 1 ? singular : plural;
+// }
+
 
 // ----------------------------------------------------------------------------
 // OTHERS

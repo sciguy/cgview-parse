@@ -1,5 +1,5 @@
-import Logger from '../Logger.js';
-import * as helpers from '../Helpers.js';
+import Logger from '../../Support/Logger.js';
+import * as helpers from '../../Support/Helpers.js';
 
 class GTFFeatureFile {
 

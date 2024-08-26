@@ -147,6 +147,68 @@ var CGParse = (function () {
 
   }
 
+  // This will be the base class for any class that has status
+
+  class Status {
+
+    // Options:
+    // - logger: logger object
+    // - maxLogCount: number (undefined means no limit) [Default: undefined]
+    constructor(options = {}) {
+
+      // Logger
+      this.logger = options.logger || new Logger();
+      options.logger = this.logger;
+      if (options.maxLogCount) {
+        this.logger.maxLogCount = options.maxLogCount;
+      }
+      this.logger.info(`Date: ${new Date().toUTCString()}`);
+
+      // Initialize status
+      this._success = true;
+      this._status = 'success';
+      this._errorCodes = new Set();
+    }
+
+
+    /////////////////////////////////////////////////////////////////////////////
+    // Properties
+    /////////////////////////////////////////////////////////////////////////////
+
+    // Should be one of: 'success', 'warnings', 'fail'
+    get status() {
+      return this._status;
+    }
+
+    get success() {
+      return this.status == 'success';
+    }
+
+    get passed() {
+      return this.status === 'success' || this.status === 'warnings';
+    }
+
+    // Returns an array of unique error codes
+    // Codes: unknown, binary, empty, unknown_format
+    get errorCodes() {
+      return Array.from(this._errorCodes);
+    }
+
+    _fail(message, errorCode='unknown') {
+      this.logger.error(message);
+      this._status = 'failed';
+      this._errorCodes.add(errorCode);
+    }
+
+    _warn(message) {
+      this.logger.warn(message);
+      if (this.status !== 'fail') {
+        this._status = 'warnings';
+      }
+    }
+
+  }
+
   // ----------------------------------------------------------------------------
   // CGPARSE HELPERS
   // ----------------------------------------------------------------------------
@@ -184,6 +246,12 @@ var CGParse = (function () {
     // Replace CRLF and CR with LF
     return text.replace(/\r\n?/g, '\n');
   }
+
+  // Simple way to pluralize a phrase
+  // e.g. _pluralizeHasHave(1) => 's has'
+  // _pluralizeHasHave(count, singular, plural) {
+  //   return count === 1 ? singular : plural;
+  // }
 
 
   // ----------------------------------------------------------------------------
@@ -409,40 +477,31 @@ var CGParse = (function () {
   // - config: jsonConfig
   // - FIXME: CHANGE TO includ/excludeFeatures skipTypes: boolean (TEST) [Default: ['gene', 'source', 'exon']]
   //   - If false, include ALL feature types in the JSON
-  // - includeFeatures: boolean [Defualt: true]
+  // - includeFeatures: boolean [Default: true]
   //   - If true, include ALL feature types in the JSON
   //   - If array of strings, include only those feature type
   //   - If false, include NO features
-  // - excludeFeatures: array of string [Defualt: undefined]
+  // - excludeFeatures: array of string [Default: undefined]
   //   - include all feature types except for these
   //   - ignored unless includeFeatures is true
-  // - includeQualifiers: boolean [Defualt: false]
+  // - includeQualifiers: boolean [Default: false]
   //   - If true, include ALL qualifiers in the JSON
   //   - If array of strings, include only those qualifiers
   //   - If false, include NO qualifiers
-  // - excludeQualifiers: array of string [Defualt: undefined]
+  // - excludeQualifiers: array of string [Default: undefined]
   //   - include all qualifiers except for these
   //   - ignored unless includeQualifiers is true
-  // - includeCaption: boolean [Defualt: true]
+  // - includeCaption: boolean [Default: true]
   //   - NOTE: captions could come from the config (like I did for cgview_builder.rb)
-  // - skipComplexLocations: boolean (not implemented yet) [Defualt: true]
-  //   - need to decide how to handle these
   // - maxLogCount: number (undefined means no limit) [Default: undefined]
-
-  // LOGGING (including from sequence file)
-  // - start with date and version (and options: skipTypes, includeQualifiers, excludeQulifiers, skipComplexLocations)
-  class CGViewBuilder {
+  class CGViewBuilder extends Status {
 
     constructor(input, options = {}) {
+      super(options);
       // this.input = input;
       this.version = "1.6.0";
       this.options = options;
-      this.logger = options.logger || new Logger();
-      if (options.maxLogCount) {
-        this.logger.maxLogCount = options.maxLogCount;
-      }
-      this._success = true;
-      this._status = 'success';
+
       // this.includeFeatures = options.includeFeatures || true;
       this.includeFeatures = (options.includeFeatures === undefined) ? true : options.includeFeatures;
       this.excludeFeatures = options.excludeFeatures || ['gene', 'source', 'exon'];
@@ -455,34 +514,9 @@ var CGParse = (function () {
       this.inputType = this.seqFile.inputType;
       this.sequenceType = this.seqFile.sequenceType;
       if (this.seqFile.success === true) {
-        this._json = this._convert(this.seqFile.records);
+        this._json = this._build(this.seqFile.records);
       } else {
         this._fail('*** Cannot convert to CGView JSON because parsing sequence file failed ***');
-      }
-    }
-
-    // Should be one of: 'success', 'warnings', 'fail'
-    get status() {
-      return this._status;
-    }
-
-    get success() {
-      return this.status === 'success';
-    }
-
-    get passed() {
-      return this.status === 'success' || this.status === 'warnings';
-    }
-
-    _fail(message) {
-      this.logger.error(message);
-      this._status = 'fail';
-    }
-
-    _warn(message) {
-      this.logger.warn(message);
-      if (this.status !== 'fail') {
-        this._status = 'warnings';
       }
     }
 
@@ -498,7 +532,7 @@ var CGParse = (function () {
       }
     }
 
-    _convert(seqRecords) {
+    _build(seqRecords) {
       // this.logger.info(`Converting ${seqRecord.length} sequence record(s) to CGView JSON (version ${this.version})`);
       this._skippedFeaturesByType = {};
       this._skippedComplexFeatures = []; // not skipped anymore
@@ -538,7 +572,7 @@ var CGParse = (function () {
       json = this._removeUnusedLegends(json);
       // Add track for features (if there are any)
       json.tracks = this._buildTracks(json, this.inputType);
-      this._convertSummary(json);
+      this._buildSummary(json);
       return { cgview: json };
     }
 
@@ -554,7 +588,7 @@ var CGParse = (function () {
       return captions;
     }
 
-    _convertSummary(json) {
+    _buildSummary(json) {
       const contigs = json.sequence?.contigs || [];
       const contigCount = contigs.length || 0;
       const featureCount = json.features?.length || 0;
@@ -953,7 +987,7 @@ var CGParse = (function () {
   // TODO: Give examples of output (the record format)
 
 
-  class SequenceFile {
+  class SequenceFile extends Status {
 
     static toCGViewJSON(inputText, options={}) {
       const logger = new Logger({logToConsole: false});
@@ -969,23 +1003,12 @@ var CGParse = (function () {
     // - logger: logger object
     // - maxLogCount: number (undefined means no limit) [Default: undefined]
     constructor(inputText, options={}) {
-      // this.inputText;
-      // console.log("THIS IS THE NEW STUFF$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$4")
-      // console.log(/\r\n/.test(inputText));
+      super(options);
       const convertedText = convertLineEndingsToLF(inputText);
-      // console.log(/\r\n/.test(convertedText));
-      // const convertedText = inputText;
-      this.logger = options.logger || new Logger();
-      options.logger = this.logger;
-      if (options.maxLogCount) {
-        this.logger.maxLogCount = options.maxLogCount;
-      }
       this.nameKeys = options.nameKeys || ['gene', 'locus_tag', 'product', 'note', 'db_xref'];
       this.logger.info(`Date: ${new Date().toUTCString()}`);
-      this._success = true;
-      this._status = 'success';
+
       this._records = [];
-      this._errorCodes = new Set();
 
       if (!convertedText || convertedText === '') {
         this._fail('Parsing Failed: No input text provided.', 'empty');
@@ -1010,14 +1033,6 @@ var CGParse = (function () {
     // Properties
     /////////////////////////////////////////////////////////////////////////////
 
-    get status() {
-      return this._status;
-    }
-
-    get success() {
-      return this.status == 'success';
-    }
-
     get inputType() {
       return this._inputType;
     }
@@ -1029,12 +1044,6 @@ var CGParse = (function () {
     // { inputType, sequenceType, sequenceCount, featureCount, totalLength, success }
     get summary() {
       return this._summary;
-    }
-
-    // Returns an array of unique error codes
-    // Codes: unknown, binary, empty
-    get errorCodes() {
-      return Array.from(this._errorCodes);
     }
 
     /////////////////////////////////////////////////////////////////////////////
@@ -1588,19 +1597,6 @@ var CGParse = (function () {
       const uniqueSeqTypes = [...new Set(seqTypes)];
       this._sequenceType = (uniqueSeqTypes.length > 1) ? 'multiple' : uniqueSeqTypes[0];
     }
-
-    _fail(message, errorCode='unknown') {
-      this.logger.error(message);
-      // this._success = false;
-      this._status = 'failed';
-      this._errorCodes.add(errorCode);
-    }
-
-    // Simple way to pluralize a phrase
-    // e.g. _pluralizeHasHave(1) => 's has'
-    // _pluralizeHasHave(count, singular, plural) {
-    //   return count === 1 ? singular : plural;
-    // }
 
     _validateRecords(records) {
       this.logger.info('Validating...');
@@ -2410,7 +2406,7 @@ var CGParse = (function () {
   // - displayFileFormat (getter): e.g. 'GFF3', 'BED', 'CSV', 'GTF'
   // = nameKeys (getter): array of strings
 
-  class FeatureFile {
+  class FeatureFile extends Status {
 
     static FORMATS = ['auto', 'gff3', 'bed', 'csv', 'gtf'];
 
@@ -2432,20 +2428,12 @@ var CGParse = (function () {
     // - logger: logger object
     // - maxLogCount: number (undefined means no limit) [Default: undefined]
     constructor(inputText, options={}) {
+      super(options);
       this.options = options;
       const convertedText = convertLineEndingsToLF(inputText);
-      this.logger = options.logger || new Logger();
-      options.logger = this.logger;
       let providedFormat = options.format || 'auto';
-      if (options.maxLogCount) {
-        this.logger.maxLogCount = options.maxLogCount;
-      }
-      this.logger.info(`Date: ${new Date().toUTCString()}`);
-      this._success = true;
-      this._status = 'success';
+
       this._records = [];
-      // codes: unknown, binary, empty, unknown_format
-      this._errorCodes = new Set();
 
       this.nameKeys = options.nameKeys || ['Name', 'Alias', 'gene', 'locus_tag', 'product', 'note', 'db_xref', 'ID'];
 
@@ -2473,45 +2461,6 @@ var CGParse = (function () {
         this.parseSummary();
       }
       this.logger.break();
-    }
-
-
-
-    /////////////////////////////////////////////////////////////////////////////
-    // Status
-    /////////////////////////////////////////////////////////////////////////////
-
-    // Should be one of: 'success', 'warnings', 'fail'
-    get status() {
-      return this._status;
-    }
-
-    get success() {
-      return this.status == 'success';
-    }
-
-    get passed() {
-      return this.status === 'success' || this.status === 'warnings';
-    }
-
-    _warn(message) {
-      this.logger.warn(message);
-      if (this.status !== 'fail') {
-        this._status = 'warnings';
-      }
-    }
-
-    // Sets the status to failed and logs an error message
-    _fail(message, errorCode='unknown') {
-      this.logger.error(message);
-      this._status = 'failed';
-      this._errorCodes.add(errorCode);
-    }
-
-    // Returns an array of unique error codes
-    // Codes: unknown, binary, empty
-    get errorCodes() {
-      return Array.from(this._errorCodes);
     }
 
 

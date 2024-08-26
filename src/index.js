@@ -1,7 +1,7 @@
-import Logger from "./Logger.js";
-import SequenceFile from "./SequenceFile.js";
-import CGViewBuilder from "./CGViewBuilder.js";
-import FeatureFile from "./FeatureFile.js";
+import Logger from "./Support/Logger.js";
+import SequenceFile from "./Sequence/SequenceFile.js";
+import CGViewBuilder from "./Sequence/CGViewBuilder.js";
+import FeatureFile from "./Features/FeatureFile.js";
 
 const CGParse = {}
 CGParse.Logger = Logger;

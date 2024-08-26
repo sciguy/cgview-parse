@@ -1,5 +1,5 @@
-import Logger from '../Logger.js';
-import * as helpers from '../Helpers.js';
+import Logger from '../../Support/Logger.js';
+import * as helpers from '../../Support/Helpers.js';
 
 // NOTES:
 // - Bed is a 0-based format. The chromStart field is 0-based and the chromEnd field is 1-based.
