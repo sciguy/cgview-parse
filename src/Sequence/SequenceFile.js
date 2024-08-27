@@ -38,7 +38,7 @@ class SequenceFile extends Status {
   // - logger: logger object
   // - maxLogCount: number (undefined means no limit) [Default: undefined]
   constructor(inputText, options={}) {
-    super(options);
+    super(options, 'PARSING SEQUENCE FILE');
     const convertedText = helpers.convertLineEndingsToLF(inputText);
     this.nameKeys = options.nameKeys || ['gene', 'locus_tag', 'product', 'note', 'db_xref'];
     // this.logger.info(`Date: ${new Date().toUTCString()}`);
@@ -108,21 +108,14 @@ class SequenceFile extends Status {
     const features = records.map((record) => record.features).flat();
     const seqLength = records.map((record) => record.length).reduce((a, b) => a + b, 0);
 
-    // this.logger.break('--------------------------------------------\n')
     this.logger.divider();
     this.logger.info('Parsing Summary:');
-    this.logger.info(`- Input file type: ${this.inputType.padStart(12)}`);
-    this.logger.info(`- Sequence Type: ${this.sequenceType.padStart(14)}`);
-    this.logger.info(`- Sequence Count: ${records.length.toLocaleString().padStart(13)}`);
-    this.logger.info(`- Feature Count: ${features.length.toLocaleString().padStart(14)}`);
-    this.logger.info('- Total Length (bp): ' + `${seqLength.toLocaleString()}`.padStart(10));
+    this.logger.info('- Input file type: ', { padded: this.inputType });
+    this.logger.info('- Sequence Type: ', { padded: this.sequenceType });
+    this.logger.info('- Sequence Count: ', { padded: records.length });
+    this.logger.info('- Feature Count: ', { padded: features.length });
+    this.logger.info('- Total Length (bp): ', { padded: seqLength.toLocaleString() });
     this.logStatusLine()
-    // if (this.success) {
-    //   this.logger.info('- Status: ' + 'Success'.padStart(21), {icon: 'success'});
-    // } else {
-    //   this.logger.error('- Status: ' + 'FAILED'.padStart(21), {icon: 'fail'});
-    // }
-    // this.logger.break('--------------------------------------------\n')
     this.logger.divider();
 
     this._summary = {

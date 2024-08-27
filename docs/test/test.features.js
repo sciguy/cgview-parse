@@ -243,9 +243,10 @@ function runParse() {
   updateTime('time-seq-json', featureJsonRunTime);
   let seqString = JSON.stringify(featureJSON, null, 2);
   // Compact the locations array to a single line for easier viewing
-  seqString = seqString.replace(/"locations":(.*?)(\s+)([}"])/smg, (match, p1, p2, p3) => {
-    return `"locations": ${p1.replace(/\s+/g, '')}${p2}${p3}`;
-  });
+  // seqString = seqString.replace(/"locations":(.*?)(\s+)([}"])/smg, (match, p1, p2, p3) => {
+  //   return `"locations": ${p1.replace(/\s+/g, '')}${p2}${p3}`;
+  // });
+  seqString = compacetLocations(seqString);
   outputSeqJsonDiv.innerHTML = filterJSONText(seqString);
   window.json.feature = featureJSON; // For debugging
   // return;
@@ -266,6 +267,7 @@ function runParse() {
     // Convert to string (and pretty print with 2 spaces)
     if (builder.passed && cgvJSON) {
       let cgvString = JSON.stringify(cgvJSON, null, 2);
+      cgvString = compacetLocations(cgvString);
       outputCgvJsonDiv.innerHTML = prismMode ? Prism.highlight(cgvString, Prism.languages.json, 'json') : cgvString;
     }
     window.json.cgv = cgvJSON; // For debugging
@@ -286,6 +288,13 @@ function runParse() {
   //   myResize();
   // }
 }
+
+function compacetLocations(seqString) {
+  return seqString.replace(/"locations":(.*?)(\s+)([}"])/smg, (match, p1, p2, p3) => {
+    return `"locations": ${p1.replace(/\s+/g, '')}${p2}${p3}`;
+  });
+}
+
 
 function filterJSONText(text) {
   // let filteredText = text;

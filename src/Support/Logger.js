@@ -61,6 +61,19 @@ class Logger {
     this.logs.push(logItem);
   }
 
+  title(title, paddingChar = '-') {
+    const length = this.lineLength;
+    let text = title + '\n';
+    if (title.length < length) {
+      const totalPadding = length - title.length;
+      const paddingLeft = Math.floor(totalPadding / 2);
+      const paddingRight = totalPadding - paddingLeft;
+      text = paddingChar.repeat(paddingLeft) + title + paddingChar.repeat(paddingRight) + "\n";
+    }
+    this.break(text);
+  }
+
+
   history(options={}) {
     let text = '';
     for (const logItem of this.logs) {

@@ -61,6 +61,19 @@ class Logger {
     this.logs.push(logItem);
   }
 
+  title(title, paddingChar = '-') {
+    const length = this.lineLength;
+    let text = title + '\n';
+    if (title.length < length) {
+      const totalPadding = length - title.length;
+      const paddingLeft = Math.floor(totalPadding / 2);
+      const paddingRight = totalPadding - paddingLeft;
+      text = paddingChar.repeat(paddingLeft) + title + paddingChar.repeat(paddingRight) + "\n";
+    }
+    this.break(text);
+  }
+
+
   history(options={}) {
     let text = '';
     for (const logItem of this.logs) {
@@ -176,92 +189,20 @@ class Logger {
 
 }
 
-// This will be the base class for any class that has status
-
-class Status {
-
-  // Options:
-  // - logger: logger object
-  // - maxLogCount: number (undefined means no limit) [Default: undefined]
-  constructor(options = {}) {
-
-    this._options = options;
-
-    // Logger
-    this.logger = options.logger || new Logger();
-    options.logger = this.logger;
-    if (options.maxLogCount) {
-      this.logger.maxLogCount = options.maxLogCount;
-    }
-    this.logger.info(`Date: ${new Date().toUTCString()}`);
-
-    // Initialize status
-    this._status = 'success';
-    this._errorCodes = new Set();
-  }
-
-
-  /////////////////////////////////////////////////////////////////////////////
-  // Properties
-  /////////////////////////////////////////////////////////////////////////////
-
-  get options() {
-    return this._options;
-  }
-
-  // Parsing status
-  // Should be one of: 'success', 'warnings', 'fail'
-  get status() {
-    return this._status;
-  }
-
-  // Parsing is successful
-  get success() {
-    return this.status === 'success';
-  }
-
-  // Parsing has passed with success or warnings
-  get passed() {
-    return this.status === 'success' || this.status === 'warnings';
-  }
-
-  // Returns an array of unique error codes
-  // Codes: unknown, binary, empty, unknown_format
-  get errorCodes() {
-    return Array.from(this._errorCodes);
-  }
-
-  // Parsing has failed
-  // Optional error code can be provided to help identify the error
-  _fail(message, errorCode='unknown') {
-    this.logger.error(message);
-    this._status = 'failed';
-    this._errorCodes.add(errorCode);
-  }
-
-  _warn(message) {
-    this.logger.warn(message);
-    if (this.status !== 'fail') {
-      this._status = 'warnings';
-    }
-  }
-
-  logStatusLine() {
-    if (this.success) {
-      this.logger.info('- Status: ', { padded: 'Success', icon: 'success' });
-    } else if (this.status === 'warnings') {
-      this.logger.warn('- Status: ', { padded: 'Warnings', icon: 'warn' });
-    } else {
-      this.logger.error('- Status: ', { padded: 'FAILED', icon: 'fail' });
-    }
-  }
-
-}
+var version = "1.0.0";
 
 // ----------------------------------------------------------------------------
 // CGPARSE HELPERS
 // ----------------------------------------------------------------------------
 
+// ----------------------------------------------------------------------------
+// CONSTANTS
+// ----------------------------------------------------------------------------
+
+const CGPARSE_VERSION = version;
+
+// All GenBank/EMBL Feature Types
+const FEATURE_TYPES = ["assembly_gap", "C_region", "CDS", "centromere", "D-loop", "D_segment", "exon", "gap", "gene", "iDNA", "intron", "J_segment", "mat_peptide", "misc_binding", "misc_difference", "misc_feature", "misc_recomb", "misc_RNA", "misc_structure", "mobile_element", "modified_base", "mRNA", "ncRNA", "N_region", "old_sequence", "operon", "oriT", "polyA_site", "precursor_RNA", "prim_transcript", "primer_bind", "propeptide", "protein_bind", "regulatory", "repeat_region", "rep_origin", "rRNA", "S_region", "sig_peptide", "source", "stem_loop", "STS", "telomere", "tmRNA", "transit_peptide", "tRNA", "unsure", "V_region", "V_segment", "variation", "3'UTR", "5'UTR"];
 
 // All GenBank/EMBL Qualifiers
 const QUALIFIERS = [ "allele", "altitude", "anticodon", "artificial_location", "bio_material", "bound_moiety", "cell_line", "cell_type", "chromosome", "circular_RNA", "citation", "clone", "clone_lib", "codon_start", "collected_by", "collection_date", "compare", "country", "cultivar", "culture_collection", "db_xref", "dev_stage", "direction", "EC_number", "ecotype", "environmental_sample", "estimated_length", "exception", "experiment", "focus", "frequency", "function", "gap_type", "gene", "gene_synonym", "germline", "haplogroup", "haplotype", "host", "identified_by", "inference", "isolate", "isolation_source", "lab_host", "lat_lon", "linkage_evidence", "locus_tag", "macronuclear", "map", "mating_type", "metagenome_source", "mobile_element_type", "mod_base", "mol_type", "ncRNA_class", "note", "number", "old_locus_tag", "operon", "organelle", "organism", "partial", "PCR_conditions", "PCR_primers", "phenotype", "plasmid", "pop_variant", "product", "protein_id", "proviral", "pseudo", "pseudogene", "rearranged", "ination_class", "tory_class", "replace", "ribosomal_slippage", "rpt_family", "rpt_type", "rpt_unit_range", "rpt_unit_seq", "satellite", "segment", "serotype", "serovar", "sex", "specimen_voucher", "standard_name", "strain", "sub_clone", "submitter_seqid", "sub_species", "sub_strain", "tag_peptide", "tissue_lib", "tissue_type", "transgenic", "translation", "transl_except", "transl_table", "trans_splicing", "type_material", "variety"];
@@ -289,6 +230,10 @@ function removeWhiteSpace(string) {
 
 function removeDigits(string) {
   return string.replace(/\d+/g, "");
+}
+
+function removeNewlines(string) {
+  return string.replace(/[\n\r]+/g, "");
 }
 
 function convertLineEndingsToLF(text) {
@@ -520,6 +465,128 @@ function countCharactersInSequence(sequence, characters) {
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
+var helpers = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  CGPARSE_VERSION: CGPARSE_VERSION,
+  FEATURE_TYPES: FEATURE_TYPES,
+  QUALIFIERS: QUALIFIERS,
+  SO_TERMS: SO_TERMS,
+  complement: complement,
+  convertLineEndingsToLF: convertLineEndingsToLF,
+  countCharactersInSequence: countCharactersInSequence,
+  determineSeqMolType: determineSeqMolType,
+  findNonIUPACCharacters: findNonIUPACCharacters,
+  isBinary: isBinary,
+  removeDigits: removeDigits,
+  removeNewlines: removeNewlines,
+  removeWhiteSpace: removeWhiteSpace,
+  reverse: reverse,
+  uniqueId: uniqueId,
+  uniqueName: uniqueName
+});
+
+// This will be the base class for any class that has status
+
+class Status {
+
+  // Options:
+  // - logger: logger object
+  // - maxLogCount: number (undefined means no limit) [Default: undefined]
+  constructor(options = {}, logTitle) {
+
+    this._options = options;
+
+    // Logger
+    this.logger = options.logger || new Logger();
+    options.logger = this.logger;
+    if (options.maxLogCount) {
+      this.logger.maxLogCount = options.maxLogCount;
+    }
+    // this.logger.divider();
+    if (logTitle) {
+      this.logger.title(` ${logTitle} `);
+    } else {
+      this.logger.divider();
+    }
+    this.logger.info(`Date: ${new Date().toUTCString()}`);
+    // this.logVersion();
+
+    // Initialize status
+    this._status = 'success';
+    this._errorCodes = new Set();
+  }
+
+
+  /////////////////////////////////////////////////////////////////////////////
+  // Properties
+  /////////////////////////////////////////////////////////////////////////////
+
+  get options() {
+    return this._options;
+  }
+
+  get version() {
+    return CGPARSE_VERSION;
+  }
+
+  // Parsing status
+  // Should be one of: 'success', 'warnings', 'fail'
+  get status() {
+    return this._status;
+  }
+
+  // Parsing is successful
+  get success() {
+    return this.status === 'success';
+  }
+
+  // Parsing has passed with success or warnings
+  get passed() {
+    return this.status === 'success' || this.status === 'warnings';
+  }
+
+  // Returns an array of unique error codes
+  // Codes: unknown, binary, empty, unknown_format
+  get errorCodes() {
+    return Array.from(this._errorCodes);
+  }
+
+
+  /////////////////////////////////////////////////////////////////////////////
+  // Methods
+  /////////////////////////////////////////////////////////////////////////////
+
+  // Parsing has failed
+  // Optional error code can be provided to help identify the error
+  _fail(message, errorCode='unknown') {
+    this.logger.error(message);
+    this._status = 'failed';
+    this._errorCodes.add(errorCode);
+  }
+
+  _warn(message) {
+    this.logger.warn(message);
+    if (this.status !== 'fail') {
+      this._status = 'warnings';
+    }
+  }
+
+  logStatusLine() {
+    if (this.success) {
+      this.logger.info('- Status: ', { padded: 'Success', icon: 'success' });
+    } else if (this.status === 'warnings') {
+      this.logger.warn('- Status: ', { padded: 'Warnings', icon: 'warn' });
+    } else {
+      this.logger.error('- Status: ', { padded: 'FAILED', icon: 'fail' });
+    }
+  }
+
+  // logVersion() {
+  //   this.logger.info(`- Version: ${this.version}`);
+  // }
+
+}
+
 // INPUT:
 // - SequenceFile or string of sequence file (e.g. GenBank, FASTA) that can be converted to SequenceFile
 // OPTIONS:
@@ -546,9 +613,9 @@ function countCharactersInSequence(sequence, characters) {
 class CGViewBuilder extends Status {
 
   constructor(input, options = {}) {
-    super(options);
+    super(options, 'BUILDING CGVIEW JSON');
     // this.input = input;
-    this.version = "1.6.0";
+    this.cgvJSONVersion = "1.6.0";
     // this.options = options;
 
     // this.includeFeatures = options.includeFeatures || true;
@@ -581,17 +648,18 @@ class CGViewBuilder extends Status {
   }
 
   _build(seqRecords) {
-    // this.logger.info(`Converting ${seqRecord.length} sequence record(s) to CGView JSON (version ${this.version})`);
+    // this.logger.info(`Converting ${seqRecord.length} sequence record(s) to CGView JSON (version ${this.cgvJSONVersion})`);
     this._skippedFeaturesByType = {};
     this._skippedComplexFeatures = []; // not skipped anymore
     this._complexFeatures = [];
     this._skippedLocationlessFeatures = [];
-    this.logger.info(`Date: ${new Date().toUTCString()}`);
+    // this.logger.info(`Date: ${new Date().toUTCString()}`);
+    this.logger.info('CGViewBuilder: ', { padded: this.version });
     this.logger.info(`Converting to CGView JSON...`);
-    this.logger.info(`- CGView JSON version ${this.version}`);
-    this.logger.info(`- Input Sequence Count: ${seqRecords.length}`);
-    this.logger.info(`- Input File Type: ${this.inputType || 'Unknown'}`);
-    this.logger.info(`- Input Sequence Type: ${this.sequenceType || 'Unknown'}`);
+    this.logger.info('- CGView JSON version: ', { padded: this.cgvJSONVersion });
+    this.logger.info('- Input Sequence Count: ', { padded: seqRecords.length });
+    this.logger.info('- Input File Type: ', { padded: this.inputType || 'Unknown' });
+    this.logger.info('- Input Sequence Type: ', { padded: this.sequenceType || 'Unknown' });
     // Check for records and make sure they are DNA
     if (!seqRecords || seqRecords.length < 1) {
       this._fail("Conversion Failed: No sequence records provided");
@@ -613,7 +681,7 @@ class CGViewBuilder extends Status {
     this._adjustFeatureGeneticCode(json);
     this._qualifiersSetup();
     if (this._complexFeatures.length > 0) {
-      this.logger.info(`- Complex Features Found: ${this._complexFeatures.length.toLocaleString()}`);
+      this.logger.info('- Complex Features Found: ', { padded: this._complexFeatures.length });
     }
     // json.name = json.sequence?.contigs[0]?.name || "Untitled";
     json.name = seqRecords[0]?.definition || seqRecords[0]?.name || seqRecords[0]?.seqID || "Untitled";
@@ -649,22 +717,14 @@ class CGViewBuilder extends Status {
     // this.logger.break('--------------------------------------------\n')
     this.logger.divider();
     this.logger.info('CGView JSON Summary:');
-    this.logger.info(`- Map Name: ${json.name.padStart(19)}`);
-    this.logger.info(`- Contig Count: ${contigCount.toLocaleString().padStart(15)}`);
-    this.logger.info('- Total Length (bp): ' + `${seqLength.toLocaleString()}`.padStart(10));
-    this.logger.info(`- Track Count: ${trackCount.toLocaleString().padStart(16)}`);
-    this.logger.info(`- Legend Count: ${legendCount.toLocaleString().padStart(15)}`);
-    this.logger.info(`- Features Included: ${featureCount.toLocaleString().padStart(10)}`);
-    this.logger.info(`- Features Skipped: ${skippedFeatures.toLocaleString().padStart(11)}`);
+    this.logger.info('- Map Name: ', { padded: json.name });
+    this.logger.info('- Contig Count: ', { padded: contigCount });
+    this.logger.info('- Total Length (bp): ', { padded: seqLength.toLocaleString() });
+    this.logger.info('- Track Count: ', { padded: trackCount });
+    this.logger.info('- Legend Count: ', { padded: legendCount });
+    this.logger.info('- Features Included: ', { padded: featureCount });
+    this.logger.info('- Features Skipped: ', { padded: skippedFeatures });
     this.logStatusLine();
-    // if (this.success) {
-    //   this.logger.info('- Status: ' + 'Success'.padStart(21), {icon: 'success'});
-    // } else if (this.status === 'warnings') {
-    //   this.logger.warn('- Status: ' + 'Warnings'.padStart(21), {icon: 'warn'});
-    // } else {
-    //   this.logger.error('- Status: ' + 'FAILED'.padStart(21), {icon: 'fail'});
-    // }
-    // this.logger.break('--------------------------------------------\n')
     this.logger.divider();
   }
 
@@ -675,7 +735,7 @@ class CGViewBuilder extends Status {
     if (Object.keys(skippedFeatures).length > 0) {
       this.logger.info(`- Skipped features (${skippedFeatureCount}) by type:`);
       for (const [key, value] of Object.entries(skippedFeatures)) {
-        this.logger.info(`  - ${key}: ${value.toLocaleString().padStart(15 - key.length)}`);
+        this.logger.info(`  - ${key}: `, { padded: value });
       }
     }
     // Complex Locations
@@ -879,30 +939,38 @@ class CGViewBuilder extends Status {
   _setupInExcludeItems(name, includeItems, excludeItems) {
     let itemsToInclude = [];
     let itemsToExclude = [];
+    let logData = {inexclude: 'EMPTY', items: 'EMPTY'};
     if (includeItems === true) {
       itemsToInclude = true;
       if (Array.isArray(excludeItems)) {
         itemsToExclude = excludeItems;
         if (itemsToExclude.length > 0) {
-          this.logger.info(`- ${name} to exclude: ${itemsToExclude.join(', ')}`);
+          // this.logger.info(`- ${name} to exclude: ${itemsToExclude.join(', ')}`);
+          logData = {inexclude: 'exclude', items: itemsToExclude.join(', ')};
         } else {
-          this.logger.info(`- ${name} to include: All`);
+          // this.logger.info(`- ${name} to include: All`);
+          logData = {inexclude: 'include', items: 'All'};
         }
       } else {
-          this.logger.info(`- ${name} to include: All`);
+          // this.logger.info(`- ${name} to include: All`);
+          logData = {inexclude: 'include', items: 'All'};
       }
     } else if (Array.isArray(includeItems)) {
       itemsToInclude = includeItems;
       if (itemsToInclude.length > 0) {
-        this.logger.info(`- ${name} to include: ${itemsToInclude.join(', ')}`);
+        // this.logger.info(`- ${name} to include: ${itemsToInclude.join(', ')}`);
+        logData = {inexclude: 'include', items: itemsToInclude.join(', ')};
       } else {
-        this.logger.info(`- ${name} to include: None`);
+        // this.logger.info(`- ${name} to include: None`);
+        logData = {inexclude: 'include', items: 'None'};
       }
     } else {
       // false, or aything but true or an array
       itemsToInclude = [];
-      this.logger.info(`- ${name} to include: None`);
+      // this.logger.info(`- ${name} to include: None`);
+      logData = {inexclude: 'include', items: 'None'};
     }
+    this.logger.info(`- ${name} to ${logData.inexclude}: `, {padded: logData.items });
     return {itemsToInclude, itemsToExclude};
   }
 
@@ -1053,7 +1121,7 @@ class SequenceFile extends Status {
   // - logger: logger object
   // - maxLogCount: number (undefined means no limit) [Default: undefined]
   constructor(inputText, options={}) {
-    super(options);
+    super(options, 'PARSING SEQUENCE FILE');
     const convertedText = convertLineEndingsToLF(inputText);
     this.nameKeys = options.nameKeys || ['gene', 'locus_tag', 'product', 'note', 'db_xref'];
     // this.logger.info(`Date: ${new Date().toUTCString()}`);
@@ -1123,21 +1191,14 @@ class SequenceFile extends Status {
     const features = records.map((record) => record.features).flat();
     const seqLength = records.map((record) => record.length).reduce((a, b) => a + b, 0);
 
-    // this.logger.break('--------------------------------------------\n')
     this.logger.divider();
     this.logger.info('Parsing Summary:');
-    this.logger.info(`- Input file type: ${this.inputType.padStart(12)}`);
-    this.logger.info(`- Sequence Type: ${this.sequenceType.padStart(14)}`);
-    this.logger.info(`- Sequence Count: ${records.length.toLocaleString().padStart(13)}`);
-    this.logger.info(`- Feature Count: ${features.length.toLocaleString().padStart(14)}`);
-    this.logger.info('- Total Length (bp): ' + `${seqLength.toLocaleString()}`.padStart(10));
+    this.logger.info('- Input file type: ', { padded: this.inputType });
+    this.logger.info('- Sequence Type: ', { padded: this.sequenceType });
+    this.logger.info('- Sequence Count: ', { padded: records.length });
+    this.logger.info('- Feature Count: ', { padded: features.length });
+    this.logger.info('- Total Length (bp): ', { padded: seqLength.toLocaleString() });
     this.logStatusLine();
-    // if (this.success) {
-    //   this.logger.info('- Status: ' + 'Success'.padStart(21), {icon: 'success'});
-    // } else {
-    //   this.logger.error('- Status: ' + 'FAILED'.padStart(21), {icon: 'fail'});
-    // }
-    // this.logger.break('--------------------------------------------\n')
     this.logger.divider();
 
     this._summary = {
@@ -2436,6 +2497,7 @@ class BEDFeatureFile {
       // this._fail(`- Records missing Stops: ${missingStops.length.toLocaleString().padStart(6)}`);
       this._fail('- Records missing Stops: ', { padded: missingStops.length });
     }
+    this.logger.info(`- STATUS ${this.file.status}`);
 
   }
 
@@ -2487,7 +2549,7 @@ class FeatureFile extends Status {
   // - logger: logger object
   // - maxLogCount: number (undefined means no limit) [Default: undefined]
   constructor(inputText, options={}) {
-    super(options);
+    super(options, 'PARSING FEATURE FILE');
     // this.options = options;
     const convertedText = convertLineEndingsToLF(inputText);
     let providedFormat = options.format || 'auto';
@@ -2710,7 +2772,7 @@ class FeatureFile extends Status {
     this.logger.info(`Validating Records ...`);
     try {
       this.validateRecords(records, options);
-      if (this.success) {
+      if (this.passed) {
         this.logger.info('- Validations Passed', {icon: 'success'});
       } else {
         this.logger.error('- Validations Failed');
@@ -2747,8 +2809,7 @@ class FeatureFile extends Status {
 class FeatureBuilder extends Status {
 
   constructor(input, options = {}) {
-    super(options);
-    // this.options = options;
+    super(options, 'BUILDING FEATURES');
 
     this.includeFeatures = (options.includeFeatures === undefined) ? true : options.includeFeatures;
     this.excludeFeatures = options.excludeFeatures || ['gene', 'source', 'exon'];
@@ -2757,10 +2818,10 @@ class FeatureBuilder extends Status {
 
     this.featureFile = this._parseInput(input);
     this.inputDisplayFormat = this.featureFile.displayFileFormat;
-    if (this.featureFile.success === true) {
+    if (this.featureFile.passed) {
       this._json = this._build(this.featureFile.records);
     } else {
-      this._fail('*** Cannot convert to CGView Feature JSON because parsing feature file failed ***');
+      this._fail('*** Cannot convert to CGView Feature JSON because feature file parsing failed ***');
     }
   }
 
@@ -2785,9 +2846,10 @@ class FeatureBuilder extends Status {
     this._complexFeatures = [];
     this._skippedLocationlessFeatures = [];
     // this.logger.info(`Date: ${new Date().toUTCString()}`);
+    this.logger.info('FeatureBuilder: ', { padded: this.version });
     this.logger.info(`Converting to CGView Feature JSON...`);
-    this.logger.info('- Input Feature Count: ', { padded: records.length });
     this.logger.info('- Input File Format: ', { padded: (this.inputDisplayFormat || 'Unknown') });
+    this.logger.info('- Input Feature Count: ', { padded: records.length });
     // Check for records
     if (!records || records.length < 1) {
       this._fail("Conversion Failed: No feature records provided");
@@ -2812,29 +2874,32 @@ class FeatureBuilder extends Status {
     return features;
   }
 
+  // TODO: LOCATIONS!!!!!!!!!!
   _buildFeature(record) {
     const feature = {};
-    // Required fields
+
+    if (record.name) { feature.name = record.name; }
     feature.contig = record.contig;
     feature.start = record.start;
     feature.stop = record.stop;
     feature.strand = ["-1", "-", -1].includes(record.strand) ? -1 : 1;
     feature.type = record.type;
-    // Optional fields
-    if (record.name) {
-      feature.name = record.name;
-    }
-    if (record.score) {
-      feature.score = record.score;
+
+    if (!isNaN(Number(record.score))) {
+      feature.score = Number(record.score);
     }
     if (record.source) {
       feature.source = record.source;
     }
-    if (record.frame) {
-      feature.frame = record.frame;
-    }
+    // TODO: CODON
+    // if (record.frame) {
+    //   feature.frame = record.frame;
+    // }
     if (record.qualifiers) {
       feature.qualifiers = record.qualifiers;
+    }
+    if (record.locations) {
+      feature.locations = record.locations;
     }
     return feature;
   }
@@ -2887,7 +2952,9 @@ class FeatureBuilder extends Status {
 }
 
 const CGParse = {};
+CGParse.version = CGPARSE_VERSION;
 CGParse.Logger = Logger;
+CGParse.helpers = helpers;
 CGParse.SequenceFile = SequenceFile$1;
 CGParse.CGViewBuilder = CGViewBuilder;
 CGParse.FeatureFile = FeatureFile;

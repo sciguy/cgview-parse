@@ -28,8 +28,7 @@ import * as helpers from '../Support/Helpers.js';
 export default class FeatureBuilder extends Status {
 
   constructor(input, options = {}) {
-    super(options);
-    // this.options = options;
+    super(options, 'BUILDING FEATURES');
 
     this.includeFeatures = (options.includeFeatures === undefined) ? true : options.includeFeatures;
     this.excludeFeatures = options.excludeFeatures || ['gene', 'source', 'exon'];
@@ -38,10 +37,10 @@ export default class FeatureBuilder extends Status {
 
     this.featureFile = this._parseInput(input);
     this.inputDisplayFormat = this.featureFile.displayFileFormat
-    if (this.featureFile.success === true) {
+    if (this.featureFile.passed) {
       this._json = this._build(this.featureFile.records);
     } else {
-      this._fail('*** Cannot convert to CGView Feature JSON because parsing feature file failed ***');
+      this._fail('*** Cannot convert to CGView Feature JSON because feature file parsing failed ***');
     }
   }
 
@@ -66,9 +65,10 @@ export default class FeatureBuilder extends Status {
     this._complexFeatures = [];
     this._skippedLocationlessFeatures = [];
     // this.logger.info(`Date: ${new Date().toUTCString()}`);
+    this.logger.info('FeatureBuilder: ', { padded: this.version });
     this.logger.info(`Converting to CGView Feature JSON...`);
-    this.logger.info('- Input Feature Count: ', { padded: records.length });
     this.logger.info('- Input File Format: ', { padded: (this.inputDisplayFormat || 'Unknown') });
+    this.logger.info('- Input Feature Count: ', { padded: records.length });
     // Check for records
     if (!records || records.length < 1) {
       this._fail("Conversion Failed: No feature records provided");
@@ -93,29 +93,32 @@ export default class FeatureBuilder extends Status {
     return features;
   }
 
+  // TODO: LOCATIONS!!!!!!!!!!
   _buildFeature(record) {
     const feature = {};
-    // Required fields
+
+    if (record.name) { feature.name = record.name; }
     feature.contig = record.contig;
     feature.start = record.start;
     feature.stop = record.stop;
     feature.strand = ["-1", "-", -1].includes(record.strand) ? -1 : 1;
     feature.type = record.type;
-    // Optional fields
-    if (record.name) {
-      feature.name = record.name;
-    }
-    if (record.score) {
-      feature.score = record.score;
+
+    if (!isNaN(Number(record.score))) {
+      feature.score = Number(record.score);
     }
     if (record.source) {
       feature.source = record.source;
     }
-    if (record.frame) {
-      feature.frame = record.frame;
-    }
+    // TODO: CODON
+    // if (record.frame) {
+    //   feature.frame = record.frame;
+    // }
     if (record.qualifiers) {
       feature.qualifiers = record.qualifiers;
+    }
+    if (record.locations) {
+      feature.locations = record.locations;
     }
     return feature;
   }

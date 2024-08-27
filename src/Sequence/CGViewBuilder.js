@@ -29,9 +29,9 @@ import * as helpers from '../Support/Helpers.js';
 export default class CGViewBuilder extends Status {
 
   constructor(input, options = {}) {
-    super(options);
+    super(options, 'BUILDING CGVIEW JSON');
     // this.input = input;
-    this.version = "1.6.0";
+    this.cgvJSONVersion = "1.6.0";
     // this.options = options;
 
     // this.includeFeatures = options.includeFeatures || true;
@@ -64,17 +64,18 @@ export default class CGViewBuilder extends Status {
   }
 
   _build(seqRecords) {
-    // this.logger.info(`Converting ${seqRecord.length} sequence record(s) to CGView JSON (version ${this.version})`);
+    // this.logger.info(`Converting ${seqRecord.length} sequence record(s) to CGView JSON (version ${this.cgvJSONVersion})`);
     this._skippedFeaturesByType = {};
     this._skippedComplexFeatures = []; // not skipped anymore
     this._complexFeatures = [];
     this._skippedLocationlessFeatures = [];
-    this.logger.info(`Date: ${new Date().toUTCString()}`);
+    // this.logger.info(`Date: ${new Date().toUTCString()}`);
+    this.logger.info('CGViewBuilder: ', { padded: this.version });
     this.logger.info(`Converting to CGView JSON...`);
-    this.logger.info(`- CGView JSON version ${this.version}`);
-    this.logger.info(`- Input Sequence Count: ${seqRecords.length}`);
-    this.logger.info(`- Input File Type: ${this.inputType || 'Unknown'}`);
-    this.logger.info(`- Input Sequence Type: ${this.sequenceType || 'Unknown'}`);
+    this.logger.info('- CGView JSON version: ', { padded: this.cgvJSONVersion });
+    this.logger.info('- Input Sequence Count: ', { padded: seqRecords.length });
+    this.logger.info('- Input File Type: ', { padded: this.inputType || 'Unknown' });
+    this.logger.info('- Input Sequence Type: ', { padded: this.sequenceType || 'Unknown' });
     // Check for records and make sure they are DNA
     if (!seqRecords || seqRecords.length < 1) {
       this._fail("Conversion Failed: No sequence records provided");
@@ -96,7 +97,7 @@ export default class CGViewBuilder extends Status {
     this._adjustFeatureGeneticCode(json)
     this._qualifiersSetup();
     if (this._complexFeatures.length > 0) {
-      this.logger.info(`- Complex Features Found: ${this._complexFeatures.length.toLocaleString()}`);
+      this.logger.info('- Complex Features Found: ', { padded: this._complexFeatures.length });
     }
     // json.name = json.sequence?.contigs[0]?.name || "Untitled";
     json.name = seqRecords[0]?.definition || seqRecords[0]?.name || seqRecords[0]?.seqID || "Untitled";
@@ -132,22 +133,14 @@ export default class CGViewBuilder extends Status {
     // this.logger.break('--------------------------------------------\n')
     this.logger.divider();
     this.logger.info('CGView JSON Summary:');
-    this.logger.info(`- Map Name: ${json.name.padStart(19)}`);
-    this.logger.info(`- Contig Count: ${contigCount.toLocaleString().padStart(15)}`);
-    this.logger.info('- Total Length (bp): ' + `${seqLength.toLocaleString()}`.padStart(10));
-    this.logger.info(`- Track Count: ${trackCount.toLocaleString().padStart(16)}`);
-    this.logger.info(`- Legend Count: ${legendCount.toLocaleString().padStart(15)}`);
-    this.logger.info(`- Features Included: ${featureCount.toLocaleString().padStart(10)}`);
-    this.logger.info(`- Features Skipped: ${skippedFeatures.toLocaleString().padStart(11)}`);
+    this.logger.info('- Map Name: ', { padded: json.name });
+    this.logger.info('- Contig Count: ', { padded: contigCount });
+    this.logger.info('- Total Length (bp): ', { padded: seqLength.toLocaleString() });
+    this.logger.info('- Track Count: ', { padded: trackCount });
+    this.logger.info('- Legend Count: ', { padded: legendCount });
+    this.logger.info('- Features Included: ', { padded: featureCount });
+    this.logger.info('- Features Skipped: ', { padded: skippedFeatures });
     this.logStatusLine()
-    // if (this.success) {
-    //   this.logger.info('- Status: ' + 'Success'.padStart(21), {icon: 'success'});
-    // } else if (this.status === 'warnings') {
-    //   this.logger.warn('- Status: ' + 'Warnings'.padStart(21), {icon: 'warn'});
-    // } else {
-    //   this.logger.error('- Status: ' + 'FAILED'.padStart(21), {icon: 'fail'});
-    // }
-    // this.logger.break('--------------------------------------------\n')
     this.logger.divider();
   }
 
@@ -158,7 +151,7 @@ export default class CGViewBuilder extends Status {
     if (Object.keys(skippedFeatures).length > 0) {
       this.logger.info(`- Skipped features (${skippedFeatureCount}) by type:`)
       for (const [key, value] of Object.entries(skippedFeatures)) {
-        this.logger.info(`  - ${key}: ${value.toLocaleString().padStart(15 - key.length)}`);
+        this.logger.info(`  - ${key}: `, { padded: value });
       }
     }
     // Complex Locations
@@ -362,30 +355,38 @@ export default class CGViewBuilder extends Status {
   _setupInExcludeItems(name, includeItems, excludeItems) {
     let itemsToInclude = [];
     let itemsToExclude = [];
+    let logData = {inexclude: 'EMPTY', items: 'EMPTY'}
     if (includeItems === true) {
       itemsToInclude = true;
       if (Array.isArray(excludeItems)) {
         itemsToExclude = excludeItems;
         if (itemsToExclude.length > 0) {
-          this.logger.info(`- ${name} to exclude: ${itemsToExclude.join(', ')}`);
+          // this.logger.info(`- ${name} to exclude: ${itemsToExclude.join(', ')}`);
+          logData = {inexclude: 'exclude', items: itemsToExclude.join(', ')}
         } else {
-          this.logger.info(`- ${name} to include: All`);
+          // this.logger.info(`- ${name} to include: All`);
+          logData = {inexclude: 'include', items: 'All'};
         }
       } else {
-          this.logger.info(`- ${name} to include: All`);
+          // this.logger.info(`- ${name} to include: All`);
+          logData = {inexclude: 'include', items: 'All'};
       }
     } else if (Array.isArray(includeItems)) {
       itemsToInclude = includeItems;
       if (itemsToInclude.length > 0) {
-        this.logger.info(`- ${name} to include: ${itemsToInclude.join(', ')}`);
+        // this.logger.info(`- ${name} to include: ${itemsToInclude.join(', ')}`);
+        logData = {inexclude: 'include', items: itemsToInclude.join(', ')};
       } else {
-        this.logger.info(`- ${name} to include: None`);
+        // this.logger.info(`- ${name} to include: None`);
+        logData = {inexclude: 'include', items: 'None'};
       }
     } else {
       // false, or aything but true or an array
       itemsToInclude = [];
-      this.logger.info(`- ${name} to include: None`);
+      // this.logger.info(`- ${name} to include: None`);
+      logData = {inexclude: 'include', items: 'None'};
     }
+    this.logger.info(`- ${name} to ${logData.inexclude}: `, {padded: logData.items });
     return {itemsToInclude, itemsToExclude};
   }
 

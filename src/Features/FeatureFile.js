@@ -67,7 +67,7 @@ class FeatureFile extends Status {
   // - logger: logger object
   // - maxLogCount: number (undefined means no limit) [Default: undefined]
   constructor(inputText, options={}) {
-    super(options);
+    super(options, 'PARSING FEATURE FILE');
     // this.options = options;
     const convertedText = helpers.convertLineEndingsToLF(inputText);
     let providedFormat = options.format || 'auto';
@@ -290,7 +290,7 @@ class FeatureFile extends Status {
     this.logger.info(`Validating Records ...`);
     try {
       this.validateRecords(records, options);
-      if (this.success) {
+      if (this.passed) {
         this.logger.info('- Validations Passed', {icon: 'success'});
       } else {
         this.logger.error('- Validations Failed');

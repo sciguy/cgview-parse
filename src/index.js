@@ -3,9 +3,12 @@ import SequenceFile from "./Sequence/SequenceFile.js";
 import CGViewBuilder from "./Sequence/CGViewBuilder.js";
 import FeatureFile from "./Features/FeatureFile.js";
 import FeatureBuilder from "./Features/FeatureBuilder.js";
+import * as helpers from './Support/Helpers.js';
 
 const CGParse = {}
+CGParse.version = helpers.CGPARSE_VERSION;
 CGParse.Logger = Logger;
+CGParse.helpers = helpers;
 CGParse.SequenceFile = SequenceFile;
 CGParse.CGViewBuilder = CGViewBuilder;
 CGParse.FeatureFile = FeatureFile;

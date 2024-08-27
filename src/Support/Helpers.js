@@ -1,3 +1,4 @@
+import { version } from '../../package.json';
 // ----------------------------------------------------------------------------
 // CGPARSE HELPERS
 // ----------------------------------------------------------------------------
@@ -5,6 +6,8 @@
 // ----------------------------------------------------------------------------
 // CONSTANTS
 // ----------------------------------------------------------------------------
+
+export const CGPARSE_VERSION = version;
 
 // All GenBank/EMBL Feature Types
 export const FEATURE_TYPES = ["assembly_gap", "C_region", "CDS", "centromere", "D-loop", "D_segment", "exon", "gap", "gene", "iDNA", "intron", "J_segment", "mat_peptide", "misc_binding", "misc_difference", "misc_feature", "misc_recomb", "misc_RNA", "misc_structure", "mobile_element", "modified_base", "mRNA", "ncRNA", "N_region", "old_sequence", "operon", "oriT", "polyA_site", "precursor_RNA", "prim_transcript", "primer_bind", "propeptide", "protein_bind", "regulatory", "repeat_region", "rep_origin", "rRNA", "S_region", "sig_peptide", "source", "stem_loop", "STS", "telomere", "tmRNA", "transit_peptide", "tRNA", "unsure", "V_region", "V_segment", "variation", "3'UTR", "5'UTR"];

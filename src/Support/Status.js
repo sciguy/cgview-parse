@@ -1,12 +1,13 @@
 // This will be the base class for any class that has status
 import Logger from '../Support/Logger.js';
+import * as helpers from '../Support/Helpers.js';
 
 export default class Status {
 
   // Options:
   // - logger: logger object
   // - maxLogCount: number (undefined means no limit) [Default: undefined]
-  constructor(options = {}) {
+  constructor(options = {}, logTitle) {
 
     this._options = options;
 
@@ -16,7 +17,14 @@ export default class Status {
     if (options.maxLogCount) {
       this.logger.maxLogCount = options.maxLogCount;
     }
+    // this.logger.divider();
+    if (logTitle) {
+      this.logger.title(` ${logTitle} `);
+    } else {
+      this.logger.divider();
+    }
     this.logger.info(`Date: ${new Date().toUTCString()}`);
+    // this.logVersion();
 
     // Initialize status
     this._status = 'success'
@@ -30,6 +38,10 @@ export default class Status {
 
   get options() {
     return this._options;
+  }
+
+  get version() {
+    return helpers.CGPARSE_VERSION;
   }
 
   // Parsing status
@@ -53,6 +65,11 @@ export default class Status {
   get errorCodes() {
     return Array.from(this._errorCodes);
   }
+
+
+  /////////////////////////////////////////////////////////////////////////////
+  // Methods
+  /////////////////////////////////////////////////////////////////////////////
 
   // Parsing has failed
   // Optional error code can be provided to help identify the error
@@ -78,5 +95,9 @@ export default class Status {
       this.logger.error('- Status: ', { padded: 'FAILED', icon: 'fail' });
     }
   }
+
+  // logVersion() {
+  //   this.logger.info(`- Version: ${this.version}`);
+  // }
 
 }
