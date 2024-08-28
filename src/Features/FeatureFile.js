@@ -139,6 +139,11 @@ class FeatureFile extends Status {
     } else if (BEDFeatureFile.lineMatches(firstLine)) {
       detectedFormat = 'bed';
     } else {
+      // Try CSV/TSV
+      // - check for separator
+      // - if a separator is found, then try to lineMatch
+
+      // ELSE: unknown
       detectedFormat = 'unknown';
     }
 

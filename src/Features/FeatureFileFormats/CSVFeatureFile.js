@@ -2,12 +2,14 @@ import Logger from '../../Support/Logger.js';
 import * as helpers from '../../Support/Helpers.js';
 
 // NOTES:
-// - Bed is a 0-based format. The chromStart field is 0-based and the chromEnd field is 1-based.
+// - CSV is a 1-based format. The start field is 1-based and the stop field is 1-based.
+// - Can be CSV or TSV
 
-class BEDFeatureFile {
+class CSVFeatureFile {
 
   constructor(file, options={}) {
       this._file = file;
+      this._separator = options.separator || ',';
       this._errors = {};
       this._options = options;
       this.logger = options.logger || new Logger();
@@ -23,11 +25,11 @@ class BEDFeatureFile {
   }
 
   get fileFormat() {
-      return 'bed';
+      return 'csv';
   }
 
   get displayFileFormat() {
-      return 'BED';
+      return 'CSV';
   }
 
   get lineCount() {
@@ -35,9 +37,7 @@ class BEDFeatureFile {
   }
 
   // Returns an object with keys for the error codes and values for the error messages
-  // - errorTypes:
-  //   - thickStartNotMatchingStart
-  //   - thickEndNotMatchingStop
+  // - errorTypes: ?
   get errors() {
     return this._errors || {};
   }
@@ -50,7 +50,14 @@ class BEDFeatureFile {
     this.file._fail(message, errorCode);
   }
 
-  // Returns true if the line matches the BED format
+  // TODO check for separator
+  // take upto the first 10 lines (non-empty/non-comment) and check for the separator
+  // - count how many ',' and how many '\t' are on each line
+  // - then check if the counts are consistent. If they are, then assign to commaCount or tabCount
+  // - Take the separator with the highest count
+  // - If they are undefined (i.e. counts are not consistent), then return an error
+
+  // Returns true if the line matches the CSV format
   // - line: the first non-empty/non-comment line of the file
   // fields: 2, 3, 5, 7, 8, 10 when present should be numbers
   static lineMatches(line) {

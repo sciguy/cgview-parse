@@ -2497,7 +2497,6 @@ class BEDFeatureFile {
       // this._fail(`- Records missing Stops: ${missingStops.length.toLocaleString().padStart(6)}`);
       this._fail('- Records missing Stops: ', { padded: missingStops.length });
     }
-    this.logger.info(`- STATUS ${this.file.status}`);
 
   }
 
@@ -2621,6 +2620,11 @@ class FeatureFile extends Status {
     } else if (BEDFeatureFile.lineMatches(firstLine)) {
       detectedFormat = 'bed';
     } else {
+      // Try CSV/TSV
+      // - check for separator
+      // - if a separator is found, then try to lineMatch
+
+      // ELSE: unknown
       detectedFormat = 'unknown';
     }
 
@@ -2874,7 +2878,6 @@ class FeatureBuilder extends Status {
     return features;
   }
 
-  // TODO: LOCATIONS!!!!!!!!!!
   _buildFeature(record) {
     const feature = {};
 

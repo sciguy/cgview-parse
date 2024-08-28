@@ -93,7 +93,6 @@ export default class FeatureBuilder extends Status {
     return features;
   }
 
-  // TODO: LOCATIONS!!!!!!!!!!
   _buildFeature(record) {
     const feature = {};
 
