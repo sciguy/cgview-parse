@@ -1,4 +1,4 @@
-import Logger from '../src/Logger.js';
+import Logger from '../src/Support/Logger.js';
 
 describe('Logger', () => {
 

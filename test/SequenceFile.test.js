@@ -1,4 +1,4 @@
-import SequenceFile from '../src/SequenceFile.js';
+import SequenceFile from '../src/Sequence/SequenceFile.js';
 
 describe('SequenceFile', () => {
   let seqFile = new SequenceFile("");

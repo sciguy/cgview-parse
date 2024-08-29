@@ -1,4 +1,4 @@
-import CGViewBuilder from '../src/CGViewBuilder.js';
+import CGViewBuilder from '../src/Sequence/CGViewBuilder.js';
 
 describe('CGViewBuilder', () => {
 

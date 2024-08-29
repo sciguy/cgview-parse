@@ -82,6 +82,39 @@ class CSVFeatureFile {
     return true;
   }
 
+  // Detect the separator based on the first 10 lines of the file
+  // Returns the separator or null if the separator could not be detected
+  static detectSeparator(fileText) {
+    const maxLines = 10;
+    const testLines = helpers.getLines(fileText, { maxLines: 10 });
+
+    let commaCount, tabCount;
+    for (const line of testLines) {
+      const lineCommaCount = (line.match(/,/g) || []).length;
+      const lineTabCount = (line.match(/\t/g) || []).length;
+      if (commaCount === undefined) {
+        commaCount = lineCommaCount;
+      } else if (commaCount !== lineCommaCount) {
+        commaCount = -1;
+      }
+      if (tabCount === undefined) {
+        tabCount = lineTabCount;
+      } else if (tabCount !== lineTabCount) {
+        tabCount = -1;
+      }
+    }
+
+    if ([0, -1].includes(commaCount) && [0, -1].includes(tabCount)) {
+      // this.logger.warn(`- Unable to detect separator`);
+    } else if (commaCount === -1) {
+      return '\t';
+    } else if (tabCount === -1) {
+      return ',';
+    } else {
+      return (commaCount > tabCount) ? ',' : '\t';
+    }
+  }
+
   addError(errorCode, message) {
     const errors = this.errors;
     if (errors[errorCode]) {
@@ -221,4 +254,4 @@ class CSVFeatureFile {
 
 }
 
-export default BEDFeatureFile;
+export default CSVFeatureFile;

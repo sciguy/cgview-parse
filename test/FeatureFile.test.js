@@ -1,6 +1,7 @@
-import FeatureFile from '../src/FeatureFile.js';
-import GFF3FeatureFile from '../src/FeatureFileFormats/GFF3FeatureFile.js';
-import GTFFeatureFile from '../src/FeatureFileFormats/GTFFeatureFile.js';
+import FeatureFile from '../src/Features/FeatureFile.js';
+import GFF3FeatureFile from '../src/Features/FeatureFileFormats/GFF3FeatureFile.js';
+import GTFFeatureFile from '../src/Features/FeatureFileFormats/GTFFeatureFile.js';
+import CSVFeatureFile from '../src/Features/FeatureFileFormats/CSVFeatureFile.js';
 
 describe('FeatureFile', () => {
   let featureFile = new FeatureFile("");
@@ -152,7 +153,52 @@ chr123	Twinscan	CDS	380	401	.	+	0	gene_id "001"; transcript_id "001.1";
 
   });
 
+  /////////////////////////////////////////////////////////////////////////////
+  // CSV/TSV
+  /////////////////////////////////////////////////////////////////////////////
 
+  describe('detectSeparator', () => {
 
+    test('- return comma from CSV', () => {
+      const input = `
+# name, start, stop, strand
+gene00001, 100, 200, +
+gene00001, 300, 400, +
+`.trim();
+      const output = CSVFeatureFile.detectSeparator(input);
+      expect(output).toEqual(',');
+    });
+
+    test('- return tab from TSV', () => {
+      const input = `
+# name	 start	 stop	 strand
+gene00001	 100	 200	 +
+gene00001	 300	 400	 +
+`.trim();
+      const output = CSVFeatureFile.detectSeparator(input);
+      expect(output).toEqual("\t");
+    });
+
+    test('- return tab from Mixed', () => {
+      const input = `
+# name	 start	 stop	 strand	test
+gene00001	 100	 200	 +	a,b,c
+gene00001	 300	 400	 +	d,e,f
+`.trim();
+      const output = CSVFeatureFile.detectSeparator(input);
+      expect(output).toEqual("\t");
+    });
+
+    test('- return undefined if not consistent', () => {
+      const input = `
+# name, start, stop, strand
+gene00001, 100, 200, +,
+gene00001, 300, 400, +
+`.trim();
+      const output = CSVFeatureFile.detectSeparator(input);
+      expect(output).toEqual(undefined);
+    });
+
+  });
 
 });

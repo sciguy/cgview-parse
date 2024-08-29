@@ -137,6 +137,18 @@ export function isBinary(text) {
   return isBinary;
 }
 
+// Give text, return an array of lines
+// - comments lines starting with # are removed
+// - empty lines are removed
+// - options:
+//   - maxLines: the number of lines returned (default is all lines)
+export function getLines(text, options={}) {
+  const lines = text.split(/\r\n|\r|\n/);
+  // Filter out comments and empty lines
+  const filteredLines = lines.filter(line => !line.startsWith('#') && line.trim() !== '');
+  // return the first maxLines or all lines
+  return options.maxLines ? filteredLines.slice(0, options.maxLines) : filteredLines;
+}
 
 // ----------------------------------------------------------------------------
 // SEQUENCE METHODS

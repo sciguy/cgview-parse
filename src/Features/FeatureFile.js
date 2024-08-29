@@ -31,6 +31,7 @@ import GTFFeatureFile from './FeatureFileFormats/GTFFeatureFile.js';
 import BEDFeatureFile from './FeatureFileFormats/BEDFeatureFile.js';
 // import FeatureBuilder from './FeatureBuilder.js';
 import * as helpers from '../Support/Helpers.js';
+import CSVFeatureFile from './FeatureFileFormats/CSVFeatureFile.js';
 
 // FeatureFile class reads a feature file (GFF3, BED, CSV, GTF) and returns an array of records
 // One for each feature. Some records (e.g. CDS) may be joined together if they have the same ID.
@@ -139,6 +140,7 @@ class FeatureFile extends Status {
     } else if (BEDFeatureFile.lineMatches(firstLine)) {
       detectedFormat = 'bed';
     } else {
+      const separator = CSVFeatureFile.detectSeparator(fileText);
       // Try CSV/TSV
       // - check for separator
       // - if a separator is found, then try to lineMatch
@@ -295,6 +297,16 @@ class FeatureFile extends Status {
     this.logger.info(`Validating Records ...`);
     try {
       this.validateRecords(records, options);
+
+      // General Validations
+      // - Are there any records?
+      // TODO: this may go above the validateRecords call
+      console.log("HERE HERHERHERHEHR")
+      console.log(records)
+      if (records.length === 0) {
+        this._fail('- Failed: No records found in the file.');
+      }
+
       if (this.passed) {
         this.logger.info('- Validations Passed', {icon: 'success'});
       } else {
