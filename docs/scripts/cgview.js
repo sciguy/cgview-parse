@@ -11971,6 +11971,9 @@ var CGV = (function (exports, d3) {
       this.source = utils.defaultFor(data.source, '');
       this.tags = data.tags;
       this.favorite = utils.defaultFor(data.favorite, false);
+      // This will hold the name temporarily until the Label is created
+      // Useful if there are errors in contig creation
+      this._tempName = data.name;
       // this.contig = data.contig || viewer.sequence.mapContig;
       this.contig = data.contig;
       // this.range = new CGV.CGRange(this.viewer.sequence, Number(data.start), Number(data.stop));
@@ -12029,7 +12032,7 @@ var CGV = (function (exports, d3) {
      * @member {String} - Get or set the name via the [Label](Label.html).
      */
     get name() {
-      return this.label && this.label.name;
+      return this.label && this.label.name || this._tempName;
     }
 
     set name(value) {
@@ -12233,12 +12236,11 @@ var CGV = (function (exports, d3) {
      *   All start and stop positions are assumed to be going in a clockwise direction.
      *   Locations shouldn't overlap the origin but can overlap each other (e.g. due to ribosomal slippage).
      *   Locations are ignored unless there is more than one location.
-     *   - Validations:
-     *     - that each array has 2 numbers
-     *     - start must be less than stop
+     *   Validations:
+     *   - that each array has 2 numbers
+     *   - start must be less than stop
      *   TODO:
-     *     - order of locations should be checked
-     *   - DOES THIS WORK WITH MAP CONTIGS?
+     *   - order of locations should be checked?
      */
     get locations() {
       return this._locations || [[this.start, this.stop]];

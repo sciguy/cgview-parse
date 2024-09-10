@@ -88,7 +88,7 @@ export default class CGViewBuilder extends Status {
     // Here json refers to the CGView JSON
     let json = this._addConfigToJSON({}, this.options.config); 
     // Version: we should keep the version the same as the latest for CGView.js
-    json.version = this.version;
+    json.version = this.cgvJSONVersion;
     this._adjustContigNames(seqRecords);
     json.captions = this._getCaptions(json, seqRecords);
     json.settings.format = CGViewBuilder.determineFormat(seqRecords);
