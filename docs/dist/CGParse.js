@@ -501,13 +501,30 @@ var CGParse = (function () {
     uniqueName: uniqueName
   });
 
-  // This will be the base class for any class that has status
-
+  /**
+     * Base class for FeatureFile, SequenceFile, FeatureBuilder, CGViewBuilder
+     * - Provides logging and status tracking
+     * 
+     * The status can be one of:
+     * - 'success':  parsing/building was successful
+     * - 'warnings': parsing/building was successful with warnings (can still proceed)
+     * - 'failed':   parsing/building failed (cannot proceed)
+     * 
+     * Using the methods _fail() and _warn() will set the status accordingly
+     * 
+     * Error codes can be provided to keep track of the type of errors
+     * - Error codes can be provided as options to _fail() and _warn()
+     * - They can also be added with the addErrorCode() method
+     * - The errorCodes property returns an array of unique error codes
+     * - To check if a specific error code is present, use the hasErrorCode(ERROR_CODE) method
+     * - allowed error codes are set with the static property ERROR_CODES and are all lowercase
+     *
+     * @param {Object} Options - passed to logger
+     *   - logger: logger object
+     *   - maxLogCount: number (undefined means no limit) [Default: undefined]
+     */
   class Status {
 
-    // Options:
-    // - logger: logger object
-    // - maxLogCount: number (undefined means no limit) [Default: undefined]
     constructor(options = {}, logTitle) {
 
       this._options = options;
@@ -524,7 +541,7 @@ var CGParse = (function () {
       } else {
         this.logger.divider();
       }
-      this.logger.info(`Date: ${new Date().toUTCString()}`);
+      this._info(`Date: ${new Date().toUTCString()}`);
       // this.logVersion();
 
       // Initialize status
@@ -532,6 +549,9 @@ var CGParse = (function () {
       this._errorCodes = new Set();
     }
 
+    static get ERROR_CODES() {
+      return ['unknown', 'binary', 'empty', 'unknown_format', 'parsing', 'validating'];
+    }
 
     /////////////////////////////////////////////////////////////////////////////
     // Properties
@@ -551,10 +571,11 @@ var CGParse = (function () {
       return this._status;
     }
 
-    // Parsing is successful
-    get success() {
-      return this.status === 'success';
-    }
+    // Parsing is successful (No errors or warnings)
+    // This can be confusing because it doesn't includes warnings use passed instead
+    // get success() {
+    //   return this.status === 'success';
+    // }
 
     // Parsing has passed with success or warnings
     get passed() {
@@ -572,23 +593,43 @@ var CGParse = (function () {
     // Methods
     /////////////////////////////////////////////////////////////////////////////
 
-    // Parsing has failed
-    // Optional error code can be provided to help identify the error
-    _fail(message, errorCode='unknown') {
-      this.logger.error(message);
-      this._status = 'failed';
+    addErrorCode(errorCode) {
+      if (!Status.ERROR_CODES.includes(errorCode)) {
+        this._fail(`Invalid error code: ${errorCode}`);
+        return;
+      }
       this._errorCodes.add(errorCode);
     }
 
-    _warn(message) {
-      this.logger.warn(message);
+    hasErrorCode(errorCode) {
+      return this._errorCodes.has(errorCode);
+    }
+
+    // Alias for logger.info()
+    _info(message, options={}) {
+      this.logger.info(message, options);
+    }
+
+    // Parsing has failed
+    // Optional error code can be provided to help identify the error
+    // _fail(message, errorCode='unknown') {
+    _fail(message, options={}) {
+      this.logger.error(message, options);
+      this._status = 'failed';
+      // TODO: consider keeping error codes in Logger
+      const errorCode = options.errorCode || 'unknown';
+      this.addErrorCode(errorCode);
+    }
+
+    _warn(message, options={}) {
+      this.logger.warn(message, options);
       if (this.status !== 'fail') {
         this._status = 'warnings';
       }
     }
 
     logStatusLine() {
-      if (this.success) {
+      if (this.status === 'success') {
         this.logger.info('- Status: ', { padded: 'Success', icon: 'success' });
       } else if (this.status === 'warnings') {
         this.logger.warn('- Status: ', { padded: 'Warnings', icon: 'warn' });
@@ -644,7 +685,7 @@ var CGParse = (function () {
       this.seqFile = this._parseInput(input);
       this.inputType = this.seqFile.inputType;
       this.sequenceType = this.seqFile.sequenceType;
-      if (this.seqFile.success === true) {
+      if (this.seqFile.passed === true) {
         this._json = this._build(this.seqFile.records);
       } else {
         this._fail('*** Cannot convert to CGView JSON because parsing sequence file failed ***');
@@ -1175,7 +1216,7 @@ var CGParse = (function () {
       return this._sequenceType;
     }
 
-    // { inputType, sequenceType, sequenceCount, featureCount, totalLength, success }
+    // { inputType, sequenceType, sequenceCount, featureCount, totalLength, status }
     get summary() {
       return this._summary;
     }
@@ -1185,7 +1226,7 @@ var CGParse = (function () {
     /////////////////////////////////////////////////////////////////////////////
 
     toCGViewJSON(options={}) {
-      if (this.success) {
+      if (this.passed) {
         options.logger = options.logger || this.logger;
         const builder = new CGViewBuilder(this, options);
         return builder.toJSON();
@@ -1224,7 +1265,7 @@ var CGParse = (function () {
         featureCount: features.length,
         totalLength: seqLength,
         status: this.status,
-        success: this.success
+        // success: this.success
       };
     }
 
@@ -1808,7 +1849,9 @@ var CGParse = (function () {
         // featureStartGreaterThanEnd.forEach((error) => this.logger.error(`- ${error}`));
       }
 
-      if (this.success) {
+      // if (this.success) {
+      // TODO: added warning here if needed
+      if (this.passed) {
         this.logger.info('- validations passed', {icon: 'success'});
       } else {
         this.logger.error('- validations failed', {icon: 'fail'});
@@ -1852,8 +1895,8 @@ var CGParse = (function () {
       return this.options.nameKeys || ['Name', 'Alias', 'gene', 'locus_tag', 'product', 'note', 'db_xref', 'ID'];
     }
 
-    _fail(message, errorCode='unknown') {
-      this.file._fail(message, errorCode);
+    _fail(message, options={}) {
+      this.file._fail(message, options);
     }
 
     // Returns true if the line matches the GFF3 format
@@ -2081,8 +2124,8 @@ var CGParse = (function () {
       return this.options.nameKeys || ['Name', 'Alias', 'gene', 'locus_tag', 'product', 'note', 'db_xref', 'ID'];
     }
 
-    _fail(message, errorCode='unknown') {
-      this.file._fail(message, errorCode);
+    _fail(message, options={}) {
+      this.file._fail(message, options);
     }
 
     // Returns true if the line matches the GTF format
@@ -2151,6 +2194,7 @@ var CGParse = (function () {
         phase: fields[7],
         attributes: this._parseGTFAttributes(fields[8]),
         qualifiers: {},
+        valid: true,
       };
       const qualifiers = this._extractQualifiers(record);
       if (Object.keys(qualifiers).length > 0) {
@@ -2318,10 +2362,14 @@ var CGParse = (function () {
 
     constructor(file, options={}) {
         this._file = file;
-        this._errors = {};
+        this._validationIssues = {};
         this._options = options;
         this.logger = options.logger || new Logger();
         this._lineCount = 0;
+    }
+
+    static get VALIDATION_ISSUE_CODES() {
+      return ['thickStartNotMatchingStart', 'thickEndNotMatchingEnd', 'missingStart', 'missingStop'];
     }
 
     get file() {
@@ -2345,19 +2393,21 @@ var CGParse = (function () {
     }
 
     // Returns an object with keys for the error codes and values for the error messages
-    // - errorTypes:
+    // - Issure Codes:
     //   - thickStartNotMatchingStart
     //   - thickEndNotMatchingStop
-    get errors() {
-      return this._errors || {};
+    //   - missingStart
+    //   - missingStop
+    get validationIssues() {
+      return this._validationIssues || {};
     }
 
-    _warn(message, errorCode='unknown') {
-      this.file._warn(message, errorCode);
+    _warn(message, options={}) {
+      this.file._warn(message, options);
     }
 
-    _fail(message, errorCode='unknown') {
-      this.file._fail(message, errorCode);
+    _fail(message, options={}) {
+      this.file._fail(message, options);
     }
 
     // Returns true if the line matches the BED format
@@ -2385,12 +2435,19 @@ var CGParse = (function () {
       return true;
     }
 
-    addError(errorCode, message) {
-      const errors = this.errors;
-      if (errors[errorCode]) {
-        errors[errorCode].push(message);
+    // CONSIDER:
+    // - addValidationWarning
+    // - addValidationError
+    addValidationIssue(issueCode, message) {
+      if (!BEDFeatureFile.VALIDATION_ISSUE_CODES.includes(issueCode)) {
+        this._fail("ERROR: Invalid validiation issue code: " + issueCode);
+        return;
+      }
+      const validationIssues = this.validationIssues;
+      if (validationIssues[issueCode]) {
+        validationIssues[issueCode].push(message);
       } else {
-        errors[errorCode] = [message];
+        validationIssues[issueCode] = [message];
       }
     }
 
@@ -2407,7 +2464,7 @@ var CGParse = (function () {
           }
         }
       }
-      this.logger.info(`- Parsed ${records.length} record`);
+      this.logger.info(`- Parsed ${records.length} records`);
       return records;
     }
 
@@ -2429,7 +2486,18 @@ var CGParse = (function () {
         start: parseInt(fields[1]) + 1,
         stop: parseInt(fields[2]),
         name: fields[3] || 'Uknown',
+        valid: true,
       };
+
+      if (isNaN(record.start)) {
+          this.addValidationIssue('missingStart');
+          record.valid = false;
+      }
+      if (isNaN(record.stop)) {
+          this.addValidationIssue('missingStop');
+          record.valid = false;
+      }
+
       // Score
       const score = parseFloat(fields[4]);
       if (!isNaN(score)) {
@@ -2444,13 +2512,15 @@ var CGParse = (function () {
         const thickStart = parseInt(fields[6]);
         // thickStart is 0-based so we add 1 here
         if ((thickStart + 1) !== record.start) {
-          this.addError('thickStartNotMatchingStart', `- thickStart is not the same as start: ${line}`);
+          this.addValidationIssue('thickStartNotMatchingStart', `- thickStart is not the same as start: ${line}`);
+          // record.valid = false;
         }
       }
       if (fields[7]) {
         const thickEnd = parseInt(fields[7]);
         if (thickEnd !== record.stop) {
-          this.addError('thickEndNotMatchingEnd', `- thickEnd is not the same as stop: ${line}`);
+          this.addValidationIssue('thickEndNotMatchingEnd', `- thickEnd is not the same as stop: ${line}`);
+          // record.valid = false;
         }
       }
       // Blocks (requires fields 10, 11, 12)
@@ -2488,13 +2558,13 @@ var CGParse = (function () {
     }
 
     validateRecords(records) {
-      const errors = this.errors;
+      const validationIssues = this.validationIssues;
       // ThickStart and ThickEnd Warnings
-      const thickStartErrors = errors['thickStartNotMatchingStart'] || [];
+      const thickStartErrors = validationIssues['thickStartNotMatchingStart'] || [];
       if (thickStartErrors.length) {
         this._warn(`- Features where thickStart != start: ${thickStartErrors.length}`);
       }
-      const thickEndErrors = errors['thickEndNotMatchingEnd'] || [];
+      const thickEndErrors = validationIssues['thickEndNotMatchingEnd'] || [];
       if (thickEndErrors.length) {
         this._warn(`- Features where thickEnd != stop: ${thickStartErrors.length}`);
       }
@@ -2503,15 +2573,19 @@ var CGParse = (function () {
       }
 
       // Missing Starts and Stops
-      const missingStarts = records.filter((record) => isNaN(record.start));
-      if (missingStarts.length) {
+      // const missingStarts = records.filter((record) => isNaN(record.start));
+      const missingStartErrors = validationIssues['missingStart'] || [];
+      if (missingStartErrors.length) {
         // this._fail(`- Records missing Starts: ${missingStarts.length.toLocaleString().padStart(5)}`);
-        this._fail('- Records missing Starts: ', { padded: missingStarts.length });
+        // this._fail('- Records missing Starts: ', { padded: missingStarts.length });
+        this._fail('- Records missing Starts: ', { padded: missingStartErrors.length });
       }
-      const missingStops = records.filter((record) => isNaN(record.stop));
-      if (missingStops.length) {
+      // const missingStops = records.filter((record) => isNaN(record.stop));
+      const missingStopErrors = validationIssues['missingStart'] || [];
+      if (missingStopErrors.length) {
         // this._fail(`- Records missing Stops: ${missingStops.length.toLocaleString().padStart(6)}`);
-        this._fail('- Records missing Stops: ', { padded: missingStops.length });
+        // this._fail('- Records missing Stops: ', { padded: missingStops.length });
+        this._fail('- Records missing Stops: ', { padded: missingStopErrors.length });
       }
 
     }
@@ -2521,16 +2595,78 @@ var CGParse = (function () {
   // NOTES:
   // - CSV is a 1-based format. The start field is 1-based and the stop field is 1-based.
   // - Can be CSV or TSV
+  // - header line can be optional but then you need to state what each column is (HOW)
+  // - columnMap: internal column names to column names in the file
 
   class CSVFeatureFile {
 
     constructor(file, options={}) {
         this._file = file;
-        this._separator = options.separator || ',';
-        this._errors = {};
+        this._separator = [',', '\t'].includes(options.separator) ? options.separator : ',';
+        // this._errors = {};
         this._options = options;
         this.logger = options.logger || new Logger();
         this._lineCount = 0;
+        this._hasHeader = (options.hasHeader === undefined) ? true : options.hasHeader;
+        this.onlyColumns = options.onlyColumns || [];
+        this.columnMap = this.createColumnMap(options.columnMap);
+        // this.columnIndexMap = this.createColumnIndexMap(options.columnMap);
+
+        if (!this.hasHeader) {
+          // this.logger.info('- Header: Present');
+          // Check that the columnMap values are all integers
+          if (Object.values(this.columnMap).some((value) => isNaN(value))) {
+            this._fail(`- ColumnMap values must be integers when there is no header`);
+          }
+        }
+
+        // Valdiate ColumnMap
+        // - Check that all the required columns are present
+        // - Check that there are no extra columns
+        // - Check that the columns are in the correct order
+        // - Check that the columns are not duplicated
+        // - Check that the columns are not empty
+
+        // options for column mapping
+        // Keys: internal column names, values: column names in the file (or indexes)
+        // - default values are the internal column names
+        // this._columnMap = {};
+        // columns:
+        // - contig
+        // - start
+        // - stop
+        // - name
+        // - score
+        // - strand
+        // - type
+        // - legend
+        // - codonStart
+        // - ---------
+        // - tags?
+        // - meta?
+        // - visible?
+        // - favorite?
+        // - geneticCode?
+        // - attributes?
+        // - qualifiers?
+        // - locations?
+        // - centerOffsetAdjustment?
+        // - proportionOfThickness?
+
+    }
+
+    get defaultColumnMap() {
+      return {
+        contig: 'contig',
+        start: 'start',
+        stop: 'stop',
+        name: 'name',
+        score: 'score',
+        strand: 'strand',
+        type: 'type',
+        legend: 'legend',
+        codonStart: 'codonStart',
+      };
     }
 
     get file() {
@@ -2542,22 +2678,30 @@ var CGParse = (function () {
     }
 
     get fileFormat() {
-        return 'csv';
+        return (this.separator === ',') ? 'csv' : 'tsv';
     }
 
     get displayFileFormat() {
-        return 'CSV';
+        return (this.separator === ',') ? 'CSV' : 'TSV';
     }
 
     get lineCount() {
       return this._lineCount;
     }
 
+    get separator() {
+      return this._separator;
+    }
+
+    get hasHeader() {
+      return this._hasHeader;
+    }
+
     // Returns an object with keys for the error codes and values for the error messages
     // - errorTypes: ?
-    get errors() {
-      return this._errors || {};
-    }
+    // get errors() {
+    //   return this._errors || {};
+    // }
 
     _warn(message, errorCode='unknown') {
       this.file._warn(message, errorCode);
@@ -2566,6 +2710,53 @@ var CGParse = (function () {
     _fail(message, errorCode='unknown') {
       this.file._fail(message, errorCode);
     }
+
+    // TODO: handle no header line
+    // createColumnIndexMap(columnMap) {
+    createColumnMap(columnMap={}) {
+      // Check that all keys are valid
+      const validKeys = Object.keys(this.defaultColumnMap);
+      const columnKeys = Object.keys(columnMap);
+      for (const key of columnKeys) {
+        if (!validKeys.includes(key)) {
+          this._fail(`- Invalid column key: ${key}`);
+        }
+      }
+      // Check for required columns
+      const requiredKeys = ['start', 'stop'];
+      for (const key of requiredKeys) {
+        if (!columnKeys.includes(key)) {
+          this._fail(`- Missing required column: ${key}`);
+        }
+      }
+
+      // Combine the default column map with the provided column map
+      const newColumnMap = {...this.defaultColumnMap, ...columnMap};
+
+      // Change the keys to lowercase
+      // NOTE: only need to worry about case for values
+      // const newColumnMapKeys = Object.keys(newColumnMap);
+      // for (const key of newColumnMapKeys) {
+      //   const newKey = key.toLowerCase();
+      //   if (newKey !== key) {
+      //     newColumnMap[newKey] = newColumnMap[key];
+      //     delete newColumnMap[key];
+      //   }
+      // }
+
+      // Remove any columns that are not in the onlyColumns list (if present)
+      if (this.onlyColumns.length) {
+        const newColumnMapKeys = Object.keys(newColumnMap);
+        for (const key of newColumnMapKeys) {
+          if (!this.onlyColumns.includes(key)) {
+            delete newColumnMap[key];
+          }
+        }
+      }
+
+      return newColumnMap;
+    }
+
 
     // TODO check for separator
     // take upto the first 10 lines (non-empty/non-comment) and check for the separator
@@ -2576,31 +2767,30 @@ var CGParse = (function () {
 
     // Returns true if the line matches the CSV format
     // - line: the first non-empty/non-comment line of the file
-    // fields: 2, 3, 5, 7, 8, 10 when present should be numbers
-    static lineMatches(line) {
-      const fields = line.split('\t').map((field) => field.trim());
-      if (fields.length < 3) {
-        return false;
-      } else if (fields.length === 10 || fields.length === 11) {
-        // BED10 and BED11 are not permitted
-        return false;
-      } else if (isNaN(fields[1]) || isNaN(fields[2])) {
-        return false;
-      } else if (fields.length >= 5 && isNaN(fields[4])) {
-        return false;
-      } else if (fields.length >= 7 && isNaN(fields[6])) {
-        return false;
-      } else if (fields.length >= 8 && isNaN(fields[7])) {
-        return false;
-      } else if (fields.length >= 10 && isNaN(fields[9])) {
-        return false;
-      }
+    // static lineMatches(line) {
+    //   const fields = line.split('\t').map((field) => field.trim());
+    //   if (fields.length < 3) {
+    //     return false;
+    //   } else if (fields.length === 10 || fields.length === 11) {
+    //     // BED10 and BED11 are not permitted
+    //     return false;
+    //   } else if (isNaN(fields[1]) || isNaN(fields[2])) {
+    //     return false;
+    //   } else if (fields.length >= 5 && isNaN(fields[4])) {
+    //     return false;
+    //   } else if (fields.length >= 7 && isNaN(fields[6])) {
+    //     return false;
+    //   } else if (fields.length >= 8 && isNaN(fields[7])) {
+    //     return false;
+    //   } else if (fields.length >= 10 && isNaN(fields[9])) {
+    //     return false;
+    //   }
 
-      return true;
-    }
+    //   return true;
+    // }
 
     // Detect the separator based on the first 10 lines of the file
-    // Returns the separator or null if the separator could not be detected
+    // Returns the separator or undefined if the separator could not be detected
     static detectSeparator(fileText) {
       const testLines = getLines(fileText, { maxLines: 10 });
 
@@ -2640,33 +2830,48 @@ var CGParse = (function () {
 
     parse(fileText, options={}) {
       const records = [];
+      const foundHeader = false;
       const lines = fileText.split('\n');
       let line;
       for (line of lines) {
         if (line.startsWith('#')) ; else if (line.trim() === '') ; else {
-          // This is a feature line
-          const record = this._parseLine(line);
-          if (record) {
-            records.push(record);
+          if (this.hasHeader && !foundHeader) {
+            // This is the header line
+            foundHeader = true;
+            // Parse the header line
+            this._parseHeader(line);
+          } else {
+            // This is a feature line
+            const record = this._parseLine(line);
+            if (record) {
+              records.push(record);
+            }
           }
         }
       }
-      this.logger.info(`- Parsed ${records.length} record`);
+      this.logger.info(`- Parsed ${records.length} records`);
       return records;
     }
 
+    _parseHeader(line) {
+    }
+
     // TODO
-    // - Provide warnging for thickStart/thickEnd
     // - Should we check the number of fields and confirm they are all the same?
+    // TODO: handle no header line
     _parseLine(line) {
       this._lineCount++;
-      const fields = line.split('\t').map((field) => field.trim());
-      if (fields.length < 3) {
-        this._fail(`- Line does not have at least 3 fields: ${line}`);
-        // this.logger.warn(`- Skipping line: ${line}`);
+      const fields = line.split(this.separator).map((field) => field.trim());
+      if (fields.length < 2) {
+        // TODO: use validationErrors
+        this._fail(`- Line does not have at least 2 fields: ${line}`);
         return null;
       }
-      // Bsic fields
+      const colMap = this.columnMap;
+      fields[colMap.contig];
+      // Adds the field to the record if it exists in fields and columnMap
+      this.addFieldToRecord(record, 'contig', fields, 'integer');
+      // Basic fields
       const record = {
         contig: fields[0],
         // Convert start to 1-based
@@ -2697,38 +2902,26 @@ var CGParse = (function () {
           this.addError('thickEndNotMatchingEnd', `- thickEnd is not the same as stop: ${line}`);
         }
       }
-      // Blocks (requires fields 10, 11, 12)
-      if (fields[11]) {
-        const blockCount = parseInt(fields[9]);
-        if (blockCount > 1) {
-          // blockSizes and blockStarts may have dangling commas
-          const blockSizes = fields[10].replace(/,$/, '').split(',').map((size) => parseInt(size));
-          // blockStarts are 0-based so we add 1 here
-          const blockStarts = fields[11].replace(/,$/, '').split(',').map((start) => parseInt(start) + 1);
-          if (blockCount !== blockSizes.length || blockCount !== blockStarts.length) {
-            // ERROR CODE
-            this.logger.warn(`- Block count does not match block sizes and starts: ${line}`);
-            console.log(blockCount, blockSizes, blockStarts);
-          } else if (blockStarts[0] !== 1) {
-            // ERROR CODE
-            this.logger.warn(`- Block start does not match start: ${line}`);
-          } else if ((blockStarts[blockStarts.length - 1] + blockSizes[blockStarts.length - 1] + record.start - 2) !== record.stop) {
-            // ERROR CODE
-            this.logger.warn(`- Block end does not match stop: ${line}`);
+      return record;
+    }
+
+    addFieldToRecord(record, field, fields, parseAs='string') {
+      if (!['string', 'integer', 'float'].includes(parseAs)) {
+        throw new Error(`Invalid parseAs value: ${parseAs}`);
+      }
+      const colMap = this.columnIndexMap;
+      if (colMap[field] !== undefined) {
+        const index = colMap[field];
+        if (fields[index] !== undefined) {
+          if (parseAs === 'integer') {
+            record[field] = parseInt(fields[index]);
+          } else if (parseAs === 'float') {
+            record[field] = parseFloat(fields[index]);
           } else {
-            // Add blocks to locations
-            record.locations = [];
-            for (let i = 0; i < blockCount; i++) {
-              record.locations.push([
-                record.start + blockStarts[i] - 1,
-                record.start + blockStarts[i] + blockSizes[i] - 2
-              ]);
-            }
+            record[field] = fields[index];
           }
         }
       }
-
-      return record;
     }
 
     validateRecords(records) {
@@ -2794,7 +2987,8 @@ var CGParse = (function () {
       'gff3': GFF3FeatureFile,
       'gtf': GTFFeatureFile,
       'bed': BEDFeatureFile,
-      // 'csv': CSVFeatureFile,
+      'csv': CSVFeatureFile,
+      'tsv': CSVFeatureFile,
     };
 
     // inputText: string from GFF3, BED, CSV, GTF [Required]
@@ -2818,24 +3012,24 @@ var CGParse = (function () {
       this.nameKeys = options.nameKeys || ['Name', 'Alias', 'gene', 'locus_tag', 'product', 'note', 'db_xref', 'ID'];
 
       if (!convertedText || convertedText === '') {
-        this._fail('Parsing Failed: No input text provided.', 'empty');
+        this._fail('Parsing Failed: No input text provided.', {errorCode: 'empty'});
       } else if (isBinary(convertedText)) {
-        this._fail('Parsing Failed: Input contains non-text characters. Is this binary data?', 'binary');
+        this._fail('Parsing Failed: Input contains non-text characters. Is this binary data?', {errorCode: 'binary'});
       } else {
         // File Format
-        this.logger.info("Checking File Format...");
+        this._info("Checking File Format...");
         // this.logger.info('- Format Provided: ' + providedFormat.padStart(12));
-        this.logger.info('- Format Provided: ', { padded: providedFormat });
+        this._info('- Format Provided: ', { padded: providedFormat });
         const detectedFormat = this.detectFormat(convertedText);
         // this.logger.info('- Format Detected: ' + detectedFormat.padStart(12));
-        this.logger.info('- Format Detected: ', { padded: detectedFormat });
+        this._info('- Format Detected: ', { padded: detectedFormat });
         this.inputFormat = this.chooseFormat(providedFormat, detectedFormat);
         // Do not continue if the format is unknown
-        if (!this.success) { return; }
+        if (!this.passed) { return; }
 
         // Names
         if (['gtf', 'gff3'].includes(this.inputFormat)) {
-          this.logger.info("- Name extraction keys (GFF3/GTF): " + this.nameKeys.join(', '));
+          this._info("- Name extraction keys (GFF3/GTF): " + this.nameKeys.join(', '));
         }
         // Parse
         this._records = this.parseWrapper(convertedText, options);
@@ -2850,7 +3044,7 @@ var CGParse = (function () {
     // FILE FORMAT
     /////////////////////////////////////////////////////////////////////////////
 
-    // The file format being parsed: 'auto', 'gff3', 'bed', 'csv', 'gtf', 'uknonwn'
+    // The file format being parsed: 'auto', 'gff3', 'bed', 'csv', 'tsv', 'gtf', 'unknown'
     get inputFormat() {
       return this.delegate.fileFormat;
     }
@@ -2858,6 +3052,9 @@ var CGParse = (function () {
     set inputFormat(format) {
       const fileFormats = Object.keys(FeatureFile.formatDelegateMap);
       if (fileFormats.includes(format)) {
+        if ([ 'csv', 'tsv' ].includes(format)) {
+          this.options.separator = (format === 'csv') ? ',' : '\t';
+        }
         this._delegate = new FeatureFile.formatDelegateMap[format](this, this.options);
       } else {
         this._fail(`File format '${format}' must be one of the following: ${fileFormats.join(', ')}`);
@@ -2880,13 +3077,14 @@ var CGParse = (function () {
       } else if (BEDFeatureFile.lineMatches(firstLine)) {
         detectedFormat = 'bed';
       } else {
-        CSVFeatureFile.detectSeparator(fileText);
-        // Try CSV/TSV
-        // - check for separator
-        // - if a separator is found, then try to lineMatch
-
-        // ELSE: unknown
-        detectedFormat = 'unknown';
+        const separator = CSVFeatureFile.detectSeparator(fileText);
+        if (separator === ',') {
+          detectedFormat = 'csv';
+        } else if (separator === '\t') {
+          detectedFormat = 'tsv';
+        } else {
+          detectedFormat = 'unknown';
+        }
       }
 
       return detectedFormat;
@@ -2905,10 +3103,10 @@ var CGParse = (function () {
       } else {
         // Either they provided an invalide format or 'auto'
         if (detectedFormat === 'unknown') {
-          this._fail(`- File Format Unknown: AutoDection Failed. Try explicitly setting the format.`, 'unknown_format');
+          this._fail(`- File Format Unknown: AutoDection Failed. Try explicitly setting the format.`, {errorCode: 'unknown_format'});
         } else if (providedFormat !== 'auto') {
           // Invalid format provided
-          this.logger.warn(`- Unknown format '${providedFormat}' -> Using '${detectedFormat}'`);
+          this._warn(`- Unknown format '${providedFormat}' -> Using '${detectedFormat}'`);
         }
         return detectedFormat;
       }
@@ -2948,13 +3146,19 @@ var CGParse = (function () {
 
       // this.logger.break('--------------------------------------------\n')
       this.logger.divider();
-      this.logger.info('Parsing Summary:');
+      this._info('Parsing Summary:');
       // this.logger.info(`- Input File Format: ${format.padStart(10)}`);
-      this.logger.info(`- Input File Format:`, { padded: format });
+      this._info(`- Input File Format:`, { padded: format });
       // this.logger.info(`- Feature Lines: ${this.lineCount.toLocaleString().padStart(14)}`);
-      this.logger.info(`- Feature Lines:`, { padded: this.lineCount });
+      this._info(`- Data Lines:`, { padded: this.lineCount });
       // this.logger.info(`- Feature Count: ${records.length.toLocaleString().padStart(14)}`);
-      this.logger.info(`- Feature Count:`, { padded: records.length });
+      this._info(`- Feature Count:`, { padded: records.length });
+      const failedCount = records.filter((record) => !record.valid).length;
+      if (failedCount > 0) {
+        this._fail(`- Features Failed:`, { padded: failedCount });
+      // } else {
+      //   this._info(`- Features Failed:`, { padded: failedCount });
+      }
       this.logStatusLine();
       // if (this.success) {
       //   this.logger.info('- Status: ' + 'Success'.padStart(21), {icon: 'success'});
@@ -2973,7 +3177,7 @@ var CGParse = (function () {
         featureCount: records.length,
         // totalLength: seqLength,
         status: this.status,
-        success: this.success
+        // success: this.success
       };
     }
 
@@ -3017,17 +3221,17 @@ var CGParse = (function () {
 
     parseWrapper(fileText, options={}) {
       let records = [];
-      this.logger.info(`Parsing ${this.displayFileFormat} Feature File...`);
+      this._info(`Parsing ${this.displayFileFormat} Feature File...`);
       try {
         records = this.parse(fileText, options);
         const recordsWithLocationsCount = records.filter((record) => Array.isArray(record.locations)).length;
         console.log('recordsWithLocationsCount', recordsWithLocationsCount);
         // this.logger.info(`- Features with >1 location: ${recordsWithLocationsCount.toLocaleString().padStart(2)}`);
-        this.logger.info('- Features with >1 location: ', { padded: recordsWithLocationsCount });
-        this.logger.info('- Done parsing feature file');
+        this._info('- Features with >1 location: ', { padded: recordsWithLocationsCount });
+        this._info('- Done parsing feature file');
       } catch (error) {
-        this._fail('- Failed: An error occurred while parsing the file.', 'parsing');
-        this.logger.error(`- ERROR: ${error.message}`);
+        this._fail('- Failed: An error occurred while parsing the file.', {errorCode: 'parsing'});
+        this._fail(`- ERROR: ${error.message}`);
       }
 
       return records;
@@ -3048,13 +3252,13 @@ var CGParse = (function () {
         }
 
         if (this.passed) {
-          this.logger.info('- Validations Passed', {icon: 'success'});
+          this._info('- Validations Passed', {icon: 'success'});
         } else {
-          this.logger.error('- Validations Failed');
+          this._fail('- Validations Failed');
         }
       } catch (error) {
-        this._fail('- Failed: An error occurred while validating the records.', 'validating');
-        this.logger.error(`- ERROR: ${error.message}`);
+        this._fail('- Failed: An error occurred while validating the records.', {errorCode: 'validating'});
+        this._fail(`- ERROR: ${error.message}`);
       }
     }
 

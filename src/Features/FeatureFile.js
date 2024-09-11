@@ -54,7 +54,8 @@ class FeatureFile extends Status {
     'gff3': GFF3FeatureFile,
     'gtf': GTFFeatureFile,
     'bed': BEDFeatureFile,
-    // 'csv': CSVFeatureFile,
+    'csv': CSVFeatureFile,
+    'tsv': CSVFeatureFile,
   };
 
   // inputText: string from GFF3, BED, CSV, GTF [Required]
@@ -78,24 +79,24 @@ class FeatureFile extends Status {
     this.nameKeys = options.nameKeys || ['Name', 'Alias', 'gene', 'locus_tag', 'product', 'note', 'db_xref', 'ID'];
 
     if (!convertedText || convertedText === '') {
-      this._fail('Parsing Failed: No input text provided.', 'empty')
+      this._fail('Parsing Failed: No input text provided.', {errorCode: 'empty'})
     } else if (helpers.isBinary(convertedText)) {
-      this._fail('Parsing Failed: Input contains non-text characters. Is this binary data?', 'binary');
+      this._fail('Parsing Failed: Input contains non-text characters. Is this binary data?', {errorCode: 'binary'});
     } else {
       // File Format
-      this.logger.info("Checking File Format...");
+      this._info("Checking File Format...");
       // this.logger.info('- Format Provided: ' + providedFormat.padStart(12));
-      this.logger.info('- Format Provided: ', { padded: providedFormat });
+      this._info('- Format Provided: ', { padded: providedFormat });
       const detectedFormat = this.detectFormat(convertedText);
       // this.logger.info('- Format Detected: ' + detectedFormat.padStart(12));
-      this.logger.info('- Format Detected: ', { padded: detectedFormat });
+      this._info('- Format Detected: ', { padded: detectedFormat });
       this.inputFormat = this.chooseFormat(providedFormat, detectedFormat);
       // Do not continue if the format is unknown
-      if (!this.success) { return; }
+      if (!this.passed) { return; }
 
       // Names
       if (['gtf', 'gff3'].includes(this.inputFormat)) {
-        this.logger.info("- Name extraction keys (GFF3/GTF): " + this.nameKeys.join(', '));
+        this._info("- Name extraction keys (GFF3/GTF): " + this.nameKeys.join(', '));
       }
       // Parse
       this._records = this.parseWrapper(convertedText, options);
@@ -110,7 +111,7 @@ class FeatureFile extends Status {
   // FILE FORMAT
   /////////////////////////////////////////////////////////////////////////////
 
-  // The file format being parsed: 'auto', 'gff3', 'bed', 'csv', 'gtf', 'uknonwn'
+  // The file format being parsed: 'auto', 'gff3', 'bed', 'csv', 'tsv', 'gtf', 'unknown'
   get inputFormat() {
     return this.delegate.fileFormat;
   }
@@ -118,6 +119,9 @@ class FeatureFile extends Status {
   set inputFormat(format) {
     const fileFormats = Object.keys(FeatureFile.formatDelegateMap);
     if (fileFormats.includes(format)) {
+      if ([ 'csv', 'tsv' ].includes(format)) {
+        this.options.separator = (format === 'csv') ? ',' : '\t';
+      }
       this._delegate = new FeatureFile.formatDelegateMap[format](this, this.options)
     } else {
       this._fail(`File format '${format}' must be one of the following: ${fileFormats.join(', ')}`);
@@ -141,12 +145,13 @@ class FeatureFile extends Status {
       detectedFormat = 'bed';
     } else {
       const separator = CSVFeatureFile.detectSeparator(fileText);
-      // Try CSV/TSV
-      // - check for separator
-      // - if a separator is found, then try to lineMatch
-
-      // ELSE: unknown
-      detectedFormat = 'unknown';
+      if (separator === ',') {
+        detectedFormat = 'csv';
+      } else if (separator === '\t') {
+        detectedFormat = 'tsv';
+      } else {
+        detectedFormat = 'unknown';
+      }
     }
 
     return detectedFormat;
@@ -165,10 +170,10 @@ class FeatureFile extends Status {
     } else {
       // Either they provided an invalide format or 'auto'
       if (detectedFormat === 'unknown') {
-        this._fail(`- File Format Unknown: AutoDection Failed. Try explicitly setting the format.`, 'unknown_format');
+        this._fail(`- File Format Unknown: AutoDection Failed. Try explicitly setting the format.`, {errorCode: 'unknown_format'});
       } else if (providedFormat !== 'auto') {
         // Invalid format provided
-        this.logger.warn(`- Unknown format '${providedFormat}' -> Using '${detectedFormat}'`);
+        this._warn(`- Unknown format '${providedFormat}' -> Using '${detectedFormat}'`);
       }
       return detectedFormat;
     }
@@ -208,13 +213,19 @@ class FeatureFile extends Status {
 
     // this.logger.break('--------------------------------------------\n')
     this.logger.divider();
-    this.logger.info('Parsing Summary:');
+    this._info('Parsing Summary:');
     // this.logger.info(`- Input File Format: ${format.padStart(10)}`);
-    this.logger.info(`- Input File Format:`, { padded: format });
+    this._info(`- Input File Format:`, { padded: format });
     // this.logger.info(`- Feature Lines: ${this.lineCount.toLocaleString().padStart(14)}`);
-    this.logger.info(`- Feature Lines:`, { padded: this.lineCount });
+    this._info(`- Data Lines:`, { padded: this.lineCount });
     // this.logger.info(`- Feature Count: ${records.length.toLocaleString().padStart(14)}`);
-    this.logger.info(`- Feature Count:`, { padded: records.length });
+    this._info(`- Feature Count:`, { padded: records.length });
+    const failedCount = records.filter((record) => !record.valid).length;
+    if (failedCount > 0) {
+      this._fail(`- Features Failed:`, { padded: failedCount });
+    // } else {
+    //   this._info(`- Features Failed:`, { padded: failedCount });
+    }
     this.logStatusLine()
     // if (this.success) {
     //   this.logger.info('- Status: ' + 'Success'.padStart(21), {icon: 'success'});
@@ -233,7 +244,7 @@ class FeatureFile extends Status {
       featureCount: records.length,
       // totalLength: seqLength,
       status: this.status,
-      success: this.success
+      // success: this.success
     };
   }
 
@@ -277,17 +288,17 @@ class FeatureFile extends Status {
 
   parseWrapper(fileText, options={}) {
     let records = [];
-    this.logger.info(`Parsing ${this.displayFileFormat} Feature File...`);
+    this._info(`Parsing ${this.displayFileFormat} Feature File...`);
     try {
       records = this.parse(fileText, options);
       const recordsWithLocationsCount = records.filter((record) => Array.isArray(record.locations)).length;
       console.log('recordsWithLocationsCount', recordsWithLocationsCount);
       // this.logger.info(`- Features with >1 location: ${recordsWithLocationsCount.toLocaleString().padStart(2)}`);
-      this.logger.info('- Features with >1 location: ', { padded: recordsWithLocationsCount });
-      this.logger.info('- Done parsing feature file');
+      this._info('- Features with >1 location: ', { padded: recordsWithLocationsCount });
+      this._info('- Done parsing feature file');
     } catch (error) {
-      this._fail('- Failed: An error occurred while parsing the file.', 'parsing');
-      this.logger.error(`- ERROR: ${error.message}`);
+      this._fail('- Failed: An error occurred while parsing the file.', {errorCode: 'parsing'});
+      this._fail(`- ERROR: ${error.message}`);
     }
 
     return records;
@@ -308,13 +319,13 @@ class FeatureFile extends Status {
       }
 
       if (this.passed) {
-        this.logger.info('- Validations Passed', {icon: 'success'});
+        this._info('- Validations Passed', {icon: 'success'});
       } else {
-        this.logger.error('- Validations Failed');
+        this._fail('- Validations Failed');
       }
     } catch (error) {
-      this._fail('- Failed: An error occurred while validating the records.', 'validating');
-      this.logger.error(`- ERROR: ${error.message}`);
+      this._fail('- Failed: An error occurred while validating the records.', {errorCode: 'validating'});
+      this._fail(`- ERROR: ${error.message}`);
     }
   }
 

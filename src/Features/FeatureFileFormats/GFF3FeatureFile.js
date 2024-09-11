@@ -34,8 +34,8 @@ class GFF3FeatureFile {
     return this.options.nameKeys || ['Name', 'Alias', 'gene', 'locus_tag', 'product', 'note', 'db_xref', 'ID'];
   }
 
-  _fail(message, errorCode='unknown') {
-    this.file._fail(message, errorCode);
+  _fail(message, options={}) {
+    this.file._fail(message, options);
   }
 
   // Returns true if the line matches the GFF3 format

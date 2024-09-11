@@ -201,4 +201,15 @@ gene00001, 300, 400, +
 
   });
 
+  describe('createColumnMap', () => {
+
+    test('- return defaultColumnMap when none is given', () => {
+      const input = {};
+      const csvFile = new CSVFeatureFile(featureFile, input);
+      const output = csvFile.columnMap;
+      expect(output).toEqual(csvFile.defaultColumnMap);
+    });
+
+  });
+
 });

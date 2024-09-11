@@ -1,5 +1,15 @@
 inputs = {
-  sample: {
+  sample_csv: {
+    name: 'Sample CSV',
+    type: 'csv',
+    url: '../inputs/feature_files/CSV/features.csv',
+  },
+  sample_tsv: {
+    name: 'Sample TSV',
+    type: 'csv',
+    url: '../inputs/feature_files/CSV/features.tsv',
+  },
+  sample_gff3: {
     name: 'Sample GFF3',
     type: 'gff3',
     url: '../inputs/feature_files/GFF3/sample.gff3',

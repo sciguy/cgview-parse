@@ -76,7 +76,7 @@ class SequenceFile extends Status {
     return this._sequenceType;
   }
 
-  // { inputType, sequenceType, sequenceCount, featureCount, totalLength, success }
+  // { inputType, sequenceType, sequenceCount, featureCount, totalLength, status }
   get summary() {
     return this._summary;
   }
@@ -86,7 +86,7 @@ class SequenceFile extends Status {
   /////////////////////////////////////////////////////////////////////////////
 
   toCGViewJSON(options={}) {
-    if (this.success) {
+    if (this.passed) {
       options.logger = options.logger || this.logger
       const builder = new CGViewBuilder(this, options);
       return builder.toJSON();
@@ -125,7 +125,7 @@ class SequenceFile extends Status {
       featureCount: features.length,
       totalLength: seqLength,
       status: this.status,
-      success: this.success
+      // success: this.success
     };
   }
 
@@ -713,7 +713,9 @@ class SequenceFile extends Status {
       // featureStartGreaterThanEnd.forEach((error) => this.logger.error(`- ${error}`));
     }
 
-    if (this.success) {
+    // if (this.success) {
+    // TODO: added warning here if needed
+    if (this.passed) {
       this.logger.info('- validations passed', {icon: 'success'});
     } else {
       this.logger.error('- validations failed', {icon: 'fail'});

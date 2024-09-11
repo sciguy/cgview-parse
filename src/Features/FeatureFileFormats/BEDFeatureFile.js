@@ -8,10 +8,14 @@ class BEDFeatureFile {
 
   constructor(file, options={}) {
       this._file = file;
-      this._errors = {};
+      this._validationIssues = {};
       this._options = options;
       this.logger = options.logger || new Logger();
       this._lineCount = 0;
+  }
+
+  static get VALIDATION_ISSUE_CODES() {
+    return ['thickStartNotMatchingStart', 'thickEndNotMatchingEnd', 'missingStart', 'missingStop'];
   }
 
   get file() {
@@ -35,19 +39,21 @@ class BEDFeatureFile {
   }
 
   // Returns an object with keys for the error codes and values for the error messages
-  // - errorTypes:
+  // - Issure Codes:
   //   - thickStartNotMatchingStart
   //   - thickEndNotMatchingStop
-  get errors() {
-    return this._errors || {};
+  //   - missingStart
+  //   - missingStop
+  get validationIssues() {
+    return this._validationIssues || {};
   }
 
-  _warn(message, errorCode='unknown') {
-    this.file._warn(message, errorCode);
+  _warn(message, options={}) {
+    this.file._warn(message, options);
   }
 
-  _fail(message, errorCode='unknown') {
-    this.file._fail(message, errorCode);
+  _fail(message, options={}) {
+    this.file._fail(message, options);
   }
 
   // Returns true if the line matches the BED format
@@ -75,12 +81,19 @@ class BEDFeatureFile {
     return true;
   }
 
-  addError(errorCode, message) {
-    const errors = this.errors;
-    if (errors[errorCode]) {
-      errors[errorCode].push(message);
+  // CONSIDER:
+  // - addValidationWarning
+  // - addValidationError
+  addValidationIssue(issueCode, message) {
+    if (!BEDFeatureFile.VALIDATION_ISSUE_CODES.includes(issueCode)) {
+      this._fail("ERROR: Invalid validiation issue code: " + issueCode);
+      return;
+    }
+    const validationIssues = this.validationIssues;
+    if (validationIssues[issueCode]) {
+      validationIssues[issueCode].push(message);
     } else {
-      errors[errorCode] = [message];
+      validationIssues[issueCode] = [message];
     }
   }
 
@@ -103,7 +116,7 @@ class BEDFeatureFile {
         }
       }
     }
-    this.logger.info(`- Parsed ${records.length} record`);
+    this.logger.info(`- Parsed ${records.length} records`);
     return records;
   }
 
@@ -125,7 +138,18 @@ class BEDFeatureFile {
       start: parseInt(fields[1]) + 1,
       stop: parseInt(fields[2]),
       name: fields[3] || 'Uknown',
+      valid: true,
     };
+
+    if (isNaN(record.start)) {
+        this.addValidationIssue('missingStart');
+        record.valid = false;
+    }
+    if (isNaN(record.stop)) {
+        this.addValidationIssue('missingStop');
+        record.valid = false;
+    }
+
     // Score
     const score = parseFloat(fields[4]);
     if (!isNaN(score)) {
@@ -140,13 +164,15 @@ class BEDFeatureFile {
       const thickStart = parseInt(fields[6]);
       // thickStart is 0-based so we add 1 here
       if ((thickStart + 1) !== record.start) {
-        this.addError('thickStartNotMatchingStart', `- thickStart is not the same as start: ${line}`);
+        this.addValidationIssue('thickStartNotMatchingStart', `- thickStart is not the same as start: ${line}`);
+        // record.valid = false;
       }
     }
     if (fields[7]) {
       const thickEnd = parseInt(fields[7]);
       if (thickEnd !== record.stop) {
-        this.addError('thickEndNotMatchingEnd', `- thickEnd is not the same as stop: ${line}`);
+        this.addValidationIssue('thickEndNotMatchingEnd', `- thickEnd is not the same as stop: ${line}`);
+        // record.valid = false;
       }
     }
     // Blocks (requires fields 10, 11, 12)
@@ -184,13 +210,13 @@ class BEDFeatureFile {
   }
 
   validateRecords(records) {
-    const errors = this.errors;
+    const validationIssues = this.validationIssues;
     // ThickStart and ThickEnd Warnings
-    const thickStartErrors = errors['thickStartNotMatchingStart'] || [];
+    const thickStartErrors = validationIssues['thickStartNotMatchingStart'] || [];
     if (thickStartErrors.length) {
       this._warn(`- Features where thickStart != start: ${thickStartErrors.length}`);
     }
-    const thickEndErrors = errors['thickEndNotMatchingEnd'] || [];
+    const thickEndErrors = validationIssues['thickEndNotMatchingEnd'] || [];
     if (thickEndErrors.length) {
       this._warn(`- Features where thickEnd != stop: ${thickStartErrors.length}`);
     }
@@ -199,15 +225,19 @@ class BEDFeatureFile {
     }
 
     // Missing Starts and Stops
-    const missingStarts = records.filter((record) => isNaN(record.start));
-    if (missingStarts.length) {
+    // const missingStarts = records.filter((record) => isNaN(record.start));
+    const missingStartErrors = validationIssues['missingStart'] || [];
+    if (missingStartErrors.length) {
       // this._fail(`- Records missing Starts: ${missingStarts.length.toLocaleString().padStart(5)}`);
-      this._fail('- Records missing Starts: ', { padded: missingStarts.length });
+      // this._fail('- Records missing Starts: ', { padded: missingStarts.length });
+      this._fail('- Records missing Starts: ', { padded: missingStartErrors.length });
     }
-    const missingStops = records.filter((record) => isNaN(record.stop));
-    if (missingStops.length) {
+    // const missingStops = records.filter((record) => isNaN(record.stop));
+    const missingStopErrors = validationIssues['missingStart'] || [];
+    if (missingStopErrors.length) {
       // this._fail(`- Records missing Stops: ${missingStops.length.toLocaleString().padStart(6)}`);
-      this._fail('- Records missing Stops: ', { padded: missingStops.length });
+      // this._fail('- Records missing Stops: ', { padded: missingStops.length });
+      this._fail('- Records missing Stops: ', { padded: missingStopErrors.length });
     }
 
   }

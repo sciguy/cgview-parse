@@ -1,12 +1,30 @@
-// This will be the base class for any class that has status
 import Logger from '../Support/Logger.js';
 import * as helpers from '../Support/Helpers.js';
 
+ /**
+   * Base class for FeatureFile, SequenceFile, FeatureBuilder, CGViewBuilder
+   * - Provides logging and status tracking
+   * 
+   * The status can be one of:
+   * - 'success':  parsing/building was successful
+   * - 'warnings': parsing/building was successful with warnings (can still proceed)
+   * - 'failed':   parsing/building failed (cannot proceed)
+   * 
+   * Using the methods _fail() and _warn() will set the status accordingly
+   * 
+   * Error codes can be provided to keep track of the type of errors
+   * - Error codes can be provided as options to _fail() and _warn()
+   * - They can also be added with the addErrorCode() method
+   * - The errorCodes property returns an array of unique error codes
+   * - To check if a specific error code is present, use the hasErrorCode(ERROR_CODE) method
+   * - allowed error codes are set with the static property ERROR_CODES and are all lowercase
+   *
+   * @param {Object} Options - passed to logger
+   *   - logger: logger object
+   *   - maxLogCount: number (undefined means no limit) [Default: undefined]
+   */
 export default class Status {
 
-  // Options:
-  // - logger: logger object
-  // - maxLogCount: number (undefined means no limit) [Default: undefined]
   constructor(options = {}, logTitle) {
 
     this._options = options;
@@ -23,7 +41,7 @@ export default class Status {
     } else {
       this.logger.divider();
     }
-    this.logger.info(`Date: ${new Date().toUTCString()}`);
+    this._info(`Date: ${new Date().toUTCString()}`);
     // this.logVersion();
 
     // Initialize status
@@ -31,6 +49,9 @@ export default class Status {
     this._errorCodes = new Set();
   }
 
+  static get ERROR_CODES() {
+    return ['unknown', 'binary', 'empty', 'unknown_format', 'parsing', 'validating'];
+  }
 
   /////////////////////////////////////////////////////////////////////////////
   // Properties
@@ -50,10 +71,11 @@ export default class Status {
     return this._status;
   }
 
-  // Parsing is successful
-  get success() {
-    return this.status === 'success';
-  }
+  // Parsing is successful (No errors or warnings)
+  // This can be confusing because it doesn't includes warnings use passed instead
+  // get success() {
+  //   return this.status === 'success';
+  // }
 
   // Parsing has passed with success or warnings
   get passed() {
@@ -71,23 +93,43 @@ export default class Status {
   // Methods
   /////////////////////////////////////////////////////////////////////////////
 
-  // Parsing has failed
-  // Optional error code can be provided to help identify the error
-  _fail(message, errorCode='unknown') {
-    this.logger.error(message);
-    this._status = 'failed';
+  addErrorCode(errorCode) {
+    if (!Status.ERROR_CODES.includes(errorCode)) {
+      this._fail(`Invalid error code: ${errorCode}`);
+      return;
+    }
     this._errorCodes.add(errorCode);
   }
 
-  _warn(message) {
-    this.logger.warn(message);
+  hasErrorCode(errorCode) {
+    return this._errorCodes.has(errorCode);
+  }
+
+  // Alias for logger.info()
+  _info(message, options={}) {
+    this.logger.info(message, options);
+  }
+
+  // Parsing has failed
+  // Optional error code can be provided to help identify the error
+  // _fail(message, errorCode='unknown') {
+  _fail(message, options={}) {
+    this.logger.error(message, options);
+    this._status = 'failed';
+    // TODO: consider keeping error codes in Logger
+    const errorCode = options.errorCode || 'unknown';
+    this.addErrorCode(errorCode);
+  }
+
+  _warn(message, options={}) {
+    this.logger.warn(message, options);
     if (this.status !== 'fail') {
       this._status = 'warnings';
     }
   }
 
   logStatusLine() {
-    if (this.success) {
+    if (this.status === 'success') {
       this.logger.info('- Status: ', { padded: 'Success', icon: 'success' });
     } else if (this.status === 'warnings') {
       this.logger.warn('- Status: ', { padded: 'Warnings', icon: 'warn' });

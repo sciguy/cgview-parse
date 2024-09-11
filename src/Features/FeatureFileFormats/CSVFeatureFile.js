@@ -4,16 +4,78 @@ import * as helpers from '../../Support/Helpers.js';
 // NOTES:
 // - CSV is a 1-based format. The start field is 1-based and the stop field is 1-based.
 // - Can be CSV or TSV
+// - header line can be optional but then you need to state what each column is (HOW)
+// - columnMap: internal column names to column names in the file
 
 class CSVFeatureFile {
 
   constructor(file, options={}) {
       this._file = file;
-      this._separator = options.separator || ',';
-      this._errors = {};
+      this._separator = [',', '\t'].includes(options.separator) ? options.separator : ',';
+      // this._errors = {};
       this._options = options;
       this.logger = options.logger || new Logger();
       this._lineCount = 0;
+      this._hasHeader = (options.hasHeader === undefined) ? true : options.hasHeader;
+      this.onlyColumns = options.onlyColumns || [];
+      this.columnMap = this.createColumnMap(options.columnMap);
+      // this.columnIndexMap = this.createColumnIndexMap(options.columnMap);
+
+      if (!this.hasHeader) {
+        // this.logger.info('- Header: Present');
+        // Check that the columnMap values are all integers
+        if (Object.values(this.columnMap).some((value) => isNaN(value))) {
+          this._fail(`- ColumnMap values must be integers when there is no header`);
+        }
+      }
+
+      // Valdiate ColumnMap
+      // - Check that all the required columns are present
+      // - Check that there are no extra columns
+      // - Check that the columns are in the correct order
+      // - Check that the columns are not duplicated
+      // - Check that the columns are not empty
+
+      // options for column mapping
+      // Keys: internal column names, values: column names in the file (or indexes)
+      // - default values are the internal column names
+      // this._columnMap = {};
+      // columns:
+      // - contig
+      // - start
+      // - stop
+      // - name
+      // - score
+      // - strand
+      // - type
+      // - legend
+      // - codonStart
+      // - ---------
+      // - tags?
+      // - meta?
+      // - visible?
+      // - favorite?
+      // - geneticCode?
+      // - attributes?
+      // - qualifiers?
+      // - locations?
+      // - centerOffsetAdjustment?
+      // - proportionOfThickness?
+
+  }
+
+  get defaultColumnMap() {
+    return {
+      contig: 'contig',
+      start: 'start',
+      stop: 'stop',
+      name: 'name',
+      score: 'score',
+      strand: 'strand',
+      type: 'type',
+      legend: 'legend',
+      codonStart: 'codonStart',
+    };
   }
 
   get file() {
@@ -25,22 +87,30 @@ class CSVFeatureFile {
   }
 
   get fileFormat() {
-      return 'csv';
+      return (this.separator === ',') ? 'csv' : 'tsv';
   }
 
   get displayFileFormat() {
-      return 'CSV';
+      return (this.separator === ',') ? 'CSV' : 'TSV';
   }
 
   get lineCount() {
     return this._lineCount;
   }
 
+  get separator() {
+    return this._separator;
+  }
+
+  get hasHeader() {
+    return this._hasHeader;
+  }
+
   // Returns an object with keys for the error codes and values for the error messages
   // - errorTypes: ?
-  get errors() {
-    return this._errors || {};
-  }
+  // get errors() {
+  //   return this._errors || {};
+  // }
 
   _warn(message, errorCode='unknown') {
     this.file._warn(message, errorCode);
@@ -49,6 +119,53 @@ class CSVFeatureFile {
   _fail(message, errorCode='unknown') {
     this.file._fail(message, errorCode);
   }
+
+  // TODO: handle no header line
+  // createColumnIndexMap(columnMap) {
+  createColumnMap(columnMap={}) {
+    // Check that all keys are valid
+    const validKeys = Object.keys(this.defaultColumnMap);
+    const columnKeys = Object.keys(columnMap);
+    for (const key of columnKeys) {
+      if (!validKeys.includes(key)) {
+        this._fail(`- Invalid column key: ${key}`);
+      }
+    }
+    // Check for required columns
+    const requiredKeys = ['start', 'stop'];
+    for (const key of requiredKeys) {
+      if (!columnKeys.includes(key)) {
+        this._fail(`- Missing required column: ${key}`);
+      }
+    }
+
+    // Combine the default column map with the provided column map
+    const newColumnMap = {...this.defaultColumnMap, ...columnMap};
+
+    // Change the keys to lowercase
+    // NOTE: only need to worry about case for values
+    // const newColumnMapKeys = Object.keys(newColumnMap);
+    // for (const key of newColumnMapKeys) {
+    //   const newKey = key.toLowerCase();
+    //   if (newKey !== key) {
+    //     newColumnMap[newKey] = newColumnMap[key];
+    //     delete newColumnMap[key];
+    //   }
+    // }
+
+    // Remove any columns that are not in the onlyColumns list (if present)
+    if (this.onlyColumns.length) {
+      const newColumnMapKeys = Object.keys(newColumnMap);
+      for (const key of newColumnMapKeys) {
+        if (!this.onlyColumns.includes(key)) {
+          delete newColumnMap[key];
+        }
+      }
+    }
+
+    return newColumnMap;
+  }
+
 
   // TODO check for separator
   // take upto the first 10 lines (non-empty/non-comment) and check for the separator
@@ -59,31 +176,30 @@ class CSVFeatureFile {
 
   // Returns true if the line matches the CSV format
   // - line: the first non-empty/non-comment line of the file
-  // fields: 2, 3, 5, 7, 8, 10 when present should be numbers
-  static lineMatches(line) {
-    const fields = line.split('\t').map((field) => field.trim());
-    if (fields.length < 3) {
-      return false;
-    } else if (fields.length === 10 || fields.length === 11) {
-      // BED10 and BED11 are not permitted
-      return false;
-    } else if (isNaN(fields[1]) || isNaN(fields[2])) {
-      return false;
-    } else if (fields.length >= 5 && isNaN(fields[4])) {
-      return false;
-    } else if (fields.length >= 7 && isNaN(fields[6])) {
-      return false;
-    } else if (fields.length >= 8 && isNaN(fields[7])) {
-      return false;
-    } else if (fields.length >= 10 && isNaN(fields[9])) {
-      return false;
-    }
+  // static lineMatches(line) {
+  //   const fields = line.split('\t').map((field) => field.trim());
+  //   if (fields.length < 3) {
+  //     return false;
+  //   } else if (fields.length === 10 || fields.length === 11) {
+  //     // BED10 and BED11 are not permitted
+  //     return false;
+  //   } else if (isNaN(fields[1]) || isNaN(fields[2])) {
+  //     return false;
+  //   } else if (fields.length >= 5 && isNaN(fields[4])) {
+  //     return false;
+  //   } else if (fields.length >= 7 && isNaN(fields[6])) {
+  //     return false;
+  //   } else if (fields.length >= 8 && isNaN(fields[7])) {
+  //     return false;
+  //   } else if (fields.length >= 10 && isNaN(fields[9])) {
+  //     return false;
+  //   }
 
-    return true;
-  }
+  //   return true;
+  // }
 
   // Detect the separator based on the first 10 lines of the file
-  // Returns the separator or null if the separator could not be detected
+  // Returns the separator or undefined if the separator could not be detected
   static detectSeparator(fileText) {
     const maxLines = 10;
     const testLines = helpers.getLines(fileText, { maxLines: 10 });
@@ -126,6 +242,7 @@ class CSVFeatureFile {
 
   parse(fileText, options={}) {
     const records = [];
+    const foundHeader = false;
     const lines = fileText.split('\n');
     let line;
     for (line of lines) {
@@ -136,29 +253,43 @@ class CSVFeatureFile {
         // This is an empty line
         // Do nothing
       } else {
-        // This is a feature line
-        const record = this._parseLine(line);
-        if (record) {
-          records.push(record);
+        if (this.hasHeader && !foundHeader) {
+          // This is the header line
+          foundHeader = true;
+          // Parse the header line
+          this._parseHeader(line);
+        } else {
+          // This is a feature line
+          const record = this._parseLine(line);
+          if (record) {
+            records.push(record);
+          }
         }
       }
     }
-    this.logger.info(`- Parsed ${records.length} record`);
+    this.logger.info(`- Parsed ${records.length} records`);
     return records;
   }
 
+  _parseHeader(line) {
+  }
+
   // TODO
-  // - Provide warnging for thickStart/thickEnd
   // - Should we check the number of fields and confirm they are all the same?
+  // TODO: handle no header line
   _parseLine(line) {
     this._lineCount++;
-    const fields = line.split('\t').map((field) => field.trim());
-    if (fields.length < 3) {
-      this._fail(`- Line does not have at least 3 fields: ${line}`);
-      // this.logger.warn(`- Skipping line: ${line}`);
+    const fields = line.split(this.separator).map((field) => field.trim());
+    if (fields.length < 2) {
+      // TODO: use validationErrors
+      this._fail(`- Line does not have at least 2 fields: ${line}`);
       return null;
     }
-    // Bsic fields
+    const colMap = this.columnMap;
+    const contig = fields[colMap.contig];
+    // Adds the field to the record if it exists in fields and columnMap
+    this.addFieldToRecord(record, 'contig', fields, 'integer');
+    // Basic fields
     const record = {
       contig: fields[0],
       // Convert start to 1-based
@@ -189,38 +320,26 @@ class CSVFeatureFile {
         this.addError('thickEndNotMatchingEnd', `- thickEnd is not the same as stop: ${line}`);
       }
     }
-    // Blocks (requires fields 10, 11, 12)
-    if (fields[11]) {
-      const blockCount = parseInt(fields[9]);
-      if (blockCount > 1) {
-        // blockSizes and blockStarts may have dangling commas
-        const blockSizes = fields[10].replace(/,$/, '').split(',').map((size) => parseInt(size));
-        // blockStarts are 0-based so we add 1 here
-        const blockStarts = fields[11].replace(/,$/, '').split(',').map((start) => parseInt(start) + 1);
-        if (blockCount !== blockSizes.length || blockCount !== blockStarts.length) {
-          // ERROR CODE
-          this.logger.warn(`- Block count does not match block sizes and starts: ${line}`);
-          console.log(blockCount, blockSizes, blockStarts);
-        } else if (blockStarts[0] !== 1) {
-          // ERROR CODE
-          this.logger.warn(`- Block start does not match start: ${line}`);
-        } else if ((blockStarts[blockStarts.length - 1] + blockSizes[blockStarts.length - 1] + record.start - 2) !== record.stop) {
-          // ERROR CODE
-          this.logger.warn(`- Block end does not match stop: ${line}`);
+    return record;
+  }
+
+  addFieldToRecord(record, field, fields, parseAs='string') {
+    if (!['string', 'integer', 'float'].includes(parseAs)) {
+      throw new Error(`Invalid parseAs value: ${parseAs}`);
+    }
+    const colMap = this.columnIndexMap;
+    if (colMap[field] !== undefined) {
+      const index = colMap[field];
+      if (fields[index] !== undefined) {
+        if (parseAs === 'integer') {
+          record[field] = parseInt(fields[index]);
+        } else if (parseAs === 'float') {
+          record[field] = parseFloat(fields[index]);
         } else {
-          // Add blocks to locations
-          record.locations = [];
-          for (let i = 0; i < blockCount; i++) {
-            record.locations.push([
-              record.start + blockStarts[i] - 1,
-              record.start + blockStarts[i] + blockSizes[i] - 2
-            ]);
-          }
+          record[field] = fields[index];
         }
       }
     }
-
-    return record;
   }
 
   validateRecords(records) {

@@ -44,7 +44,7 @@ export default class CGViewBuilder extends Status {
     this.seqFile = this._parseInput(input);
     this.inputType = this.seqFile.inputType
     this.sequenceType = this.seqFile.sequenceType
-    if (this.seqFile.success === true) {
+    if (this.seqFile.passed === true) {
       this._json = this._build(this.seqFile.records);
     } else {
       this._fail('*** Cannot convert to CGView JSON because parsing sequence file failed ***');

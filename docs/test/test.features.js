@@ -5,8 +5,10 @@
 // Initial input file to load: '', 'file', or input from input.js (e.g. 'mito')
 // const defaultMap = '';     // Empty
 // const defaultMap = 'file'; // File Choose
-// const defaultMap = 'sample';
-const defaultMap = 'sample_gtf';
+// const defaultMap = 'sample_gff3';
+// const defaultMap = 'sample_gtf';
+const defaultMap = 'sample_csv';
+// const defaultMap = 'sample_tsv';
 // const defualtMap = 'arabidopsis_gtf';
 // const defaultMap = 'bed12';
 // const defaultMap = 'mito';
