@@ -110,6 +110,7 @@ class GFF3FeatureFile {
       phase: fields[7],
       attributes: this._parseAttributes(fields[8]),
       qualifiers: {},
+      valid: true,
     };
     const qualifiers = this._extractQualifiers(record);
     if (Object.keys(qualifiers).length > 0) {

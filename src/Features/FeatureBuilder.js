@@ -139,6 +139,10 @@ export default class FeatureBuilder extends Status {
     this.logger.info('- Checking feature contig names...');
     const contigNames = features.map((feature) => feature.contig);
     const uniqueContigNames = [...new Set(contigNames)];
+    if (uniqueContigNames.length === 1 && uniqueContigNames[0] === undefined) {
+      this.logger.info('- No contig names found');
+      return;
+    }
     const adjustedContigNameResults = CGViewBuilder.adjustContigNames(uniqueContigNames);
     const contigNameMap = {};
     adjustedContigNameResults.reasons.forEach((reason) => {

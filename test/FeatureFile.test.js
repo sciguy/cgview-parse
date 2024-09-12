@@ -201,15 +201,125 @@ gene00001, 300, 400, +
 
   });
 
-  describe('createColumnMap', () => {
+  describe('createColumnIndexMapFromHeader', () => {
 
-    test('- return defaultColumnMap when none is given', () => {
-      const input = {};
-      const csvFile = new CSVFeatureFile(featureFile, input);
-      const output = csvFile.columnMap;
-      expect(output).toEqual(csvFile.defaultColumnMap);
+    test('- return {} with empty line', () => {
+      const header = "";
+      const options = {};
+      featureFile._status = 'success';
+      const csvFile = new CSVFeatureFile(featureFile, options);
+      const output = csvFile.createColumnIndexMapFromHeader(header);
+      expect(output).toEqual({});
+      expect(csvFile.file.passed).toBe(false);
     });
 
+    test('- return map with for default column names (case-insensitive)', () => {
+      const header = "Start, stoP";
+      const options = {};
+      featureFile._status = 'success';
+      const csvFile = new CSVFeatureFile(featureFile, options);
+      const output = csvFile.createColumnIndexMapFromHeader(header);
+      expect(output).toEqual({start: 0, stop: 1});
+      expect(csvFile.file.passed).toBe(true);
+    });
+
+    test('- return map with for updated column names (case-insensitive)', () => {
+      const header = "name, start, enD";
+      const options = {columnMap: {stop: 'End'}};
+      featureFile._status = 'success';
+      const csvFile = new CSVFeatureFile(featureFile, options);
+      const output = csvFile.createColumnIndexMapFromHeader(header);
+      expect(output).toEqual({name: 0, start: 1, stop: 2});
+      expect(csvFile.file.passed).toBe(true);
+    });
+
+    test('- fail if missing start', () => {
+      const header = "stop";
+      featureFile._status = 'success';
+      const csvFile = new CSVFeatureFile(featureFile);
+      const output = csvFile.createColumnIndexMapFromHeader(header);
+      expect(csvFile.file.passed).toBe(false);
+    });
+
+    test('- fail missing stop', () => {
+      const header = "start";
+      featureFile._status = 'success';
+      const csvFile = new CSVFeatureFile(featureFile);
+      const output = csvFile.createColumnIndexMapFromHeader(header);
+      expect(csvFile.file.passed).toBe(false);
+    });
+
+    test('- fail with unknown columns', () => {
+      const header = "start, stop";
+      const options = {columnMap: {bob: 'end'}};
+      featureFile._status = 'success';
+      const csvFile = new CSVFeatureFile(featureFile, options);
+      const output = csvFile.createColumnIndexMapFromHeader(header);
+      expect(output).toEqual({start: 0, stop: 1});
+      expect(csvFile.file.passed).toBe(false);
+    });
+
+    test('- fail with missing columns', () => {
+      const header = "start, end";
+      const options = {columnMap: {stop: 'bend'}};
+      featureFile._status = 'success';
+      const csvFile = new CSVFeatureFile(featureFile, options);
+      const output = csvFile.createColumnIndexMapFromHeader(header);
+      expect(output).toEqual({start: 0});
+      expect(csvFile.file.passed).toBe(false);
+    });
+
+    test('- onlyColumns', () => {
+      const header = "start, stop, name";
+      const options = {onlyColumns: ['start', 'stop']};
+      featureFile._status = 'success';
+      const csvFile = new CSVFeatureFile(featureFile, options);
+      const output = csvFile.createColumnIndexMapFromHeader(header);
+      expect(output).toEqual({start: 0, stop: 1});
+      expect(csvFile.file.passed).toBe(true);
+    });
+
+    test('- fail: no header or column map', () => {
+      const firstLine = "0, 1";
+      const options = {noHeader: true};
+      featureFile._status = 'success';
+      const csvFile = new CSVFeatureFile(featureFile);
+      const output = csvFile.createColumnIndexMapFromHeader(firstLine);
+      expect(csvFile.file.passed).toBe(false);
+    });
+
+    test('- no header but has column map', () => {
+      const firstLine = "0, 1";
+      const options = {noHeader: true, columnMap: {start: 0 , stop: '1'}};
+      featureFile._status = 'success';
+      const csvFile = new CSVFeatureFile(featureFile, options);
+      const output = csvFile.createColumnIndexMapFromHeader(firstLine);
+      expect(output).toEqual({start: 0, stop: 1});
+      expect(csvFile.file.passed).toBe(true);
+    });
+
+    test('- fail: no header and column map index too large', () => {
+      const firstLine = "0, 1";
+      const options = {noHeader: true, columnMap: {start: 0 , stop: 2}};
+      featureFile._status = 'success';
+      const csvFile = new CSVFeatureFile(featureFile, options);
+      const output = csvFile.createColumnIndexMapFromHeader(firstLine);
+      expect(output).toEqual({start: 0, stop: 2});
+      expect(csvFile.file.passed).toBe(false);
+    });
+
+    test('- fail: no header and column map not number', () => {
+      const firstLine = "0, 1";
+      const options = {noHeader: true, columnMap: {start: 0 , stop: 'end'}};
+      featureFile._status = 'success';
+      const csvFile = new CSVFeatureFile(featureFile, options);
+      const output = csvFile.createColumnIndexMapFromHeader(firstLine);
+      expect(output).toEqual({start: 0, stop: NaN});
+      expect(csvFile.file.passed).toBe(false);
+    });
+
+
   });
+
 
 });

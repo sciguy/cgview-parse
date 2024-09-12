@@ -9,9 +9,10 @@ import * as helpers from '../Support/Helpers.js';
    * - 'success':  parsing/building was successful
    * - 'warnings': parsing/building was successful with warnings (can still proceed)
    * - 'failed':   parsing/building failed (cannot proceed)
-   * 
+   *
    * Using the methods _fail() and _warn() will set the status accordingly
-   * 
+   * - Once the status is set to 'failed', it cannot be changed
+   *
    * Error codes can be provided to keep track of the type of errors
    * - Error codes can be provided as options to _fail() and _warn()
    * - They can also be added with the addErrorCode() method
@@ -83,7 +84,7 @@ export default class Status {
   }
 
   // Returns an array of unique error codes
-  // Codes: unknown, binary, empty, unknown_format
+  // See Status.ERROR_CODES for allowed error codes
   get errorCodes() {
     return Array.from(this._errorCodes);
   }
@@ -93,6 +94,7 @@ export default class Status {
   // Methods
   /////////////////////////////////////////////////////////////////////////////
 
+  // See Status.ERROR_CODES for allowed error codes
   addErrorCode(errorCode) {
     if (!Status.ERROR_CODES.includes(errorCode)) {
       this._fail(`Invalid error code: ${errorCode}`);
