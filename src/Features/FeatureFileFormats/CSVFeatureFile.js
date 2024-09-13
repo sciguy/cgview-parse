@@ -201,8 +201,8 @@ class CSVFeatureFile {
     let columnIndexMap = {};
     const fields = line.split(this.separator).map((field) => field.trim().toLowerCase());
 
-    this.logger.info(`- Columns Count: ${fields.length}`);
-    this.logger.info(`- Columns Names: ${fields.join(', ')}`);
+    this.logger.info(`- First Line: ${line}`);
+    this.logger.info(`- Column Count: ${fields.length}`);
 
     // Check that all keys are valid
     const validKeys = Object.keys(defaultColumnMap);

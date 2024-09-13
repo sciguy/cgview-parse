@@ -59,4 +59,14 @@ inputs = {
     type: 'bed',
     url: '../inputs/feature_files/BED/bed12.bed',
   },
+  empty: {
+    name: 'Empty',
+    type: 'bad',
+    url: '../inputs/feature_files/Errors/empty.txt',
+  },
+  binary: {
+    name: 'Binary (PNG)',
+    type: 'bad',
+    url: '../inputs/feature_files/Errors/binary.png',
+  },
 }

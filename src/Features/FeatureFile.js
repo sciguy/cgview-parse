@@ -1,5 +1,5 @@
 // This will be the main interface to parsing Feature Files. 
-// For each feature file type (e.g. GFF3, GTF, BED, CSV, etc.)
+// For each feature file type (e.g. GFF3, GTF, BED, CSV, TSV, etc.),
 // we will have delagates that will parse the file and return an array of
 // of joined features.
 // The returned features are not exactly CGView feature yet, but they are
@@ -25,30 +25,56 @@
 // - https://github.com/GMOD/gff-js/blob/master/src/util.ts
 
 import Status from '../Support/Status.js';
-import Logger from '../Support/Logger.js';
 import GFF3FeatureFile from './FeatureFileFormats/GFF3FeatureFile.js';
 import GTFFeatureFile from './FeatureFileFormats/GTFFeatureFile.js';
 import BEDFeatureFile from './FeatureFileFormats/BEDFeatureFile.js';
+import CSVFeatureFile from './FeatureFileFormats/CSVFeatureFile.js';
 // import FeatureBuilder from './FeatureBuilder.js';
 import * as helpers from '../Support/Helpers.js';
-import CSVFeatureFile from './FeatureFileFormats/CSVFeatureFile.js';
 
-// FeatureFile class reads a feature file (GFF3, BED, CSV, GTF) and returns an array of records
-// One for each feature. Some records (e.g. CDS) may be joined together if they have the same ID.
-
-// File Delegates (based on fileFormat)
-// Each file format has it's own delegate that is responsible for
-// processing, validating and describing a file. Each delegate must
-// have the following methods:
-// - parse(text, options): returns an array of records
-//   - options: { logger, maxLogCount }
-// - fileFormat (getter): e.g. 'gff3', 'bed', 'csv', 'gtf'
-// - displayFileFormat (getter): e.g. 'GFF3', 'BED', 'CSV', 'GTF'
-// = nameKeys (getter): array of strings
-
+/**
+ * FeatureFile class reads a feature file (GFF3, BED, CSV, TSV, GTF) and returns an array of records
+ * One for each feature. Some records (e.g. CDS) may be joined together if they have the same ID.
+ *
+ * FILE DELEGATES (based on fileFormat)
+ * Each file format has it's own delegate that is responsible for
+ * processing, validating and describing a file. Each delegate must
+ * have the following methods:
+ * - parse(text, options): returns an array of records
+ *   - options: { logger, maxLogCount }
+ * - fileFormat (getter): e.g. 'gff3', 'bed', 'csv', 'tsv', 'gtf'
+ * - displayFileFormat (getter): e.g. 'GFF3', 'BED', 'CSV', 'TSV', 'GTF'
+ * - nameKeys (getter): array of strings
+ *
+ * NOTE:
+ * - tsv and csv are both parsed by the CSVFeatureFile delegate
+ *
+ * REQUIRED:
+ * - inputText: string from GFF3, BED, CSV, GTF
+ *
+ * OPTIONS:
+ * - GENERAL (All Formats)
+ *   - format: The file format being parsed (e.g. 'auto', 'gff3', 'bed', 'csv', 'tsv', 'gtf') [Default: 'auto'].
+ *   - logger: logger object
+ *   - maxLogCount: number (undefined means no limit) [Default: undefined]
+ * - GFF3/GTF
+ *   - nameKeys: The order of preference for the name of a feature
+ *     - Currently only used for GFF3 and GTF files
+ *     - array of strings [Default: ['Name', 'Alias', 'gene', 'locus_tag', 'product', 'note', 'db_xref', 'ID']]
+ *     - NOTE: 'Name' and 'ID' are from GFF3 attributes, the others are from the qualifiers.
+ *     - FIXME: this may change based on the format
+ * - CSV/TSV
+ *   - separator: the separator used in the file (e.g. ',' or '\t') [Default: ',']
+ *   - noHeader: boolean [Default: false]
+ *   - onlyColumns: array of strings indicating which columns to extract. [Default: [] (all columns)]
+ *   - columnMap: object mapping column names to new names or column number (if no header). [Default: {}]
+ *     - e.g. { start: 'chromStart', stop: 'chromEnd' }
+ *     - columnKeys: contig, start, stop, strand, name, type, score, legend, codonStart
+ *     - Future Keys: tags, qualifiers, meta
+ */
 class FeatureFile extends Status {
 
-  static FORMATS = ['auto', 'gff3', 'bed', 'csv', 'gtf'];
+  static FORMATS = ['auto', 'gff3', 'bed', 'csv', 'tsv', 'gtf'];
 
   static FILE_FORMAT_DELEGATES = {
     'gff3': GFF3FeatureFile,
@@ -58,16 +84,6 @@ class FeatureFile extends Status {
     'tsv': CSVFeatureFile,
   };
 
-  // inputText: string from GFF3, BED, CSV, GTF [Required]
-  // Options:
-  // - format: The file format being parsed (e.g. 'auto', 'gff3', 'bed', 'csv', 'gtf') [Default: 'auto'].
-  // - nameKeys: The order of preference for the name of a feature
-  //   - Currently only used for GFF3 and GTF files
-  //   - array of strings [Default: ['Name', 'Alias', 'gene', 'locus_tag', 'product', 'note', 'db_xref', 'ID']]
-  //   - NOTE: 'Name' and 'ID' are from GFF3 attributes, the others are from the qualifiers.
-  //   - FIXME: this may change based on the format
-  // - logger: logger object
-  // - maxLogCount: number (undefined means no limit) [Default: undefined]
   constructor(inputText, options={}) {
     super(options, 'PARSING FEATURE FILE');
     // this.options = options;
@@ -85,10 +101,8 @@ class FeatureFile extends Status {
     } else {
       // File Format
       this._info("Checking File Format...");
-      // this.logger.info('- Format Provided: ' + providedFormat.padStart(12));
       this._info('- Format Provided: ', { padded: providedFormat });
       const detectedFormat = this.detectFormat(convertedText);
-      // this.logger.info('- Format Detected: ' + detectedFormat.padStart(12));
       this._info('- Format Detected: ', { padded: detectedFormat });
       this.inputFormat = this.chooseFormat(providedFormat, detectedFormat);
       // Do not continue if the format is unknown
@@ -111,7 +125,9 @@ class FeatureFile extends Status {
   // FILE FORMAT
   /////////////////////////////////////////////////////////////////////////////
 
-  // The file format being parsed: 'auto', 'gff3', 'bed', 'csv', 'tsv', 'gtf', 'unknown'
+  /**
+   * The file format being parsed: 'auto', 'gff3', 'bed', 'csv', 'tsv', 'gtf', 'unknown'
+   */
   get inputFormat() {
     return this.delegate.fileFormat;
   }
@@ -128,10 +144,12 @@ class FeatureFile extends Status {
     }
   }
 
-  // Options:
-  // - fileText: contents of the file (string)
-  // - providedFormat: the format provided by the user (string)
-  //   - 'auto', 'gff3', 'bed', 'csv', 'gtf'
+  /**
+   * Determine the file format based on the text content
+   *
+   * @param {String} fileText - text contents of the file
+   * @return {String} - the format detected (e.g. gff3, gtf, bed, csv, tsv)
+   */
   detectFormat(fileText) {
     let detectedFormat;
     // filter lines to remove blank lines and lines with starting with '#'
@@ -157,10 +175,15 @@ class FeatureFile extends Status {
     return detectedFormat;
   }
 
-  // Choose the format to use based on the provided format and the detected format
-  // - if a format other than 'auto' is provided, that format will be returned
-  //   - however, if the format doesn't match the file, a warning will be logged
-  //   - if the provided format is unknown, 'auto' will be used and a warning will be logged
+  /**
+   * Choose the format to use based on the provided format and the detected format
+   * - if a format other than 'auto' is provided, that format will be returned
+   *   - however, if the format doesn't match the file, a warning will be logged
+   *   - if the provided format is unknown, 'auto' will be used and a warning will be logged
+   * @param {String} providedFormat - format given by the user
+   * @param {String} detectedFormat - format detected with detectFormat
+   * @returns {String} - the chosen format (e.g. gff3, gtf, bed, csv, tsv)
+   */
   chooseFormat(providedFormat, detectedFormat) {
     if (FeatureFile.FORMATS.includes(providedFormat) && (providedFormat !== 'auto')) {
       if (providedFormat !== detectedFormat) {
@@ -214,27 +237,14 @@ class FeatureFile extends Status {
     // this.logger.break('--------------------------------------------\n')
     this.logger.divider();
     this._info('Parsing Summary:');
-    // this.logger.info(`- Input File Format: ${format.padStart(10)}`);
     this._info(`- Input File Format:`, { padded: format });
-    // this.logger.info(`- Feature Lines: ${this.lineCount.toLocaleString().padStart(14)}`);
     this._info(`- Data Lines:`, { padded: this.lineCount });
-    // this.logger.info(`- Feature Count: ${records.length.toLocaleString().padStart(14)}`);
     this._info(`- Feature Count:`, { padded: records.length });
     const failedCount = records.filter((record) => !record.valid).length;
     if (failedCount > 0) {
       this._fail(`- Features Failed:`, { padded: failedCount });
-    // } else {
-    //   this._info(`- Features Failed:`, { padded: failedCount });
     }
     this.logStatusLine()
-    // if (this.success) {
-    //   this.logger.info('- Status: ' + 'Success'.padStart(21), {icon: 'success'});
-    // } else if (this.status === 'warnings') {
-    //   this.logger.warn('- Status: ' + 'Warnings'.padStart(21), {icon: 'warn'});
-    // } else {
-    //   this.logger.error('- Status: ' + 'FAILED'.padStart(21), {icon: 'fail'});
-    // }
-    // this.logger.break('--------------------------------------------\n')
     this.logger.divider();
 
     this._summary = {
@@ -292,15 +302,12 @@ class FeatureFile extends Status {
     try {
       records = this.parse(fileText, options);
       const recordsWithLocationsCount = records.filter((record) => Array.isArray(record.locations)).length;
-      console.log('recordsWithLocationsCount', recordsWithLocationsCount);
-      // this.logger.info(`- Features with >1 location: ${recordsWithLocationsCount.toLocaleString().padStart(2)}`);
       this._info('- Features with >1 location: ', { padded: recordsWithLocationsCount });
       this._info('- Done parsing feature file');
     } catch (error) {
       this._fail('- Failed: An error occurred while parsing the file.', {errorCode: 'parsing'});
       this._fail(`- ERROR: ${error.message}`);
     }
-
     return records;
   }
 
@@ -310,10 +317,13 @@ class FeatureFile extends Status {
       this.validateRecords(records, options);
 
       // General Validations
+      // - required keys: start, stops
+      // - records marked valid
       // - Are there any records?
       // TODO: this may go above the validateRecords call
-      console.log("HERE HERHERHERHEHR")
-      console.log(records)
+
+      // No Records
+      // console.log(records)
       if (records.length === 0) {
         this._fail('- Failed: No records found in the file.');
       }

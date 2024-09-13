@@ -92,8 +92,8 @@ const jsonConfig = {
 // Add maps from maps.js to Select
 // Using global variable 'inputs' from inputs.js
 const inputSelect = document.getElementById('map-select');
-const groups = { bed: 'BED', gff3: 'GFF3', gtf: 'GTF', csv: 'CSV' };
-const order = ['gff3', 'gtf', 'bed', 'csv'];
+const groups = { bed: 'BED', gff3: 'GFF3', gtf: 'GTF', csv: 'CSV', bad: 'Bad' };
+const order = ['gff3', 'gtf', 'bed', 'csv', 'bad'];
 const optionsByGroup = {};
 for (const inputKey of Object.keys(inputs)) {
   const input = inputs[inputKey];
