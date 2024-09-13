@@ -13,11 +13,12 @@ const defaultMap = 'sample_csv';
 // const defaultMap = 'bed12';
 // const defaultMap = 'mito';
 
-const defaultFormat = 'auto';
+// const defaultFormat = 'auto';
 // const defaultFormat = 'bed';
 // const defaultFormat = 'gff3';
 // const defaultFormat = 'gtf';
-// const defaultFormat = 'csv';
+const defaultFormat = 'csv';
+// const defaultFormat = 'tsv';
 
 
 // Deafult Options
@@ -27,6 +28,8 @@ const showFeatJson = true;
 const showCgvJson = true;
 const showMap = false;
 const showAllText = false; // or only the first 1000 lines
+// CSV/TSV Options
+const noHeader = false;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Initialize
@@ -63,6 +66,10 @@ showMapCheckbox.checked = showMap;
 // Show All Text (or only the first 1000 lines)
 const showAllTextCheckbox = document.querySelector('#option-show-all-text');
 showAllTextCheckbox.checked = showAllText;
+// CSV/TSV Options
+// Show/Hide Input
+const noHeaderCheckbox = document.querySelector('#option-no-header');
+noHeaderCheckbox.checked = noHeader;
 updatePageLayout();
 
 // Load default map
@@ -144,6 +151,20 @@ inputSelect.addEventListener('change', (e) => {
 // Format Select
 const formatSelect = document.getElementById('format-select');
 formatSelect.value = defaultFormat || 'auto';
+
+// Format Changed
+let selectedFormat = formatSelect.value;
+const csvOptions = document.getElementById('csv-options');
+formatSelect.addEventListener('change', (e) => {
+  selectedFormat = e.target.value;
+  if (['csv', 'tsv'].includes(selectedFormat)) {
+    csvOptions.style.display = 'block';
+  } else {
+    csvOptions.style.display = 'none';
+  }
+});
+formatSelect.dispatchEvent(new Event('change'));
+
 
 // Clear the file input when the file section is closed
 function clearFileInput() {
@@ -237,7 +258,7 @@ function runParse() {
 
   // Parse to featureJson
   const featureJsonStartTime = new Date().getTime();
-  const featureFile = new CGParse.FeatureFile(inputText, {format: selectedFormat, maxLogCount: 1});
+  const featureFile = new CGParse.FeatureFile(inputText, {format: selectedFormat, maxLogCount: 1, noHeader: noHeaderCheckbox.checked});
   const featureJSON = featureFile.records;
   json.featureFile = featureFile; // For debugging
   console.log(featureJSON)

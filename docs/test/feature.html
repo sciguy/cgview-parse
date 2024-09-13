@@ -27,9 +27,9 @@
     <!-- CGView Data -->
 
     <!-- Dev Page -->
-    <link rel="stylesheet" href="test.css" />
+    <link rel="stylesheet" href="../styles/test.css" />
     <!-- Test Feature Files -->
-    <script src='inputs.features.js'></script>
+    <script src='features.inputs.js'></script>
 
     <!-- Plausible Analytics -->
     <!-- <script defer data-domain="js.cgview.ca" src="https://stats.stothardresearch.ca/js/plausible.outbound-links.js"></script> -->
@@ -48,6 +48,7 @@
           <div class="navbar-nav">
             <a class="nav-link" href="sequence.html">Sequence</a>
             <a class="nav-link active" href="feature.html">Features</a>
+            <a class="nav-link github-logo" href="https://github.com/stothard-group/cgview-parse"><img src='../images/GitHub-Mark-Light-64px.png' /></a>
           </div>
         </div>
         <div class='dev-title'>TEST PAGE</div>
@@ -131,6 +132,16 @@
 
             </div>
           </div>
+
+          <!-- CSV/TSV Options -->
+          <div id="csv-options">
+          <div class='section-heading'>CSV/TSV Options</div>
+          <div class='options-container'>
+            <div><input id='option-no-header' type='checkbox' /> No Header</div>
+            <div id="csv-columns"></div>
+          </div>
+          </div>
+
         </div>
         <hr />
         <div class='sidebar-log'>
@@ -151,7 +162,7 @@
     <script src="../scripts/bootstrap.min.js"></script>
 
     <script src="../scripts/prism.js"></script>
-    <script src='test.features.js'></script>
+    <script src='features.js'></script>
     <script src='../scripts/controls.js'></script>
 
   </body>

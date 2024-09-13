@@ -34,9 +34,23 @@ class GFF3FeatureFile {
     return this.options.nameKeys || ['Name', 'Alias', 'gene', 'locus_tag', 'product', 'note', 'db_xref', 'ID'];
   }
 
+  /////////////////////////////////////////////////////////////////////////////
+  // FeatureFile Methods (Delegate Owner)
+  /////////////////////////////////////////////////////////////////////////////
+
+  _info(message, options={}) {
+    this.file._info(message, options);
+  }
+
+  _warn(message, options={}) {
+    this.file._warn(message, options);
+  }
+
   _fail(message, options={}) {
     this.file._fail(message, options);
   }
+
+
 
   // Returns true if the line matches the GFF3 format
   // - line: the first non-empty/non-comment line of the file
@@ -74,12 +88,12 @@ class GFF3FeatureFile {
         }
       }
     }
-    this.logger.info(`- Note: Records with the same 'ID' will be joined into a single record.`);
+    this._info(`- Note: Records with the same 'ID' will be joined into a single record.`);
     // this.logger.info(`- Parsed Feature Lines: ${records.length.toLocaleString().padStart(7)}`);
-    this.logger.info('- Parsed Feature Lines: ', { padded: records.length });
+    this._info('- Parsed Feature Lines: ', { padded: records.length });
     const joinedRecords = this._joinRecords(records);
     // this.logger.info(`- Total Features: ${joinedRecords.length.toLocaleString().padStart(13)}`);
-    this.logger.info('- Total Features: ', { padded: joinedRecords.length });
+    this._info('- Total Features: ', { padded: joinedRecords.length });
 
     return joinedRecords;
   }

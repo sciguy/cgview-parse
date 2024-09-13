@@ -1,7 +1,26 @@
-# CGView Parse
-Parser for converting sequence files (e.g. GenBank, EMBL, FASTA) to CGView JSON via our own intermediate SequenceFile JSON format. The SequenceFile parser is based on Paul's [seq_to_json.py](https://github.com/paulstothard/seq_to_json) parser.
+# CGParse
 
-[CGParse Test Page](https://stothard-group.github.io/cgview-parse/test/)
+CGParse consists of file parsers and builders to take sequence or feature files and convert them to CGView JSON or features that can be added to CGView JSON. The parsers (SequenceFile.js and FeatureFile.js) create an intermediate JSON format with all the data possible to extract. This intermediate JSON data can be used by other programs or converted to CGView JSON data via the builders (CGViewBuilder.js and CGFeatureBuilder.js). When building CGView data, options can be provied to filter the data (e.g. qualifiers).
+
+[CGParse Test Page](https://stothard-group.github.io/cgview-parse)
+
+### Sequence File Overview
+
+```
+                SequenceFile.js               CGViewBuilder.js
+          Input --------------> Sequence JSON ---------------> CGView.json
+(GenBank, EMBL, FASTA)        [Sequence Records]
+```
+
+### Feature File Overview
+
+```
+                  FeatureFile.js              FeatureBuilder.js
+            Input -------------> Feature JSON ----------------> features.cgv.json
+(GFF3, GTF, BED, CSV, TSV)    [Feature Records]
+```
+
+
 
 This package consists of 3 main components:
 - SequenceFile.js
@@ -15,6 +34,9 @@ This package consists of 3 main components:
 - qualifiers: ~103
 
 ## SequenceFile
+Parser for converting sequence files (e.g. GenBank, EMBL, FASTA) to CGView JSON via our own intermediate SequenceFile JSON format. The SequenceFile parser is based on Paul's [seq_to_json.py](https://github.com/paulstothard/seq_to_json) parser.
+
+
 ```js
 // inputText: text from a GenBank, EMBL, FASTA, or RAW file
 // Options:

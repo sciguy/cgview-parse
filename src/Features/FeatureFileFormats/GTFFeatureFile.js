@@ -30,14 +30,27 @@ class GTFFeatureFile {
     return this._lineCount;
   }
 
-
   get nameKeys() {
     return this.options.nameKeys || ['Name', 'Alias', 'gene', 'locus_tag', 'product', 'note', 'db_xref', 'ID'];
+  }
+
+  /////////////////////////////////////////////////////////////////////////////
+  // FeatureFile Methods (Delegate Owner)
+  /////////////////////////////////////////////////////////////////////////////
+
+  _info(message, options={}) {
+    this.file._info(message, options);
+  }
+
+  _warn(message, options={}) {
+    this.file._warn(message, options);
   }
 
   _fail(message, options={}) {
     this.file._fail(message, options);
   }
+
+
 
   // Returns true if the line matches the GTF format
   // - line: the first non-empty/non-comment line of the file
@@ -80,13 +93,13 @@ class GTFFeatureFile {
         }
       }
     }
-    this.logger.info(`- Note: Records (CDS, start/stop_codon) with the same 'transcript_id' will be joined into a single CDS record.`);
+    this._info(`- Note: Records (CDS, start/stop_codon) with the same 'transcript_id' will be joined into a single CDS record.`);
     // this.logger.info(`- Parsed Feature Lines: ${records.length.toLocaleString().padStart(7)}`);
-    this.logger.info('- Parsed Feature Lines: ', { padded: records.length });
+    this._info('- Parsed Feature Lines: ', { padded: records.length });
     const joinedRecords = this._joinRecords(records);
     // const joinedRecords = records;
     // this.logger.info(`- Total Features: ${joinedRecords.length.toLocaleString().padStart(13)}`);
-    this.logger.info('- Total Features: ', { padded: joinedRecords.length });
+    this._info('- Total Features: ', { padded: joinedRecords.length });
 
     return joinedRecords;
   }
@@ -248,7 +261,7 @@ class GTFFeatureFile {
       if (records.some((record) => record.type === 'CDS')) {
         joinedRecord.type = 'CDS';
       } else {
-        this.logger.warn(`- No CDS records for this group: ${records  }`);
+        this._warn(`- No CDS records for this group: ${records  }`);
       }
     }
 

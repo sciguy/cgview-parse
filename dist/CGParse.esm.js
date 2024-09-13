@@ -685,7 +685,12 @@ class CGViewBuilder extends Status {
     this.inputType = this.seqFile.inputType;
     this.sequenceType = this.seqFile.sequenceType;
     if (this.seqFile.passed === true) {
-      this._json = this._build(this.seqFile.records);
+      try {
+        this._json = this._build(this.seqFile.records);
+      } catch (error) {
+        this._fail('- Failed: An error occurred while building the JSON.', {errorCode: 'parsing'});
+        this._fail(`- ERROR: ${error.message}`);
+      }
     } else {
       this._fail('*** Cannot convert to CGView JSON because parsing sequence file failed ***');
     }
@@ -1163,41 +1168,48 @@ class CGViewBuilder extends Status {
 
 class SequenceFile extends Status {
 
+  /**
+   * Static method to convert a sequence file directly to CGView JSON
+   * @param {String} inputText - text from GenBank, EMBL, Fasta, or Raw
+   * @param {Object} options - options provided to the SequenceFile
+   * @returns 
+   */
   static toCGViewJSON(inputText, options={}) {
     const logger = new Logger({logToConsole: false});
     const seqFile = new SequenceFile(inputText, {logger: logger, ...options});
     return seqFile.toCGViewJSON();
   }
 
-  // inputText: string from GenBank, EMBL, Fasta, or Raw [Required]
-  // Options:
-  // - addFeatureSequences: boolean [Default: false]. This can increase run time ~3x.
-  // - nameKeys: The order of preference for the name of a feature
-  //   - array of strings [Default: ['gene', 'locus_tag', 'product', 'note', 'db_xref']]
-  // - logger: logger object
-  // - maxLogCount: number (undefined means no limit) [Default: undefined]
+  /**
+   * Create a new SequenceFile object
+   * @param {String} inputText - string from GenBank, EMBL, Fasta, or Raw [Required]
+   * @param {*} options - 
+   * - addFeatureSequences: boolean [Default: false]. This can increase run time ~3x.
+   * - nameKeys: The order of preference for the name of a feature
+   *   - array of strings [Default: ['gene', 'locus_tag', 'product', 'note', 'db_xref']]
+   * - logger: logger object
+   * - maxLogCount: number (undefined means no limit) [Default: undefined]
+   */
   constructor(inputText, options={}) {
     super(options, 'PARSING SEQUENCE FILE');
     const convertedText = convertLineEndingsToLF(inputText);
     this.nameKeys = options.nameKeys || ['gene', 'locus_tag', 'product', 'note', 'db_xref'];
-    // this.logger.info(`Date: ${new Date().toUTCString()}`);
 
     this._records = [];
 
     if (!convertedText || convertedText === '') {
       this._fail('Parsing Failed: No input text provided.', 'empty');
-    // } else if (!helpers.isASCII(convertedText)) {
     } else if (isBinary(convertedText)) {
       this._fail('Parsing Failed: Input contains non-text characters. Is this binary data?', 'binary');
     } else {
-      this._records = this._parse(convertedText, options);
+      this._records = this.parseWrapper(convertedText, options);
       if (options.addFeatureSequences) {
         this._addFeatureSequence(this._records);
       }
       this._determineSequenceTypes(this._records);
       this._determineOverallInputAndSequenceType(this._records);
       this.logger.info('- done parsing sequence file');
-      this._validateRecords(this._records);
+      this.validateRecordsWrapper(this._records);
       this.parseSummary();
     }
     this.logger.break();
@@ -1207,23 +1219,31 @@ class SequenceFile extends Status {
   // Properties
   /////////////////////////////////////////////////////////////////////////////
 
+  /**
+   * @member {String} - Get the input type (e.g. genbank, embl, fasta, raw, mulitple)
+   * - 'multiple' means that the file contains multiple different types of sequence records
+   */
   get inputType() {
     return this._inputType;
   }
 
+  /**
+   * @member {String} - Get the sequence type (e.g. dna, protein, unknown, multiple)
+   */
   get sequenceType() {
     return this._sequenceType;
   }
 
-  // { inputType, sequenceType, sequenceCount, featureCount, totalLength, status }
-  get summary() {
-    return this._summary;
-  }
 
   /////////////////////////////////////////////////////////////////////////////
   // EXPORTERS
   /////////////////////////////////////////////////////////////////////////////
 
+  /**
+   * Converts the seqeunce records to CGView JSON using CGViewBuilder
+   * @param {Object} options - passed to CGViewBuilder
+   * @returns {Object} - CGView JSON
+   */
   toCGViewJSON(options={}) {
     if (this.passed) {
       options.logger = options.logger || this.logger;
@@ -1234,6 +1254,9 @@ class SequenceFile extends Status {
     }
   }
 
+  /**
+   * Returns an array of parsed sequence records
+   */
   get records() {
     return this._records;
   }
@@ -1242,6 +1265,19 @@ class SequenceFile extends Status {
   // SUMMARY
   /////////////////////////////////////////////////////////////////////////////
 
+  /**
+   * Returns a summary object with the following:
+   * - inputType, sequenceType, sequenceCount, featureCount, totalLength, status
+   *
+   * The summary is generated by parseSummary()
+   */
+  get summary() {
+    return this._summary;
+  }
+
+  /**
+   * Add a summary to the logs and creates the summary object
+   */
   parseSummary() {
     const records = this.records;
     const features = records.map((record) => record.features).flat();
@@ -1266,6 +1302,40 @@ class SequenceFile extends Status {
       status: this.status,
       // success: this.success
     };
+  }
+
+  /////////////////////////////////////////////////////////////////////////////
+  // PARSE AND VALIDATION WRAPPERS
+  /////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * Wraps the _parse method to catch any errors that occur during parsing
+   * @param {String} fileText - text to parse
+   * @param {Object} options - options for parsing
+   * @returns {Array} - an array of records, one for each sequence
+   */
+  parseWrapper(fileText, options={}) {
+    let records = [];
+    try {
+      records = this._parse(fileText, options);
+    } catch (error) {
+      this._fail('- Failed: An error occurred while parsing the file.', {errorCode: 'parsing'});
+      this._fail(`- ERROR: ${error.message}`);
+    }
+    return records;
+  }
+
+  /**
+   * Wraps the validateRecords method to catch any errors that occur during validation
+   * @param {Array} records - array of records to validate
+   */
+  validateRecordsWrapper(records) {
+    try {
+      this._validateRecords(records, options);
+    } catch (error) {
+      this._fail('- Failed: An error occurred while validating the records.', {errorCode: 'validating'});
+      this._fail(`- ERROR: ${error.message}`);
+    }
   }
 
   /////////////////////////////////////////////////////////////////////////////
@@ -1894,9 +1964,23 @@ class GFF3FeatureFile {
     return this.options.nameKeys || ['Name', 'Alias', 'gene', 'locus_tag', 'product', 'note', 'db_xref', 'ID'];
   }
 
+  /////////////////////////////////////////////////////////////////////////////
+  // FeatureFile Methods (Delegate Owner)
+  /////////////////////////////////////////////////////////////////////////////
+
+  _info(message, options={}) {
+    this.file._info(message, options);
+  }
+
+  _warn(message, options={}) {
+    this.file._warn(message, options);
+  }
+
   _fail(message, options={}) {
     this.file._fail(message, options);
   }
+
+
 
   // Returns true if the line matches the GFF3 format
   // - line: the first non-empty/non-comment line of the file
@@ -1925,12 +2009,12 @@ class GFF3FeatureFile {
         }
       }
     }
-    this.logger.info(`- Note: Records with the same 'ID' will be joined into a single record.`);
+    this._info(`- Note: Records with the same 'ID' will be joined into a single record.`);
     // this.logger.info(`- Parsed Feature Lines: ${records.length.toLocaleString().padStart(7)}`);
-    this.logger.info('- Parsed Feature Lines: ', { padded: records.length });
+    this._info('- Parsed Feature Lines: ', { padded: records.length });
     const joinedRecords = this._joinRecords(records);
     // this.logger.info(`- Total Features: ${joinedRecords.length.toLocaleString().padStart(13)}`);
-    this.logger.info('- Total Features: ', { padded: joinedRecords.length });
+    this._info('- Total Features: ', { padded: joinedRecords.length });
 
     return joinedRecords;
   }
@@ -2119,14 +2203,27 @@ class GTFFeatureFile {
     return this._lineCount;
   }
 
-
   get nameKeys() {
     return this.options.nameKeys || ['Name', 'Alias', 'gene', 'locus_tag', 'product', 'note', 'db_xref', 'ID'];
+  }
+
+  /////////////////////////////////////////////////////////////////////////////
+  // FeatureFile Methods (Delegate Owner)
+  /////////////////////////////////////////////////////////////////////////////
+
+  _info(message, options={}) {
+    this.file._info(message, options);
+  }
+
+  _warn(message, options={}) {
+    this.file._warn(message, options);
   }
 
   _fail(message, options={}) {
     this.file._fail(message, options);
   }
+
+
 
   // Returns true if the line matches the GTF format
   // - line: the first non-empty/non-comment line of the file
@@ -2160,13 +2257,13 @@ class GTFFeatureFile {
         }
       }
     }
-    this.logger.info(`- Note: Records (CDS, start/stop_codon) with the same 'transcript_id' will be joined into a single CDS record.`);
+    this._info(`- Note: Records (CDS, start/stop_codon) with the same 'transcript_id' will be joined into a single CDS record.`);
     // this.logger.info(`- Parsed Feature Lines: ${records.length.toLocaleString().padStart(7)}`);
-    this.logger.info('- Parsed Feature Lines: ', { padded: records.length });
+    this._info('- Parsed Feature Lines: ', { padded: records.length });
     const joinedRecords = this._joinRecords(records);
     // const joinedRecords = records;
     // this.logger.info(`- Total Features: ${joinedRecords.length.toLocaleString().padStart(13)}`);
-    this.logger.info('- Total Features: ', { padded: joinedRecords.length });
+    this._info('- Total Features: ', { padded: joinedRecords.length });
 
     return joinedRecords;
   }
@@ -2328,7 +2425,7 @@ class GTFFeatureFile {
       if (records.some((record) => record.type === 'CDS')) {
         joinedRecord.type = 'CDS';
       } else {
-        this.logger.warn(`- No CDS records for this group: ${records  }`);
+        this._warn(`- No CDS records for this group: ${records  }`);
       }
     }
 
@@ -2402,6 +2499,15 @@ class BEDFeatureFile {
     return this._validationIssues || {};
   }
 
+
+  /////////////////////////////////////////////////////////////////////////////
+  // FeatureFile Methods (Delegate Owner)
+  /////////////////////////////////////////////////////////////////////////////
+
+  _info(message, options={}) {
+    this.file._info(message, options);
+  }
+
   _warn(message, options={}) {
     this.file._warn(message, options);
   }
@@ -2410,9 +2516,12 @@ class BEDFeatureFile {
     this.file._fail(message, options);
   }
 
-  // Returns true if the line matches the BED format
-  // - line: the first non-empty/non-comment line of the file
-  // fields: 2, 3, 5, 7, 8, 10 when present should be numbers
+  /**
+   * Returns true if the line matches the BED format.
+   * Note: fields 2, 3, 5, 7, 8, 10 when present should be numbers
+   * @param {String} line - data line from the file (first non-empty/non-comment line)
+   * @returns {Boolean} - true if the line matches the BED format
+   */
   static lineMatches(line) {
     const fields = line.split('\t').map((field) => field.trim());
     if (fields.length < 3) {
@@ -2587,7 +2696,6 @@ class BEDFeatureFile {
       // this._fail('- Records missing Stops: ', { padded: missingStops.length });
       this._fail('- Records missing Stops: ', { padded: missingStopErrors.length });
     }
-
   }
 
 }
@@ -2723,13 +2831,23 @@ class CSVFeatureFile {
   //   return this._errors || {};
   // }
 
-  _warn(message, errorCode='unknown') {
-    this.file._warn(message, errorCode);
+  /////////////////////////////////////////////////////////////////////////////
+  // FeatureFile Methods (Delegate Owner)
+  /////////////////////////////////////////////////////////////////////////////
+
+  _info(message, options={}) {
+    this.file._info(message, options);
   }
 
-  _fail(message, errorCode='unknown') {
-    this.file._fail(message, errorCode);
+  _warn(message, options={}) {
+    this.file._warn(message, options);
   }
+
+  _fail(message, options={}) {
+    this.file._fail(message, options);
+  }
+
+
 
   // createColumnMap(columnMap={}) {
   //   // Check that all keys are valid
@@ -2792,8 +2910,8 @@ class CSVFeatureFile {
     let columnIndexMap = {};
     const fields = line.split(this.separator).map((field) => field.trim().toLowerCase());
 
-    this.logger.info(`- First Line: ${line}`);
-    this.logger.info(`- Column Count: ${fields.length}`);
+    this._info(`- First Line: ${line}`);
+    this._info(`- Column Count: ${fields.length}`);
 
     // Check that all keys are valid
     const validKeys = Object.keys(defaultColumnMap);
@@ -2804,10 +2922,8 @@ class CSVFeatureFile {
       }
     }
 
-    // let newColumnMap = {};
-
     if (this.noHeader) {
-      this.logger.info('- Header: No');
+      this._info('- Header: No');
       columnIndexMap = {...columnMap};
       // Parse values as integers
       for (const key of Object.keys(columnIndexMap)) {
@@ -2823,7 +2939,7 @@ class CSVFeatureFile {
         this._fail(`- ColumnMap values must be less than the number of columns`);
       }
     } else {
-      this.logger.info('- Header: Yes');
+      this._info('- Header: Yes');
       // Check that provided column names are in the header
       for (const value of Object.values(columnMap)) {
         const index = fields.indexOf(value.toLowerCase());
@@ -2861,11 +2977,11 @@ class CSVFeatureFile {
     }
 
     // iterate over field names and print out the index and the name
-    this.logger.info("- Column Key Mapping:");
-    this.logger.info(`    #       Key${this.hasHeader ? '   Column Name' : ''}`);
+    this._info("- Column Key Mapping:");
+    this._info(`    #       Key${this.hasHeader ? '   Column Name' : ''}`);
     for (const [index, origColumn] of fields.entries()) {
       const keyColumn = Object.keys(columnIndexMap).find(key => columnIndexMap[key] === index) || 'ignored';
-      this.logger.info(`  - ${index}: ${keyColumn.padStart(8)}${this.hasHeader ? ` - ${origColumn}` : ''}`);
+      this._info(`  - ${index}: ${keyColumn.padStart(8)}${this.hasHeader ? ` - ${origColumn}` : ''}`);
     }
 
     return columnIndexMap;
@@ -2982,7 +3098,7 @@ class CSVFeatureFile {
         }
       }
     }
-    this.logger.info(`- Parsed ${records.length} records`);
+    this._info(`- Parsed ${records.length} records`);
     return records;
   }
 
@@ -3103,7 +3219,7 @@ class CSVFeatureFile {
  * - tsv and csv are both parsed by the CSVFeatureFile delegate
  *
  * REQUIRED:
- * - inputText: string from GFF3, BED, CSV, GTF
+ * - inputText: string from GFF3, BED, CSV, TSV, or GTF file
  *
  * OPTIONS:
  * - GENERAL (All Formats)
@@ -3127,8 +3243,14 @@ class CSVFeatureFile {
  */
 class FeatureFile extends Status {
 
+  /**
+   * List of supported file formats
+   */
   static FORMATS = ['auto', 'gff3', 'bed', 'csv', 'tsv', 'gtf'];
 
+  /**
+   * Map of file formats to their respective delegates
+   */
   static FILE_FORMAT_DELEGATES = {
     'gff3': GFF3FeatureFile,
     'gtf': GTFFeatureFile,
@@ -3137,9 +3259,13 @@ class FeatureFile extends Status {
     'tsv': CSVFeatureFile,
   };
 
+  /**
+   * Parses a feature file and returns an array of records
+   * @param {String} inputText - text from a feature file (GFF3, BED, CSV, TSV, GTF)
+   * @param {Object} options - See class description
+   */
   constructor(inputText, options={}) {
     super(options, 'PARSING FEATURE FILE');
-    // this.options = options;
     const convertedText = convertLineEndingsToLF(inputText);
     let providedFormat = options.format || 'auto';
 
@@ -3259,6 +3385,7 @@ class FeatureFile extends Status {
   // EXPORTERS
   /////////////////////////////////////////////////////////////////////////////
 
+  // TODO
   toCGViewFeaturesJSON(options={}) {
     // if (this.success) {
     //   options.logger = options.logger || this.logger
@@ -3269,6 +3396,9 @@ class FeatureFile extends Status {
     // }
   }
 
+  /**
+   * Returns an array of parsed feature records
+   */
   get records() {
     return this._records;
   }
@@ -3277,11 +3407,19 @@ class FeatureFile extends Status {
   // SUMMARY
   /////////////////////////////////////////////////////////////////////////////
 
-  // { inputFormat, featureCount, success }
+  /**
+   * Returns a summary object with the following:
+   * - inputFormat, featureCount, status
+   *
+   * The summary is generated by parseSummary()
+   */
   get summary() {
     return this._summary;
   }
 
+  /**
+   * Add a summary to the logs and creates the summary object
+   */
   parseSummary() {
     const records = this.records;
 
@@ -3302,10 +3440,7 @@ class FeatureFile extends Status {
 
     this._summary = {
       inputFormat: this.inputFormat,
-      // sequenceType: this.sequenceType,
-      // sequenceCount: records.length,
       featureCount: records.length,
-      // totalLength: seqLength,
       status: this.status,
       // success: this.success
     };
@@ -3315,32 +3450,58 @@ class FeatureFile extends Status {
   // DELEGATES
   /////////////////////////////////////////////////////////////////////////////
 
+  /**
+   * The delegate for the file format
+   */
   get delegate() {
     return this._delegate;
   }
 
+  /**
+   * Map of file formats to their respective delegates
+   */
   static get formatDelegateMap() {
     return FeatureFile.FILE_FORMAT_DELEGATES;
   }
 
+  /**
+   * Returns the file format (e.g. 'gff3', 'bed', 'csv', 'tsv', 'gtf')
+   */
   get fileFormat() {
     return this.delegate?.fileFormat || 'unknown';
   }
 
+  /**
+   * Returns the display name of the file format (e.g. 'GFF3', 'BED', 'CSV', 'TSV', 'GTF')
+   */
   get displayFileFormat() {
     return this.delegate?.displayFileFormat || 'Unknown';
   }
 
-  // Keep track of the number of feature lines in the file
-  // Some of these may be joined together to form a single record
+  /**
+   * The number of feature lines in the file
+   * - This is not the number of records
+   * - Some records may be joined together from several lines
+   */
   get lineCount() {
     return this.delegate.lineCount;
   }
 
+  /**
+   * Parse the file based on the file format (delegate)
+   * @param {String} fileText - text to parse
+   * @param {Object} options - options for parsing
+   * @returns {Array} - an array of records, one for each feature
+   */
   parse(fileText, options) {
     return this.delegate.parse(fileText, options);
   }
 
+  /**
+   * Validate the records based on the file format (delegate)
+   * @param {Array} records - array of records to validate
+   * @param {Object} options - options for validation
+   */
   validateRecords(records, options) {
       this.delegate.validateRecords(records, options);
   }
@@ -3349,6 +3510,12 @@ class FeatureFile extends Status {
   // PARSE AND VALIDATION WRAPPERS
   /////////////////////////////////////////////////////////////////////////////
 
+  /**
+   * Wraps the parse method to catch any errors that occur during parsing
+   * @param {String} fileText - text to parse
+   * @param {Object} options - options for parsing
+   * @returns {Array} - an array of records, one for each feature
+   */
   parseWrapper(fileText, options={}) {
     let records = [];
     this._info(`Parsing ${this.displayFileFormat} Feature File...`);
@@ -3364,6 +3531,11 @@ class FeatureFile extends Status {
     return records;
   }
 
+  /**
+   * Wraps the validateRecords method to catch any errors that occur during validation
+   * @param {Array} records - array of records to validate
+   * @param {Object} options - options for validation
+   */
   validateRecordsWrapper(records, options={}) {
     this.logger.info(`Validating Records ...`);
     try {

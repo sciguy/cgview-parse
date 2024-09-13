@@ -132,13 +132,23 @@ class CSVFeatureFile {
   //   return this._errors || {};
   // }
 
-  _warn(message, errorCode='unknown') {
-    this.file._warn(message, errorCode);
+  /////////////////////////////////////////////////////////////////////////////
+  // FeatureFile Methods (Delegate Owner)
+  /////////////////////////////////////////////////////////////////////////////
+
+  _info(message, options={}) {
+    this.file._info(message, options);
   }
 
-  _fail(message, errorCode='unknown') {
-    this.file._fail(message, errorCode);
+  _warn(message, options={}) {
+    this.file._warn(message, options);
   }
+
+  _fail(message, options={}) {
+    this.file._fail(message, options);
+  }
+
+
 
   // createColumnMap(columnMap={}) {
   //   // Check that all keys are valid
@@ -201,8 +211,8 @@ class CSVFeatureFile {
     let columnIndexMap = {};
     const fields = line.split(this.separator).map((field) => field.trim().toLowerCase());
 
-    this.logger.info(`- First Line: ${line}`);
-    this.logger.info(`- Column Count: ${fields.length}`);
+    this._info(`- First Line: ${line}`);
+    this._info(`- Column Count: ${fields.length}`);
 
     // Check that all keys are valid
     const validKeys = Object.keys(defaultColumnMap);
@@ -213,10 +223,8 @@ class CSVFeatureFile {
       }
     }
 
-    // let newColumnMap = {};
-
     if (this.noHeader) {
-      this.logger.info('- Header: No');
+      this._info('- Header: No');
       columnIndexMap = {...columnMap};
       // Parse values as integers
       for (const key of Object.keys(columnIndexMap)) {
@@ -232,7 +240,7 @@ class CSVFeatureFile {
         this._fail(`- ColumnMap values must be less than the number of columns`);
       }
     } else {
-      this.logger.info('- Header: Yes');
+      this._info('- Header: Yes');
       // Check that provided column names are in the header
       for (const value of Object.values(columnMap)) {
         const index = fields.indexOf(value.toLowerCase());
@@ -270,11 +278,11 @@ class CSVFeatureFile {
     }
 
     // iterate over field names and print out the index and the name
-    this.logger.info("- Column Key Mapping:")
-    this.logger.info(`    #       Key${this.hasHeader ? '   Column Name' : ''}`)
+    this._info("- Column Key Mapping:")
+    this._info(`    #       Key${this.hasHeader ? '   Column Name' : ''}`)
     for (const [index, origColumn] of fields.entries()) {
       const keyColumn = Object.keys(columnIndexMap).find(key => columnIndexMap[key] === index) || 'ignored';
-      this.logger.info(`  - ${index}: ${keyColumn.padStart(8)}${this.hasHeader ? ` - ${origColumn}` : ''}`);
+      this._info(`  - ${index}: ${keyColumn.padStart(8)}${this.hasHeader ? ` - ${origColumn}` : ''}`);
     }
 
     return columnIndexMap;
@@ -400,7 +408,7 @@ class CSVFeatureFile {
         }
       }
     }
-    this.logger.info(`- Parsed ${records.length} records`);
+    this._info(`- Parsed ${records.length} records`);
     return records;
   }
 

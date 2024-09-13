@@ -1,6 +1,13 @@
 # General Notes about feature conversion
 - This can be adapted to a help page on Proksee
 
+# CSV/TSV Column selection
+- Need static method to extract first line fields
+- For each field have a line with:
+  - column number
+  - select with available fields (e.g. contig, start, stop, etc)
+  - field text with column header (or first line item) bold followed by next item fro mthat column (muted)
+
 # Feature Tool Options
 - GFF3/GTF
   - Feature names
@@ -18,7 +25,7 @@
     - Then (if present), we can have InExcludes for Qualifiers & Extra Attributes
 
 # Ideas
-- We should ignore source from files and use are oen system
+- We should ignore 'source' from files (e.g. GTF, GFF3) and use our own system (e.g. FILENAME-1.1)
 - In proksee when processing general CSV/TSV file:
   - Show list of columns (with or without optional header) 
     - A preview of the first couple of lines

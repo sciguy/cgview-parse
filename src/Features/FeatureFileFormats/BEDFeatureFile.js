@@ -48,6 +48,15 @@ class BEDFeatureFile {
     return this._validationIssues || {};
   }
 
+
+  /////////////////////////////////////////////////////////////////////////////
+  // FeatureFile Methods (Delegate Owner)
+  /////////////////////////////////////////////////////////////////////////////
+
+  _info(message, options={}) {
+    this.file._info(message, options);
+  }
+
   _warn(message, options={}) {
     this.file._warn(message, options);
   }
@@ -56,9 +65,12 @@ class BEDFeatureFile {
     this.file._fail(message, options);
   }
 
-  // Returns true if the line matches the BED format
-  // - line: the first non-empty/non-comment line of the file
-  // fields: 2, 3, 5, 7, 8, 10 when present should be numbers
+  /**
+   * Returns true if the line matches the BED format.
+   * Note: fields 2, 3, 5, 7, 8, 10 when present should be numbers
+   * @param {String} line - data line from the file (first non-empty/non-comment line)
+   * @returns {Boolean} - true if the line matches the BED format
+   */
   static lineMatches(line) {
     const fields = line.split('\t').map((field) => field.trim());
     if (fields.length < 3) {
@@ -239,7 +251,6 @@ class BEDFeatureFile {
       // this._fail('- Records missing Stops: ', { padded: missingStops.length });
       this._fail('- Records missing Stops: ', { padded: missingStopErrors.length });
     }
-
   }
 
 }
