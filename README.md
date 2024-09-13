@@ -105,7 +105,7 @@ The logger logs, info, warnings, errors to the console and to a histoy that can 
 // - maxLogCount: Maximum number of similar log messages to keep
 // Log Levels: log, info, warn, error
 // Log messages can be a simgle message or an array of messages
-// - When an array of messages is provided, if the cound is more than maxLogCount
+// - When an array of messages is provided, if the count is more than maxLogCount
 //   then only the first maxLogCount messages are shown.
 
 logger = new Logger(options)
@@ -130,13 +130,13 @@ logger.break("-------")
 logger.history()
 
 // Log Icons:
-// - log: '📝'
-// - info: 'ℹ️'
-// - warn: '⚠️'
-// - error: '🛑',
+// - log:     '📝'
+// - info:    'ℹ️'
+// - warn:    '⚠️'
+// - error:   '🛑'
 // - success: '✅'
-// - fail: '🛑'
-// - none: ' '
+// - fail:    '🛑'
+// - none:    ' '
 ```
 
 
@@ -156,7 +156,6 @@ yarn test
 The testing html page can open predefined sequence files as well as use a file chooser to open custom files. The test page consists of
 - the input file
 - the intermediate Sequence Record JSON
-- optional (for testing) teselagen JSON
 - the final CGView JSON
 - the CGView Map created from the JSON
 - a log of output messages

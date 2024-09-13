@@ -11,6 +11,41 @@ main {
   position: relative;
 }
 
+main.landing {
+  align-items: center;
+  height: 100vh;
+}
+
+/* Landing Page */
+.title-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  /* background-color: lightblue; */
+  min-width: 300px;
+  color: black;
+  margin: auto;
+  margin-top: 50%;
+}
+.title-box .title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+.title-box .btn-main {
+  background-color: #007bcc;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  min-width: 180px;
+  min-height: 30px;
+  margin-bottom: 20px;
+  box-shadow: 1px 1px 20px 1px #888888;
+}
+
+
 .dev-title {
   color: white;
   font-weight: bold;
