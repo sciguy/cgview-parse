@@ -283,7 +283,7 @@ class GTFFeatureFile {
   }
 
   validateRecords(records) {
-    const errors = this.errors;
+    // GTF specific validations
   }
 
 }

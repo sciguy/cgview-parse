@@ -102,6 +102,7 @@ class FeatureFile extends Status {
     let providedFormat = options.format || 'auto';
 
     this._records = [];
+    this._validationIssues = {};
 
     this.nameKeys = options.nameKeys || ['Name', 'Alias', 'gene', 'locus_tag', 'product', 'note', 'db_xref', 'ID'];
 
@@ -131,6 +132,33 @@ class FeatureFile extends Status {
     this.logger.break();
   }
 
+  /////////////////////////////////////////////////////////////////////////////
+  // VALIDATION ISSUES
+  /////////////////////////////////////////////////////////////////////////////
+
+  // File specific issue codes can be set in the delegate: VALIDATION_ISSUE_CODES
+  static get COMMON_VALIDATION_ISSUE_CODES() {
+    return ['missingStart', 'missingStop'];
+  }
+
+  get validationIssues() {
+    return this._validationIssues || {};
+  }
+
+  addValidationIssue(issueCode, message) {
+    const delegateIssueCodes = this.delegate?.VALIDATION_ISSUE_CODES || [];
+    const allowedCodes = [...FeatureFile.COMMON_VALIDATION_ISSUE_CODES, ...delegateIssueCodes];
+    if (!allowedCodes.includes(issueCode)) {
+      this._fail("ERROR: Invalid validiation issue code: " + issueCode);
+      return;
+    }
+    const validationIssues = this.validationIssues;
+    if (validationIssues[issueCode]) {
+      validationIssues[issueCode].push(message);
+    } else {
+      validationIssues[issueCode] = [message];
+    }
+  }
 
   /////////////////////////////////////////////////////////////////////////////
   // FILE FORMAT
@@ -257,7 +285,6 @@ class FeatureFile extends Status {
 
     const format = this.displayFileFormat || this.inputFormat.toUpperCase();
 
-    // this.logger.break('--------------------------------------------\n')
     this.logger.divider();
     this._info('Parsing Summary:');
     this._info(`- Input File Format:`, { padded: format });
@@ -374,15 +401,39 @@ class FeatureFile extends Status {
       this.validateRecords(records, options);
 
       // General Validations
-      // - required keys: start, stops
+      // - start < stop?
       // - records marked valid
-      // - Are there any records?
-      // TODO: this may go above the validateRecords call
 
       // No Records
       // console.log(records)
       if (records.length === 0) {
         this._fail('- Failed: No records found in the file.');
+      }
+
+      // Common Validations
+      // - required keys: start, stops
+      for (let record of records) {
+        if (!Number.isInteger(record.start)) {
+          record.valid = false;
+          this.addValidationIssue('missingStart');
+        };
+        if (!Number.isInteger(record.stop)) {
+          record.valid = false;
+          this.addValidationIssue('missingStop');
+        }
+      }
+
+      // Check Issues
+      const validationIssues = this.validationIssues;
+
+      // Missing Starts and Stops
+      const missingStartErrors = validationIssues['missingStart'] || [];
+      if (missingStartErrors.length) {
+        this._fail('- Records missing Starts: ', { padded: missingStartErrors.length });
+      }
+      const missingStopErrors = validationIssues['missingStart'] || [];
+      if (missingStopErrors.length) {
+        this._fail('- Records missing Stops: ', { padded: missingStopErrors.length });
       }
 
       if (this.passed) {

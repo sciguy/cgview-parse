@@ -248,7 +248,7 @@ class GFF3FeatureFile {
   }
 
   validateRecords(records) {
-    const errors = this.errors;
+    // GFF3 specific validations
   }
 
 }

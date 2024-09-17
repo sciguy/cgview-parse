@@ -2188,7 +2188,7 @@ var CGParse = (function () {
     }
 
     validateRecords(records) {
-      this.errors;
+      // GFF3 specific validations
     }
 
   }
@@ -2466,7 +2466,7 @@ var CGParse = (function () {
     }
 
     validateRecords(records) {
-      this.errors;
+      // GTF specific validations
     }
 
   }
@@ -2478,14 +2478,13 @@ var CGParse = (function () {
 
     constructor(file, options={}) {
         this._file = file;
-        this._validationIssues = {};
         this._options = options;
         this.logger = options.logger || new Logger();
         this._lineCount = 0;
     }
 
-    static get VALIDATION_ISSUE_CODES() {
-      return ['thickStartNotMatchingStart', 'thickEndNotMatchingEnd', 'missingStart', 'missingStop'];
+    get VALIDATION_ISSUE_CODES() {
+      return ['thickStartNotMatchingStart', 'thickEndNotMatchingEnd'];
     }
 
     get file() {
@@ -2515,7 +2514,7 @@ var CGParse = (function () {
     //   - missingStart
     //   - missingStop
     get validationIssues() {
-      return this._validationIssues || {};
+      return this.file.validationIssues || {};
     }
 
 
@@ -2563,20 +2562,8 @@ var CGParse = (function () {
       return true;
     }
 
-    // CONSIDER:
-    // - addValidationWarning
-    // - addValidationError
     addValidationIssue(issueCode, message) {
-      if (!BEDFeatureFile.VALIDATION_ISSUE_CODES.includes(issueCode)) {
-        this._fail("ERROR: Invalid validiation issue code: " + issueCode);
-        return;
-      }
-      const validationIssues = this.validationIssues;
-      if (validationIssues[issueCode]) {
-        validationIssues[issueCode].push(message);
-      } else {
-        validationIssues[issueCode] = [message];
-      }
+      this.file.addValidationIssue(issueCode, message);
     }
 
     parse(fileText, options={}) {
@@ -2617,14 +2604,14 @@ var CGParse = (function () {
         valid: true,
       };
 
-      if (isNaN(record.start)) {
-          this.addValidationIssue('missingStart');
-          record.valid = false;
-      }
-      if (isNaN(record.stop)) {
-          this.addValidationIssue('missingStop');
-          record.valid = false;
-      }
+      // if (isNaN(record.start)) {
+      //     this.addValidationIssue('missingStart');
+      //     record.valid = false;
+      // }
+      // if (isNaN(record.stop)) {
+      //     this.addValidationIssue('missingStop');
+      //     record.valid = false;
+      // }
 
       // Score
       const score = parseFloat(fields[4]);
@@ -2686,6 +2673,7 @@ var CGParse = (function () {
     }
 
     validateRecords(records) {
+      // BED Specific Validation
       const validationIssues = this.validationIssues;
       // ThickStart and ThickEnd Warnings
       const thickStartErrors = validationIssues['thickStartNotMatchingStart'] || [];
@@ -2699,22 +2687,6 @@ var CGParse = (function () {
       if (thickStartErrors.length || thickEndErrors.length) {
         this._warn(`- NOTE: thickStart and thickEnd are ignored by this parser`);
       }
-
-      // Missing Starts and Stops
-      // const missingStarts = records.filter((record) => isNaN(record.start));
-      const missingStartErrors = validationIssues['missingStart'] || [];
-      if (missingStartErrors.length) {
-        // this._fail(`- Records missing Starts: ${missingStarts.length.toLocaleString().padStart(5)}`);
-        // this._fail('- Records missing Starts: ', { padded: missingStarts.length });
-        this._fail('- Records missing Starts: ', { padded: missingStartErrors.length });
-      }
-      // const missingStops = records.filter((record) => isNaN(record.stop));
-      const missingStopErrors = validationIssues['missingStart'] || [];
-      if (missingStopErrors.length) {
-        // this._fail(`- Records missing Stops: ${missingStops.length.toLocaleString().padStart(6)}`);
-        // this._fail('- Records missing Stops: ', { padded: missingStops.length });
-        this._fail('- Records missing Stops: ', { padded: missingStopErrors.length });
-      }
     }
 
   }
@@ -2724,10 +2696,15 @@ var CGParse = (function () {
   // - Can be CSV or TSV
   // - header line can be optional but then you need to state what each column is with columnMap
   // - columnMap: internal column names (keys) to column names in the file (or indexes)
+  //   - column keys: contig, start, stop, name, score, strand, type, legend, codonStart
+  //   - possible future keys:
+  //     - tags, meta, visible, favorite, geneticCode, attributes, qualifiers,
+  //     - locations, centerOffsetAdjustment, proportionOfThickness
   //   - when using numbers to represent column indices, they are 0-based (MAYBE CHANGE THIS AFTER)
   //     - and they must be numbers NOT strings (e.g. use 1, not "1")
   //   - column names are case-insensitive
   //   - keys are case-sensitive
+  //   - default values are the internal column keys
 
   class CSVFeatureFile {
 
@@ -2740,52 +2717,7 @@ var CGParse = (function () {
         this._lineCount = 0;
         this._noHeader = (options.noHeader === undefined) ? false : options.noHeader;
         this.onlyColumns = options.onlyColumns || [];
-        // this._columnMap = this.createColumnMap(options.columnMap);
         this._columnMap = options.columnMap || {};
-        console.log('Column Map:', this.columnMap);
-        // this.columnIndexMap = this.createColumnIndexMap(options.columnMap);
-
-        // if (this.noHeader) {
-        //   // this.logger.info('- Header: Present');
-        //   // Check that the columnMap values are all integers
-        //   if (Object.values(this.columnMap).some((value) => isNaN(value))) {
-        //     this._fail(`- ColumnMap values must be integers when there is no header`);
-        //   }
-        // }
-
-        // Valdiate ColumnMap
-        // - Check that all the required columns are present
-        // - Check that there are no extra columns
-        // - Check that the columns are in the correct order
-        // - Check that the columns are not duplicated
-        // - Check that the columns are not empty
-
-        // options for column mapping
-        // Keys: internal column names, values: column names in the file (or indexes)
-        // - default values are the internal column names
-        // this._columnMap = {};
-        // columns:
-        // - contig
-        // - start
-        // - stop
-        // - name
-        // - score
-        // - strand
-        // - type
-        // - legend
-        // - codonStart
-        // - ---------
-        // - tags?
-        // - meta?
-        // - visible?
-        // - favorite?
-        // - geneticCode?
-        // - attributes?
-        // - qualifiers?
-        // - locations?
-        // - centerOffsetAdjustment?
-        // - proportionOfThickness?
-
     }
 
     static get defaultColumnMap() {
@@ -2813,14 +2745,6 @@ var CGParse = (function () {
     set columnIndexToKeyMap(value) {
       this._columnIndexToKeyMap = value;
     }
-
-    // get columnIndexMap() {
-    //   return this._columnIndexMap;
-    // }
-
-    // set columnIndexMap(value) {
-    //   this._columnIndexMap = value;
-    // }
 
     get file() {
         return this._file;
@@ -2851,7 +2775,6 @@ var CGParse = (function () {
     }
 
     get hasHeader() {
-      // return this._hasHeader;
       return !this._noHeader;
     }
     get noHeader() {
@@ -2879,61 +2802,6 @@ var CGParse = (function () {
     _fail(message, options={}) {
       this.file._fail(message, options);
     }
-
-
-
-    // createColumnMap(columnMap={}) {
-    //   // Check that all keys are valid
-    //   const validKeys = Object.keys(this.defaultColumnMap);
-    //   const columnKeys = Object.keys(columnMap);
-    //   for (const key of columnKeys) {
-    //     if (!validKeys.includes(key)) {
-    //       this._fail(`- Invalid column key: ${key}`);
-    //     }
-    //   }
-
-    //   let newColumnMap = {};
-
-    //   if (this.noHeader) {
-    //     this.logger.info('- Header: No');
-    //     newColumnMap = {...columnMap};
-    //     // Parse values as integers
-    //     for (const key of Object.keys(newColumnMap)) {
-    //       newColumnMap[key] = parseInt(newColumnMap[key]);
-    //     }
-    //     // Check that the columnMap values are all integers
-    //     if (Object.values(newColumnMap).some((value) => isNaN(value))) {
-    //       this._fail(`- ColumnMap values must be integers when there is no header`);
-    //     }
-    //   } else {
-    //     this.logger.info('- Header: Yes');
-    //     // Combine the default column map with the provided column map
-    //     newColumnMap = {...this.defaultColumnMap, ...columnMap};
-    //   }
-
-    //   // Combine the default column map with the provided column map
-    //   // const newColumnMap = {...this.defaultColumnMap, ...columnMap};
-
-    //   // Remove any columns that are not in the onlyColumns list (if present)
-    //   if (this.onlyColumns.length) {
-    //     const newColumnMapKeys = Object.keys(newColumnMap);
-    //     for (const key of newColumnMapKeys) {
-    //       if (!this.onlyColumns.includes(key)) {
-    //         delete newColumnMap[key];
-    //       }
-    //     }
-    //   }
-
-    //   return newColumnMap;
-    // }
-
-    // internally we use a map of out col names to indexs in the file
-    // externally we will have a list of columns names/indexes with select lists of our internal names
-    // Proksee Interface:
-    // - 3 column table:
-    //   - checkbox: use this column
-    //   - text: column name (from file) or index (if no header is checked)
-    //   - select: internal column name
 
     /**
      * Returns a map of column indexes to internal column keys.
@@ -2974,19 +2842,12 @@ var CGParse = (function () {
 
       let invertedColumnMap = {};
       // Check if all the values are integers
-      // const onlyNumbers = Object.values(columnMap).every((value) => !isNaN(value))
-      // const onlyNumbers = false
       if (this.noHeader) {
         // HEADER: NO
         // Check that the columnMap values are all integers
         if (!Object.values(columnMap).every((value) => Number.isInteger(value))) {
           this._fail(`- ColumnMap values must be integers when there is no header`);
         }
-        // Check that largest value is less than the number of columns
-        // const maxIndex = Math.max(...Object.values(columnIndexMap));
-        // if (maxIndex >= fields.length) {
-        //   this._fail(`- ColumnMap values must be less than the number of columns`);
-        // }
         invertedColumnMap = invertObject(columnMap);
       } else {
         // HEADER: YES
@@ -3011,7 +2872,6 @@ var CGParse = (function () {
             columnIndexToKeyMap[index] = 'ignored';
           }
         }
-
         this._info(`  - ${index}: ${columnIndexToKeyMap[index].padStart(8)}${this.hasHeader ? ` - ${origColumn}` : ''}`);
       }
 
@@ -3043,101 +2903,6 @@ var CGParse = (function () {
       return columnIndexToKeyMap;
     }
 
-    // TODO: Change to lowercase for column names
-    // createColumnIndexMap(columnMap) {
-    createColumnIndexMapFromHeader(line) {
-      const defaultColumnMap = CSVFeatureFile.defaultColumnMap;
-      const columnMap = this.columnMap;
-      let columnIndexMap = {};
-      const fields = line.split(this.separator).map((field) => field.trim().toLowerCase());
-      this.columnCount = fields.length;
-
-      this._info(`- First Line: ${line}`);
-      this._info(`- Column Count: ${fields.length}`);
-
-      // Check that all keys are valid
-      // const validKeys = Object.keys(defaultColumnMap);
-      const validKeys = Object.keys(CSVFeatureFile.columnKeys);
-      // validKeys.push('ignored');
-      const columnKeys = Object.keys(columnMap);
-      for (const key of columnKeys) {
-        if (!validKeys.includes(key)) {
-          this._fail(`- Invalid column key: ${key}`);
-        }
-      }
-
-      // Check if all the values are integers
-      // const onlyNumbers = Object.values(columnMap).every((value) => !isNaN(value))
-      const onlyNumbers = false;
-      if (this.noHeader || onlyNumbers) {
-        if (this.noHeader) {
-          this._info('- Header: No');
-        }
-        columnIndexMap = {...columnMap};
-        // Parse values as integers
-        for (const key of Object.keys(columnIndexMap)) {
-          columnIndexMap[key] = parseInt(columnIndexMap[key]);
-        }
-        // Check that the columnMap values are all integers
-        if (Object.values(columnIndexMap).some((value) => isNaN(value))) {
-          this._fail(`- ColumnMap values must be integers when there is no header`);
-        }
-        // Check that largest value is less than the number of columns
-        const maxIndex = Math.max(...Object.values(columnIndexMap));
-        if (maxIndex >= fields.length) {
-          this._fail(`- ColumnMap values must be less than the number of columns`);
-        }
-      } else {
-        this._info('- Header: Yes');
-        // Check that provided column names are in the header
-        for (const value of Object.values(columnMap)) {
-          // FIXME: lower case if string!!
-          const index = fields.indexOf(value.toLowerCase());
-          // const index = fields.indexOf(value);
-          if (index === -1) {
-            this._fail(`- Column not found in header: ${value}`);
-          }
-        }
-
-        // Combine the default column map with the provided column map
-        const newColumnMap = {...defaultColumnMap, ...columnMap};
-
-        // Convert to values to indexes using the header
-        // Missing (non-required) columns columns will be removed
-        const newColumnMapKeys = Object.keys(newColumnMap);
-        const requiredColumnKeys = ['start', 'stop'];
-        for (const key of newColumnMapKeys) {
-          const index = fields.indexOf(newColumnMap[key].toLowerCase());
-          if (index === -1) {
-            if (requiredColumnKeys.includes(key)) {
-              this._fail(`- Required Column Missing: ${newColumnMap[key]}`);
-            }
-          } else {
-            columnIndexMap[key] = index;
-          }
-        }
-      }
-
-      // Remove any columns that are not in the onlyColumns list (if present)
-      if (this.onlyColumns.length) {
-        for (const key of Object.keys(columnIndexMap)) {
-          if (!this.onlyColumns.includes(key)) {
-            delete columnIndexMap[key];
-          }
-        }
-      }
-
-      // iterate over field names and print out the index and the name
-      this._info("- Column Key Mapping:");
-      this._info(`    #       Key${this.hasHeader ? '   Column Name' : ''}`);
-      for (const [index, origColumn] of fields.entries()) {
-        const keyColumn = Object.keys(columnIndexMap).find(key => columnIndexMap[key] === index) || 'ignored';
-        this._info(`  - ${index}: ${keyColumn.padStart(8)}${this.hasHeader ? ` - ${origColumn}` : ''}`);
-      }
-
-      return columnIndexMap;
-    }
-
     /**
      * Returns the data from the column with the given index
      * @param {Number} index - column index (1-based)
@@ -3167,42 +2932,15 @@ var CGParse = (function () {
       return data;
     }
 
-
-    // TODO check for separator
-    // take upto the first 10 lines (non-empty/non-comment) and check for the separator
+    // Detect the separator based on the first 10 lines of the file
+    // Returns the separator (',' or '\t') or undefined if the separator could not be detected
     // - count how many ',' and how many '\t' are on each line
     // - then check if the counts are consistent. If they are, then assign to commaCount or tabCount
     // - Take the separator with the highest count
     // - If they are undefined (i.e. counts are not consistent), then return an error
-
-    // Returns true if the line matches the CSV format
-    // - line: the first non-empty/non-comment line of the file
-    // static lineMatches(line) {
-    //   const fields = line.split('\t').map((field) => field.trim());
-    //   if (fields.length < 3) {
-    //     return false;
-    //   } else if (fields.length === 10 || fields.length === 11) {
-    //     // BED10 and BED11 are not permitted
-    //     return false;
-    //   } else if (isNaN(fields[1]) || isNaN(fields[2])) {
-    //     return false;
-    //   } else if (fields.length >= 5 && isNaN(fields[4])) {
-    //     return false;
-    //   } else if (fields.length >= 7 && isNaN(fields[6])) {
-    //     return false;
-    //   } else if (fields.length >= 8 && isNaN(fields[7])) {
-    //     return false;
-    //   } else if (fields.length >= 10 && isNaN(fields[9])) {
-    //     return false;
-    //   }
-
-    //   return true;
-    // }
-
-    // Detect the separator based on the first 10 lines of the file
-    // Returns the separator or undefined if the separator could not be detected
     static detectSeparator(fileText) {
-      const testLines = getLines(fileText, { maxLines: 10 });
+      const maxLines = 10;
+      const testLines = getLines(fileText, { maxLines });
 
       let commaCount, tabCount;
       for (const line of testLines) {
@@ -3248,7 +2986,6 @@ var CGParse = (function () {
             // This is the header line or first line of data
             foundHeader = true;
             // Parse the header line
-            // this.columnIndexMap = this.createColumnIndexMapFromHeader(line);
             this.columnIndexToKeyMap = this.createColumnIndexToKeyMapFromHeader(line);
             // Check status
             if (this.file.status === 'failed') {
@@ -3276,7 +3013,6 @@ var CGParse = (function () {
 
     // TODO
     // - Should we check the number of fields and confirm they are all the same?
-    // TODO: handle no header line
     _parseLine(line) {
       this._lineCount++;
       const fields = line.split(this.separator).map((field) => field.trim());
@@ -3335,32 +3071,7 @@ var CGParse = (function () {
     }
 
     validateRecords(records) {
-      // const errors = this.errors;
-      // ThickStart and ThickEnd Warnings
-      // const thickStartErrors = errors['thickStartNotMatchingStart'] || [];
-      // if (thickStartErrors.length) {
-      //   this._warn(`- Features where thickStart != start: ${thickStartErrors.length}`);
-      // }
-      // const thickEndErrors = errors['thickEndNotMatchingEnd'] || [];
-      // if (thickEndErrors.length) {
-      //   this._warn(`- Features where thickEnd != stop: ${thickStartErrors.length}`);
-      // }
-      // if (thickStartErrors.length || thickEndErrors.length) {
-      //   this._warn(`- NOTE: thickStart and thickEnd are ignored by this parser`);
-      // }
-
-      // Missing Starts and Stops
-      const missingStarts = records.filter((record) => isNaN(record.start));
-      if (missingStarts.length) {
-        // this._fail(`- Records missing Starts: ${missingStarts.length.toLocaleString().padStart(5)}`);
-        this._fail('- Records missing Starts: ', { padded: missingStarts.length });
-      }
-      const missingStops = records.filter((record) => isNaN(record.stop));
-      if (missingStops.length) {
-        // this._fail(`- Records missing Stops: ${missingStops.length.toLocaleString().padStart(6)}`);
-        this._fail('- Records missing Stops: ', { padded: missingStops.length });
-      }
-
+      // CSV specific validations
     }
 
   }
@@ -3446,6 +3157,7 @@ var CGParse = (function () {
       let providedFormat = options.format || 'auto';
 
       this._records = [];
+      this._validationIssues = {};
 
       this.nameKeys = options.nameKeys || ['Name', 'Alias', 'gene', 'locus_tag', 'product', 'note', 'db_xref', 'ID'];
 
@@ -3475,6 +3187,33 @@ var CGParse = (function () {
       this.logger.break();
     }
 
+    /////////////////////////////////////////////////////////////////////////////
+    // VALIDATION ISSUES
+    /////////////////////////////////////////////////////////////////////////////
+
+    // File specific issue codes can be set in the delegate: VALIDATION_ISSUE_CODES
+    static get COMMON_VALIDATION_ISSUE_CODES() {
+      return ['missingStart', 'missingStop'];
+    }
+
+    get validationIssues() {
+      return this._validationIssues || {};
+    }
+
+    addValidationIssue(issueCode, message) {
+      const delegateIssueCodes = this.delegate?.VALIDATION_ISSUE_CODES || [];
+      const allowedCodes = [...FeatureFile.COMMON_VALIDATION_ISSUE_CODES, ...delegateIssueCodes];
+      if (!allowedCodes.includes(issueCode)) {
+        this._fail("ERROR: Invalid validiation issue code: " + issueCode);
+        return;
+      }
+      const validationIssues = this.validationIssues;
+      if (validationIssues[issueCode]) {
+        validationIssues[issueCode].push(message);
+      } else {
+        validationIssues[issueCode] = [message];
+      }
+    }
 
     /////////////////////////////////////////////////////////////////////////////
     // FILE FORMAT
@@ -3601,7 +3340,6 @@ var CGParse = (function () {
 
       const format = this.displayFileFormat || this.inputFormat.toUpperCase();
 
-      // this.logger.break('--------------------------------------------\n')
       this.logger.divider();
       this._info('Parsing Summary:');
       this._info(`- Input File Format:`, { padded: format });
@@ -3718,15 +3456,39 @@ var CGParse = (function () {
         this.validateRecords(records, options);
 
         // General Validations
-        // - required keys: start, stops
+        // - start < stop?
         // - records marked valid
-        // - Are there any records?
-        // TODO: this may go above the validateRecords call
 
         // No Records
         // console.log(records)
         if (records.length === 0) {
           this._fail('- Failed: No records found in the file.');
+        }
+
+        // Common Validations
+        // - required keys: start, stops
+        for (let record of records) {
+          if (!Number.isInteger(record.start)) {
+            record.valid = false;
+            this.addValidationIssue('missingStart');
+          };
+          if (!Number.isInteger(record.stop)) {
+            record.valid = false;
+            this.addValidationIssue('missingStop');
+          }
+        }
+
+        // Check Issues
+        const validationIssues = this.validationIssues;
+
+        // Missing Starts and Stops
+        const missingStartErrors = validationIssues['missingStart'] || [];
+        if (missingStartErrors.length) {
+          this._fail('- Records missing Starts: ', { padded: missingStartErrors.length });
+        }
+        const missingStopErrors = validationIssues['missingStart'] || [];
+        if (missingStopErrors.length) {
+          this._fail('- Records missing Stops: ', { padded: missingStopErrors.length });
         }
 
         if (this.passed) {

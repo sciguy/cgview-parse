@@ -8,14 +8,13 @@ class BEDFeatureFile {
 
   constructor(file, options={}) {
       this._file = file;
-      this._validationIssues = {};
       this._options = options;
       this.logger = options.logger || new Logger();
       this._lineCount = 0;
   }
 
-  static get VALIDATION_ISSUE_CODES() {
-    return ['thickStartNotMatchingStart', 'thickEndNotMatchingEnd', 'missingStart', 'missingStop'];
+  get VALIDATION_ISSUE_CODES() {
+    return ['thickStartNotMatchingStart', 'thickEndNotMatchingEnd'];
   }
 
   get file() {
@@ -45,7 +44,7 @@ class BEDFeatureFile {
   //   - missingStart
   //   - missingStop
   get validationIssues() {
-    return this._validationIssues || {};
+    return this.file.validationIssues || {};
   }
 
 
@@ -93,20 +92,8 @@ class BEDFeatureFile {
     return true;
   }
 
-  // CONSIDER:
-  // - addValidationWarning
-  // - addValidationError
   addValidationIssue(issueCode, message) {
-    if (!BEDFeatureFile.VALIDATION_ISSUE_CODES.includes(issueCode)) {
-      this._fail("ERROR: Invalid validiation issue code: " + issueCode);
-      return;
-    }
-    const validationIssues = this.validationIssues;
-    if (validationIssues[issueCode]) {
-      validationIssues[issueCode].push(message);
-    } else {
-      validationIssues[issueCode] = [message];
-    }
+    this.file.addValidationIssue(issueCode, message);
   }
 
   parse(fileText, options={}) {
@@ -153,14 +140,14 @@ class BEDFeatureFile {
       valid: true,
     };
 
-    if (isNaN(record.start)) {
-        this.addValidationIssue('missingStart');
-        record.valid = false;
-    }
-    if (isNaN(record.stop)) {
-        this.addValidationIssue('missingStop');
-        record.valid = false;
-    }
+    // if (isNaN(record.start)) {
+    //     this.addValidationIssue('missingStart');
+    //     record.valid = false;
+    // }
+    // if (isNaN(record.stop)) {
+    //     this.addValidationIssue('missingStop');
+    //     record.valid = false;
+    // }
 
     // Score
     const score = parseFloat(fields[4]);
@@ -222,6 +209,7 @@ class BEDFeatureFile {
   }
 
   validateRecords(records) {
+    // BED Specific Validation
     const validationIssues = this.validationIssues;
     // ThickStart and ThickEnd Warnings
     const thickStartErrors = validationIssues['thickStartNotMatchingStart'] || [];
@@ -234,22 +222,6 @@ class BEDFeatureFile {
     }
     if (thickStartErrors.length || thickEndErrors.length) {
       this._warn(`- NOTE: thickStart and thickEnd are ignored by this parser`);
-    }
-
-    // Missing Starts and Stops
-    // const missingStarts = records.filter((record) => isNaN(record.start));
-    const missingStartErrors = validationIssues['missingStart'] || [];
-    if (missingStartErrors.length) {
-      // this._fail(`- Records missing Starts: ${missingStarts.length.toLocaleString().padStart(5)}`);
-      // this._fail('- Records missing Starts: ', { padded: missingStarts.length });
-      this._fail('- Records missing Starts: ', { padded: missingStartErrors.length });
-    }
-    // const missingStops = records.filter((record) => isNaN(record.stop));
-    const missingStopErrors = validationIssues['missingStart'] || [];
-    if (missingStopErrors.length) {
-      // this._fail(`- Records missing Stops: ${missingStops.length.toLocaleString().padStart(6)}`);
-      // this._fail('- Records missing Stops: ', { padded: missingStops.length });
-      this._fail('- Records missing Stops: ', { padded: missingStopErrors.length });
     }
   }
 
