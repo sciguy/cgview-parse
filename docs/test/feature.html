@@ -19,8 +19,8 @@
     <script src="../scripts/d3.min.js"></script>
     <!-- CGView -->
     <script src='../scripts/cgview.js'></script>
-    <!-- <script src='../dist/CGParse.js'></script> -->
-    <script src='../scripts/CGParse.min.js'></script>
+    <script src='../../dist/CGParse.js'></script>
+    <!-- <script src='../scripts/CGParse.min.js'></script> -->
 
     <link rel="stylesheet" href="../styles/cgview.css" />
     <link rel="stylesheet" href="../styles/controls.css" />
@@ -120,7 +120,7 @@
               <div><input id='option-show-seq-json' type='checkbox' checked /> Show Feature JSON</div>
               <div><input id='option-show-cgv-json' type='checkbox' checked /> Show CGView JSON</div>
               <div><input id='option-filter-seq' type='checkbox' checked /> Filter Sequence <span class='muted'>(r)</span></div>
-              <select id='format-select' class='form-select form-select-sm'>
+              <select id='format-select' class='small-select form-select form-select-sm'>
                 <option value='auto'>Auto</option>
                 <option value='csv'>CSV</option>
                 <option value='tsv'>TSV</option>
@@ -137,8 +137,13 @@
           <div id="csv-options">
           <div class='section-heading'>CSV/TSV Options</div>
           <div class='options-container'>
-            <div><input id='option-no-header' type='checkbox' /> No Header</div>
-            <div id="csv-columns"></div>
+            <div>
+              <div><input id='option-no-header' type='checkbox' /> No Header</div>
+              <table>
+                <thead><tr><th>#</th><th>Attribute</th><th>Data</th></tr></thead>
+                <tbody id="csv-columns"></tbody>
+              </table>
+            </div>
           </div>
           </div>
 

@@ -150,6 +150,21 @@ export function getLines(text, options={}) {
   return options.maxLines ? filteredLines.slice(0, options.maxLines) : filteredLines;
 }
 
+// Invert an object so the keys are values and the values are keys
+// - lowercaseKeys: if true, the keys will be lowercased
+// - Note: this assumes the values are unique
+export function invertObject(obj, lowercaseKeys=false) {
+  const inverted = {};
+  for (const key of Object.keys(obj)) {
+    let origValue = obj[key];
+    if (lowercaseKeys && typeof origValue === 'string') {
+      origValue = origValue.toLowerCase();
+    }
+    inverted[origValue] = key;
+  }
+  return inverted;
+}
+
 // ----------------------------------------------------------------------------
 // SEQUENCE METHODS
 // ----------------------------------------------------------------------------

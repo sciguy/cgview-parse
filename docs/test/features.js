@@ -2,6 +2,8 @@
 // Settings
 ///////////////////////////////////////////////////////////////////////////////
 
+// import CSVFeatureFile from "../../src/Features/FeatureFileFormats/CSVFeatureFile";
+
 // Initial input file to load: '', 'file', or input from input.js (e.g. 'mito')
 // const defaultMap = '';     // Empty
 // const defaultMap = 'file'; // File Choose
@@ -199,6 +201,7 @@ fileInput.addEventListener('change', (event) => {
     const inputTextDiv = document.getElementById('input-text');
     var contents = e.target.result;
     inputTextDiv.innerHTML = contents;
+    createCSVColumns();
     runParse();
   };
 
@@ -227,9 +230,90 @@ function loadInputFromID(id) {
     const inputText = request.responseText;
     console.log("Loaded Map", inputText)
     inputTextDiv.innerHTML = inputText;
+    createCSVColumns();
     runParse();
   };
   request.send();
+}
+///////////////////////////////////////////////////////////////////////////////
+// CSV/TSV Columns
+///////////////////////////////////////////////////////////////////////////////
+
+// - columnMap should be:
+//   - key: column name or index
+// - columnIndexMap should be:
+//   - columnKeyIndexMap should be:
+//   - key: column index
+// - we need an iverted version:
+//   - index: key
+//   - columnIndexKeyMap
+// - keys: contig, name, start, stop, strand, score, ignored, etc
+// 
+// defaultColumnMap should be static property of the delegate
+// also add columnKeys as static property of the delegate
+
+
+function createCSVColumns(providedColumnMap={}) {
+  const selectedFormat = formatSelect.value;
+  const noHeader = noHeaderCheckbox.checked;
+  if (selectedFormat !== 'csv' && selectedFormat !== 'tsv') { return; }
+
+  const csvColumns = document.getElementById('csv-columns');
+  const csvText = document.getElementById('input-text').textContent;
+
+  const featureFile = new CGParse.FeatureFile(csvText, {format: selectedFormat, maxLogCount: 1, columnMap: providedColumnMap, noHeader: noHeader});
+
+
+  const columnKeys = CGParse.CSVFeatureFile.columnKeys;
+  columnKeys.unshift('ignored');
+
+  const csvFile = featureFile.delegate;
+  const columnIndexToKeyMap = csvFile?.columnIndexToKeyMap || {};
+  const columnCount = csvFile?.columnCount;
+
+  const separator = (selectedFormat === 'csv') ? ',' : '\t';
+  const columnData = CGParse.CSVFeatureFile.columnData(csvText, separator, 5);
+
+  console.log("----------------------------------")
+  console.log(columnIndexToKeyMap)
+  console.log(columnData)
+  console.log("----------------------------------")
+
+  const rows = [];
+  for (let i = 0; i < columnCount; i++) {
+    const header = noHeader ? "" : columnData[i][0];
+    // Join data for the index together with a comma. but if noHeader is false, skip the first row
+    if (!noHeader) { columnData[i].shift(); }
+    const data = `<span class='data-line'>${columnData[i].join(', ')}</span>`;
+
+    const options = columnKeys.map((key) => {
+      let selected = '';
+      if (columnIndexToKeyMap[i] === key) {
+        selected = 'selected';
+      }
+      return `<option value='${key}' ${selected}>${key}</option>`;
+    });
+
+    const colKeySelect = `<select class='small-select form-select form-select-sm'>${options}</select>`;
+    rows.push(`<tr><td>${i}</td><td>${colKeySelect}</td><td class='data-col'><span class='data-header'>${header}</span>: ${data}</td></tr>`);
+  };
+  csvColumns.innerHTML = rows.join('\n');
+}
+
+function getCSVColumnMap() {
+  const csvColumns = document.getElementById('csv-columns');
+  const rows = csvColumns.querySelectorAll('tr');
+  const columnMap = {};
+  rows.forEach((row) => {
+    const select = row.querySelector('select');
+    const columnIndex = parseInt(row.querySelector('td').textContent);
+    const columnKey = select.value;
+    columnMap[columnKey] = columnIndex;
+  });
+  console.log("***************");
+  console.log(columnMap);
+  console.log("***************");
+  return columnMap;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -239,7 +323,7 @@ function loadInputFromID(id) {
 // - Fastest is going right to map (no innerHTML)
 // - When using innerHTML, it is faster when the sequence is replaced
 // - Prism.highlight is slowest step
-function runParse() {
+function runParse(columnMap) {
   window.json = {}; // For debugging
   const inputTextDiv = document.getElementById('input-text');
   const outputSeqJsonDiv = document.getElementById('output-seq-json');
@@ -256,9 +340,18 @@ function runParse() {
 
   const selectedFormat = formatSelect.value;
 
+  let parseColumnMap;
+  if (selectedFormat === 'csv' || selectedFormat === 'tsv') {
+    parseColumnMap = columnMap;
+    console.log("---------")
+    console.log(parseColumnMap)
+    console.log("---------")
+  }
+
+
   // Parse to featureJson
   const featureJsonStartTime = new Date().getTime();
-  const featureFile = new CGParse.FeatureFile(inputText, {format: selectedFormat, maxLogCount: 1, noHeader: noHeaderCheckbox.checked});
+  const featureFile = new CGParse.FeatureFile(inputText, {format: selectedFormat, maxLogCount: 1, noHeader: noHeaderCheckbox.checked, columnMap: parseColumnMap});
   const featureJSON = featureFile.records;
   json.featureFile = featureFile; // For debugging
   console.log(featureJSON)
@@ -345,7 +438,9 @@ function filterJSONText(text) {
 const reparseBtn = document.getElementById('reparse-btn');
 reparseBtn.addEventListener('click', (e) => {
   console.log("Reparse...")
-  runParse();
+  const columnMap = getCSVColumnMap();
+  createCSVColumns(columnMap);
+  runParse(columnMap);
 });
 
 showInputCheckbox.addEventListener('click', (e) => {

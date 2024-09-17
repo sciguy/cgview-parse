@@ -6,7 +6,8 @@ import * as helpers from '../../Support/Helpers.js';
 // - Can be CSV or TSV
 // - header line can be optional but then you need to state what each column is with columnMap
 // - columnMap: internal column names (keys) to column names in the file (or indexes)
-//   - when using numbers to represent columns, they are 0-based (MAYBE CHANGE THIS AFTER)
+//   - when using numbers to represent column indices, they are 0-based (MAYBE CHANGE THIS AFTER)
+//     - and they must be numbers NOT strings (e.g. use 1, not "1")
 //   - column names are case-insensitive
 //   - keys are case-sensitive
 
@@ -23,6 +24,7 @@ class CSVFeatureFile {
       this.onlyColumns = options.onlyColumns || [];
       // this._columnMap = this.createColumnMap(options.columnMap);
       this._columnMap = options.columnMap || {};
+      console.log('Column Map:', this.columnMap);
       // this.columnIndexMap = this.createColumnIndexMap(options.columnMap);
 
       // if (this.noHeader) {
@@ -68,7 +70,7 @@ class CSVFeatureFile {
 
   }
 
-  get defaultColumnMap() {
+  static get defaultColumnMap() {
     return {
       contig: 'contig',
       start: 'start',
@@ -82,13 +84,25 @@ class CSVFeatureFile {
     };
   }
 
-  get columnIndexMap() {
-    return this._columnIndexMap;
+  static get columnKeys() {
+    return Object.keys(CSVFeatureFile.defaultColumnMap);
   }
 
-  set columnIndexMap(value) {
-    this._columnIndexMap = value;
+  get columnIndexToKeyMap() {
+    return this._columnIndexToKeyMap;
   }
+
+  set columnIndexToKeyMap(value) {
+    this._columnIndexToKeyMap = value;
+  }
+
+  // get columnIndexMap() {
+  //   return this._columnIndexMap;
+  // }
+
+  // set columnIndexMap(value) {
+  //   this._columnIndexMap = value;
+  // }
 
   get file() {
       return this._file;
@@ -203,19 +217,130 @@ class CSVFeatureFile {
   //   - text: column name (from file) or index (if no header is checked)
   //   - select: internal column name
 
+  /**
+   * Returns a map of column indexes to internal column keys.
+   * Every column will be represented in the map.
+   * Currently, the index is 0-based but this may change to 1-based.
+   */
+  createColumnIndexToKeyMapFromHeader(line) {
+    const defaultColumnMap = CSVFeatureFile.defaultColumnMap;
+    const columnMap = this.columnMap;
+    const columnIndexToKeyMap = {};
+
+    // Split the line into fields and get the column count
+    const fields = line.split(this.separator).map((field) => field.trim().toLowerCase());
+    this.columnCount = fields.length;
+    this._info(`- First Line: ${line}`);
+    this._info(`- Column Count: ${fields.length}`);
+    if (this.onlyColumns.length) {
+      this._info(`- Only Columns: ${this.onlyColumns.join(', ')}`);
+    }
+
+    // Return empty object if line was empty
+    // Note: This actually shouldn't ever happen because we check for empty lines when parsing
+    if (fields.length === 1 && fields[0] === '') {
+      this._fail(`- Empty frst line`);
+      return {};
+    }
+
+    // Check that all keys are valid
+    const validKeys = CSVFeatureFile.columnKeys
+    validKeys.push('ignored');
+    const columnKeys = Object.keys(columnMap);
+    for (const key of columnKeys) {
+      if (!validKeys.includes(key)) {
+        this._fail(`- Invalid column key: ${key}`);
+      }
+    }
+    this._info(`- Header: ${this.hasHeader ? 'Yes' : 'No'}`);
+
+    let invertedColumnMap = {};
+    // Check if all the values are integers
+    // const onlyNumbers = Object.values(columnMap).every((value) => !isNaN(value))
+    // const onlyNumbers = false
+    if (this.noHeader) {
+      // HEADER: NO
+      // Check that the columnMap values are all integers
+      if (!Object.values(columnMap).every((value) => Number.isInteger(value))) {
+        this._fail(`- ColumnMap values must be integers when there is no header`);
+      }
+      // Check that largest value is less than the number of columns
+      // const maxIndex = Math.max(...Object.values(columnIndexMap));
+      // if (maxIndex >= fields.length) {
+      //   this._fail(`- ColumnMap values must be less than the number of columns`);
+      // }
+      invertedColumnMap = helpers.invertObject(columnMap);
+    } else {
+      // HEADER: YES
+      // Merge the default column map with the provided column map
+      const newColumnMap = {...defaultColumnMap, ...columnMap};
+      invertedColumnMap = helpers.invertObject(newColumnMap, true);
+    }
+
+    // Create the column index to key map
+    this._info("- Column Key Mapping:")
+    this._info(`    #       Key${this.hasHeader ? '   Column Name' : ''}`)
+    for (const [index, origColumn] of fields.entries()) {
+      if (invertedColumnMap[index]) {
+        columnIndexToKeyMap[index] = invertedColumnMap[index];
+      } else if (invertedColumnMap[origColumn]) {
+        columnIndexToKeyMap[index] = invertedColumnMap[origColumn];
+      } else {
+        columnIndexToKeyMap[index] = 'ignored';
+      }
+      if (this.onlyColumns.length && columnIndexToKeyMap[index] != 'ignored') {
+        if (!this.onlyColumns.includes(columnIndexToKeyMap[index])) {
+          columnIndexToKeyMap[index] = 'ignored';
+        }
+      }
+
+      this._info(`  - ${index}: ${columnIndexToKeyMap[index].padStart(8)}${this.hasHeader ? ` - ${origColumn}` : ''}`);
+    }
+
+    // Check for required columns
+    const requiredColumnKeys = ['start', 'stop'];
+    const keysPresent = Object.values(columnIndexToKeyMap);
+    for (const key of requiredColumnKeys) {
+      if (!keysPresent.includes(key)) {
+        this._fail(`- Required Column Missing: ${key}`);
+      }
+    }
+
+    // Check that provided column names are in the header
+    // And that provided column indexes are within the range of the header
+    const providedColumnValues = Object.values(columnMap);
+    for (const nameOrIndex of providedColumnValues) {
+      if (typeof nameOrIndex === 'number') {
+        if (nameOrIndex >= fields.length) {
+          this._fail(`- Column index out of range (${invertedColumnMap[nameOrIndex]}): ${nameOrIndex}`);
+        }
+      } else if (typeof nameOrIndex === 'string') {
+        const name = nameOrIndex.toLowerCase();
+        if (!fields.includes(name)) {
+          this._fail(`- Column name not found in header  (${invertedColumnMap[nameOrIndex]}): ${nameOrIndex}`);
+        }
+      }
+    }
+
+    return columnIndexToKeyMap;
+  }
+
   // TODO: Change to lowercase for column names
   // createColumnIndexMap(columnMap) {
   createColumnIndexMapFromHeader(line) {
-    const defaultColumnMap = this.defaultColumnMap;
+    const defaultColumnMap = CSVFeatureFile.defaultColumnMap;
     const columnMap = this.columnMap;
     let columnIndexMap = {};
     const fields = line.split(this.separator).map((field) => field.trim().toLowerCase());
+    this.columnCount = fields.length;
 
     this._info(`- First Line: ${line}`);
     this._info(`- Column Count: ${fields.length}`);
 
     // Check that all keys are valid
-    const validKeys = Object.keys(defaultColumnMap);
+    // const validKeys = Object.keys(defaultColumnMap);
+    const validKeys = Object.keys(CSVFeatureFile.columnKeys);
+    // validKeys.push('ignored');
     const columnKeys = Object.keys(columnMap);
     for (const key of columnKeys) {
       if (!validKeys.includes(key)) {
@@ -223,8 +348,13 @@ class CSVFeatureFile {
       }
     }
 
-    if (this.noHeader) {
-      this._info('- Header: No');
+    // Check if all the values are integers
+    // const onlyNumbers = Object.values(columnMap).every((value) => !isNaN(value))
+    const onlyNumbers = false
+    if (this.noHeader || onlyNumbers) {
+      if (this.noHeader) {
+        this._info('- Header: No');
+      }
       columnIndexMap = {...columnMap};
       // Parse values as integers
       for (const key of Object.keys(columnIndexMap)) {
@@ -243,14 +373,16 @@ class CSVFeatureFile {
       this._info('- Header: Yes');
       // Check that provided column names are in the header
       for (const value of Object.values(columnMap)) {
+        // FIXME: lower case if string!!
         const index = fields.indexOf(value.toLowerCase());
+        // const index = fields.indexOf(value);
         if (index === -1) {
           this._fail(`- Column not found in header: ${value}`);
         }
       }
 
       // Combine the default column map with the provided column map
-      const newColumnMap = {...this.defaultColumnMap, ...columnMap};
+      const newColumnMap = {...defaultColumnMap, ...columnMap};
 
       // Convert to values to indexes using the header
       // Missing (non-required) columns columns will be removed
@@ -286,14 +418,37 @@ class CSVFeatureFile {
     }
 
     return columnIndexMap;
+  }
 
-    // Check for required columns
-    // const requiredKeys = ['start', 'stop'];
-    // for (const key of requiredKeys) {
-    //   if (!columnKeys.includes(key)) {
-    //     this._fail(`- Missing required column: ${key}`);
-    //   }
-    // }
+  /**
+   * Returns the data from the column with the given index
+   * @param {Number} index - column index (1-based)
+   * @param {Number} itemCount - number of items (rows of data) in the column to be returned.
+   *  If undefined, all items will be returned.
+   * @returns {Array} - array of data for the column
+   */
+  static columnData(text, separator, count) {
+    const lines = text.split('\n');
+    const data = [];
+    let rowCount = 0
+    for (let line of lines) {
+      if (rowCount === count) {
+        break;
+      }
+      if (line.startsWith('#') || line.trim() === '') {
+        // This is a comment or blank line: Do nothing
+      } else {
+        rowCount++;
+        const fields = line.split(separator).map((field) => field.trim());
+        for (let i = 0; i < fields.length; i++) {
+          if (!data[i]) {
+            data[i] = [];
+          }
+          data[i].push(fields[i]);
+        }
+      }
+    }
+    return data;
   }
 
 
@@ -374,8 +529,7 @@ class CSVFeatureFile {
     const records = [];
     let foundHeader = false;
     const lines = fileText.split('\n');
-    let line;
-    for (line of lines) {
+    for (let line of lines) {
       if (line.startsWith('#')) {
         // This is a comment line
         // Do nothing
@@ -387,7 +541,8 @@ class CSVFeatureFile {
           // This is the header line or first line of data
           foundHeader = true;
           // Parse the header line
-          this.columnIndexMap = this.createColumnIndexMapFromHeader(line);
+          // this.columnIndexMap = this.createColumnIndexMapFromHeader(line);
+          this.columnIndexToKeyMap = this.createColumnIndexToKeyMapFromHeader(line);
           // Check status
           if (this.file.status === 'failed') {
             return [];
@@ -444,7 +599,10 @@ class CSVFeatureFile {
     if (!['string', 'integer', 'float', 'strand'].includes(parseAs)) {
       throw new Error(`Invalid parseAs value: ${parseAs}`);
     }
-    const colMap = this.columnIndexMap;
+
+    // const colMap = this.columnIndexMap;
+    const colMap = helpers.invertObject(this.columnIndexToKeyMap);
+
     if (colMap[field] !== undefined) {
       const index = colMap[field];
       if (fields[index] !== undefined) {

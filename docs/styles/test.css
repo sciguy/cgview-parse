@@ -89,7 +89,9 @@ main.landing {
 }
 
 .section-sidebar {
-  flex-basis: 25%;
+  /* flex-basis: 25%; */
+  flex-basis: 325px;
+  min-width: 325px;
 }
 
 #file-section {
@@ -161,15 +163,36 @@ main.landing {
 }
 
 #format-select {
+  position: absolute;
+  top: 0px;
+  left: 5px;
+}
+.small-select {
   font-size: 10px;
   padding: 0px 5px;
   font-weight: bold;
   border: 1px solid #DDD;
   border-radius: 3px;
-  position: absolute;
   width: 90px;
-  top: 0px;
-  left: 5px;
+}
+
+.data-col {
+  display: flex;
+  flex-wrap: nowrap;
+  font-size: 10px;
+}
+.data-header {
+  font-weight: bold;
+  font-size: 10px;
+}
+.data-line {
+  /* single line with truncation and ellipsis */
+  padding-left: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: grey;
+  font-size: 10px;
 }
 
 #open-in-proksee-btn {

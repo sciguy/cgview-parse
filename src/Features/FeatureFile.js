@@ -98,6 +98,7 @@ class FeatureFile extends Status {
   constructor(inputText, options={}) {
     super(options, 'PARSING FEATURE FILE');
     const convertedText = helpers.convertLineEndingsToLF(inputText);
+    this.inputText = convertedText; // used by csv to get column data
     let providedFormat = options.format || 'auto';
 
     this._records = [];
