@@ -26,7 +26,8 @@ import * as helpers from '../Support/Helpers.js';
    */
 export default class Status {
 
-  constructor(options = {}, logTitle) {
+  // constructor(options = {}, logTitle) {
+  constructor(options = {}) {
 
     this._options = options;
 
@@ -37,12 +38,12 @@ export default class Status {
       this.logger.maxLogCount = options.maxLogCount;
     }
     // this.logger.divider();
-    if (logTitle) {
-      this.logger.title(` ${logTitle} `);
-    } else {
-      this.logger.divider();
-    }
-    this._info(`Date: ${new Date().toUTCString()}`);
+    // if (logTitle) {
+    //   this.logger.title(` ${logTitle} `);
+    // } else {
+    //   this.logger.divider();
+    // }
+    // this._info(`Date: ${new Date().toUTCString()}`);
     // this.logVersion();
 
     // Initialize status
@@ -128,6 +129,16 @@ export default class Status {
     if (this.status !== 'fail') {
       this._status = 'warnings';
     }
+  }
+
+  // Header with option title following by the date and time
+  logHeader(title) {
+    if (title) {
+      this.logger.title(` ${title} `);
+    } else {
+      this.logger.divider();
+    }
+    this._info(`Date: ${new Date().toUTCString()}`);
   }
 
   logStatusLine() {

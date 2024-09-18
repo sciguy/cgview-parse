@@ -28,7 +28,9 @@ import * as helpers from '../Support/Helpers.js';
 export default class FeatureBuilder extends Status {
 
   constructor(input, options = {}) {
-    super(options, 'BUILDING FEATURES');
+    // super(options, 'BUILDING FEATURES');
+    super(options);
+    this.logHeader('BUILDING FEATURES');
 
     this.includeFeatures = (options.includeFeatures === undefined) ? true : options.includeFeatures;
     this.excludeFeatures = options.excludeFeatures || ['gene', 'source', 'exon'];

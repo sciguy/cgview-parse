@@ -29,7 +29,8 @@ import * as helpers from '../Support/Helpers.js';
 export default class CGViewBuilder extends Status {
 
   constructor(input, options = {}) {
-    super(options, 'BUILDING CGVIEW JSON');
+    // super(options, 'BUILDING CGVIEW JSON');
+    super(options);
     // this.input = input;
     this.cgvJSONVersion = "1.6.0";
     // this.options = options;
@@ -46,6 +47,7 @@ export default class CGViewBuilder extends Status {
     this.sequenceType = this.seqFile.sequenceType
     if (this.seqFile.passed === true) {
       try {
+        this.logHeader('BUILDING CGVIEW JSON');
         this._json = this._build(this.seqFile.records);
       } catch (error) {
         this._fail('- Failed: An error occurred while building the JSON.', {errorCode: 'parsing'});
@@ -510,7 +512,7 @@ export default class CGViewBuilder extends Status {
     return this._json;
   }
 
-  static fromSequenceText(text, options) {
+  static fromSequenceText(text, options={}) {
     const logger = new Logger({logToConsole: false, showIcons: true});
     const builder = new CGViewBuilder(text, {logger: logger, ...options});
     return {json: builder.toJSON(), log: builder.logger.history()};

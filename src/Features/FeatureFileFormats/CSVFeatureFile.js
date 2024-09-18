@@ -21,7 +21,6 @@ class CSVFeatureFile {
   constructor(file, options={}) {
       this._file = file;
       this._separator = [',', '\t'].includes(options.separator) ? options.separator : ',';
-      // this._errors = {};
       this._options = options;
       this.logger = options.logger || new Logger();
       this._lineCount = 0;
@@ -91,11 +90,6 @@ class CSVFeatureFile {
     return this._noHeader;
   }
 
-  // Returns an object with keys for the error codes and values for the error messages
-  // - errorTypes: ?
-  // get errors() {
-  //   return this._errors || {};
-  // }
 
   /////////////////////////////////////////////////////////////////////////////
   // FeatureFile Methods (Delegate Owner)
@@ -123,6 +117,13 @@ class CSVFeatureFile {
     const columnMap = this.columnMap;
     const columnIndexToKeyMap = {};
 
+    let displayColumnMap = 'None';
+    if (Object.keys(columnMap).length > 0) {
+      displayColumnMap =  JSON.stringify(columnMap);
+      displayColumnMap = displayColumnMap.replace(/{"/g, '{').replace(/,"/g, ',').replace(/":/g, ':');
+    }
+    this._info(`- Provided Column Map: ${displayColumnMap}`);
+
     // Split the line into fields and get the column count
     const fields = line.split(this.separator).map((field) => field.trim().toLowerCase());
     this.columnCount = fields.length;
@@ -149,6 +150,7 @@ class CSVFeatureFile {
       }
     }
     this._info(`- Header: ${this.hasHeader ? 'Yes' : 'No'}`);
+
 
     let invertedColumnMap = {};
     // Check if all the values are integers
@@ -281,15 +283,6 @@ class CSVFeatureFile {
     }
   }
 
-  // addError(errorCode, message) {
-  //   const errors = this.errors;
-  //   if (errors[errorCode]) {
-  //     errors[errorCode].push(message);
-  //   } else {
-  //     errors[errorCode] = [message];
-  //   }
-  // }
-
   parse(fileText, options={}) {
     const records = [];
     let foundHeader = false;
@@ -337,7 +330,6 @@ class CSVFeatureFile {
     this._lineCount++;
     const fields = line.split(this.separator).map((field) => field.trim());
     if (fields.length < 2) {
-      // TODO: use validationErrors
       this._fail(`- Line does not have at least 2 fields: ${line}`);
       return null;
     }

@@ -542,7 +542,8 @@ var CGParse = (function () {
      */
   class Status {
 
-    constructor(options = {}, logTitle) {
+    // constructor(options = {}, logTitle) {
+    constructor(options = {}) {
 
       this._options = options;
 
@@ -553,12 +554,12 @@ var CGParse = (function () {
         this.logger.maxLogCount = options.maxLogCount;
       }
       // this.logger.divider();
-      if (logTitle) {
-        this.logger.title(` ${logTitle} `);
-      } else {
-        this.logger.divider();
-      }
-      this._info(`Date: ${new Date().toUTCString()}`);
+      // if (logTitle) {
+      //   this.logger.title(` ${logTitle} `);
+      // } else {
+      //   this.logger.divider();
+      // }
+      // this._info(`Date: ${new Date().toUTCString()}`);
       // this.logVersion();
 
       // Initialize status
@@ -646,6 +647,16 @@ var CGParse = (function () {
       }
     }
 
+    // Header with option title following by the date and time
+    logHeader(title) {
+      if (title) {
+        this.logger.title(` ${title} `);
+      } else {
+        this.logger.divider();
+      }
+      this._info(`Date: ${new Date().toUTCString()}`);
+    }
+
     logStatusLine() {
       if (this.status === 'success') {
         this.logger.info('- Status: ', { padded: 'Success', icon: 'success' });
@@ -688,7 +699,8 @@ var CGParse = (function () {
   class CGViewBuilder extends Status {
 
     constructor(input, options = {}) {
-      super(options, 'BUILDING CGVIEW JSON');
+      // super(options, 'BUILDING CGVIEW JSON');
+      super(options);
       // this.input = input;
       this.cgvJSONVersion = "1.6.0";
       // this.options = options;
@@ -705,6 +717,7 @@ var CGParse = (function () {
       this.sequenceType = this.seqFile.sequenceType;
       if (this.seqFile.passed === true) {
         try {
+          this.logHeader('BUILDING CGVIEW JSON');
           this._json = this._build(this.seqFile.records);
         } catch (error) {
           this._fail('- Failed: An error occurred while building the JSON.', {errorCode: 'parsing'});
@@ -1168,7 +1181,7 @@ var CGParse = (function () {
       return this._json;
     }
 
-    static fromSequenceText(text, options) {
+    static fromSequenceText(text, options={}) {
       const logger = new Logger({logToConsole: false, showIcons: true});
       const builder = new CGViewBuilder(text, {logger: logger, ...options});
       return {json: builder.toJSON(), log: builder.logger.history()};
@@ -1210,7 +1223,9 @@ var CGParse = (function () {
      * - maxLogCount: number (undefined means no limit) [Default: undefined]
      */
     constructor(inputText, options={}) {
-      super(options, 'PARSING SEQUENCE FILE');
+      // super(options, 'PARSING SEQUENCE FILE');
+      super(options);
+      this.logHeader('PARSING SEQUENCE FILE');
       const convertedText = convertLineEndingsToLF(inputText);
       this.nameKeys = options.nameKeys || ['gene', 'locus_tag', 'product', 'note', 'db_xref'];
 
@@ -1350,7 +1365,7 @@ var CGParse = (function () {
      */
     validateRecordsWrapper(records) {
       try {
-        this._validateRecords(records, options);
+        this._validateRecords(records);
       } catch (error) {
         this._fail('- Failed: An error occurred while validating the records.', {errorCode: 'validating'});
         this._fail(`- ERROR: ${error.message}`);
@@ -2711,7 +2726,6 @@ var CGParse = (function () {
     constructor(file, options={}) {
         this._file = file;
         this._separator = [',', '\t'].includes(options.separator) ? options.separator : ',';
-        // this._errors = {};
         this._options = options;
         this.logger = options.logger || new Logger();
         this._lineCount = 0;
@@ -2781,11 +2795,6 @@ var CGParse = (function () {
       return this._noHeader;
     }
 
-    // Returns an object with keys for the error codes and values for the error messages
-    // - errorTypes: ?
-    // get errors() {
-    //   return this._errors || {};
-    // }
 
     /////////////////////////////////////////////////////////////////////////////
     // FeatureFile Methods (Delegate Owner)
@@ -2813,6 +2822,13 @@ var CGParse = (function () {
       const columnMap = this.columnMap;
       const columnIndexToKeyMap = {};
 
+      let displayColumnMap = 'None';
+      if (Object.keys(columnMap).length > 0) {
+        displayColumnMap =  JSON.stringify(columnMap);
+        displayColumnMap = displayColumnMap.replace(/{"/g, '{').replace(/,"/g, ',').replace(/":/g, ':');
+      }
+      this._info(`- Provided Column Map: ${displayColumnMap}`);
+
       // Split the line into fields and get the column count
       const fields = line.split(this.separator).map((field) => field.trim().toLowerCase());
       this.columnCount = fields.length;
@@ -2839,6 +2855,7 @@ var CGParse = (function () {
         }
       }
       this._info(`- Header: ${this.hasHeader ? 'Yes' : 'No'}`);
+
 
       let invertedColumnMap = {};
       // Check if all the values are integers
@@ -2967,15 +2984,6 @@ var CGParse = (function () {
       }
     }
 
-    // addError(errorCode, message) {
-    //   const errors = this.errors;
-    //   if (errors[errorCode]) {
-    //     errors[errorCode].push(message);
-    //   } else {
-    //     errors[errorCode] = [message];
-    //   }
-    // }
-
     parse(fileText, options={}) {
       const records = [];
       let foundHeader = false;
@@ -3017,7 +3025,6 @@ var CGParse = (function () {
       this._lineCount++;
       const fields = line.split(this.separator).map((field) => field.trim());
       if (fields.length < 2) {
-        // TODO: use validationErrors
         this._fail(`- Line does not have at least 2 fields: ${line}`);
         return null;
       }
@@ -3151,7 +3158,9 @@ var CGParse = (function () {
      * @param {Object} options - See class description
      */
     constructor(inputText, options={}) {
-      super(options, 'PARSING FEATURE FILE');
+      // super(options, 'PARSING FEATURE FILE');
+      super(options);
+      this.logHeader('PARSING FEATURE FILE');
       const convertedText = convertLineEndingsToLF(inputText);
       this.inputText = convertedText; // used by csv to get column data
       let providedFormat = options.format || 'auto';
@@ -3528,7 +3537,9 @@ var CGParse = (function () {
   class FeatureBuilder extends Status {
 
     constructor(input, options = {}) {
-      super(options, 'BUILDING FEATURES');
+      // super(options, 'BUILDING FEATURES');
+      super(options);
+      this.logHeader('BUILDING FEATURES');
 
       this.includeFeatures = (options.includeFeatures === undefined) ? true : options.includeFeatures;
       this.excludeFeatures = options.excludeFeatures || ['gene', 'source', 'exon'];

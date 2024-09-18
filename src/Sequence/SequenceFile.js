@@ -48,7 +48,9 @@ class SequenceFile extends Status {
    * - maxLogCount: number (undefined means no limit) [Default: undefined]
    */
   constructor(inputText, options={}) {
-    super(options, 'PARSING SEQUENCE FILE');
+    // super(options, 'PARSING SEQUENCE FILE');
+    super(options);
+    this.logHeader('PARSING SEQUENCE FILE');
     const convertedText = helpers.convertLineEndingsToLF(inputText);
     this.nameKeys = options.nameKeys || ['gene', 'locus_tag', 'product', 'note', 'db_xref'];
 
@@ -188,7 +190,7 @@ class SequenceFile extends Status {
    */
   validateRecordsWrapper(records) {
     try {
-      this._validateRecords(records, options);
+      this._validateRecords(records);
     } catch (error) {
       this._fail('- Failed: An error occurred while validating the records.', {errorCode: 'validating'});
       this._fail(`- ERROR: ${error.message}`);
