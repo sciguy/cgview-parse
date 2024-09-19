@@ -15,6 +15,9 @@ import * as helpers from '../../Support/Helpers.js';
 //   - column names are case-insensitive
 //   - keys are case-sensitive
 //   - default values are the internal column keys
+//   - if no header, then columnMap values must be integers
+//   - if a columnMap is provided, it must include all columns to import
+//     - missing columns will be ignored
 
 class CSVFeatureFile {
 
@@ -25,7 +28,7 @@ class CSVFeatureFile {
       this.logger = options.logger || new Logger();
       this._lineCount = 0;
       this._noHeader = (options.noHeader === undefined) ? false : options.noHeader;
-      this.onlyColumns = options.onlyColumns || [];
+      // this.onlyColumns = options.onlyColumns || [];
       this._columnMap = options.columnMap || {};
   }
 
@@ -121,6 +124,7 @@ class CSVFeatureFile {
     if (Object.keys(columnMap).length > 0) {
       displayColumnMap =  JSON.stringify(columnMap);
       displayColumnMap = displayColumnMap.replace(/{"/g, '{').replace(/,"/g, ',').replace(/":/g, ':');
+      displayColumnMap = displayColumnMap.replace(/ignored:\d+,?/, '')
     }
     this._info(`- Provided Column Map: ${displayColumnMap}`);
 
@@ -129,9 +133,9 @@ class CSVFeatureFile {
     this.columnCount = fields.length;
     this._info(`- First Line: ${line}`);
     this._info(`- Column Count: ${fields.length}`);
-    if (this.onlyColumns.length) {
-      this._info(`- Only Columns: ${this.onlyColumns.join(', ')}`);
-    }
+    // if (this.onlyColumns.length) {
+    //   this._info(`- Only Columns: ${this.onlyColumns.join(', ')}`);
+    // }
 
     // Return empty object if line was empty
     // Note: This actually shouldn't ever happen because we check for empty lines when parsing
@@ -164,13 +168,14 @@ class CSVFeatureFile {
     } else {
       // HEADER: YES
       // Merge the default column map with the provided column map
-      const newColumnMap = {...defaultColumnMap, ...columnMap};
+      // const newColumnMap = {...defaultColumnMap, ...columnMap};
+      const newColumnMap = Object.keys(columnMap).length ? columnMap : defaultColumnMap;
       invertedColumnMap = helpers.invertObject(newColumnMap, true);
     }
 
     // Create the column index to key map
     this._info("- Column Key Mapping:")
-    this._info(`    #       Key${this.hasHeader ? '   Column Name' : ''}`)
+    this._info(`    #       Key${this.hasHeader ? '   Column Header' : ''}`)
     for (const [index, origColumn] of fields.entries()) {
       if (invertedColumnMap[index]) {
         columnIndexToKeyMap[index] = invertedColumnMap[index];
@@ -179,11 +184,11 @@ class CSVFeatureFile {
       } else {
         columnIndexToKeyMap[index] = 'ignored';
       }
-      if (this.onlyColumns.length && columnIndexToKeyMap[index] != 'ignored') {
-        if (!this.onlyColumns.includes(columnIndexToKeyMap[index])) {
-          columnIndexToKeyMap[index] = 'ignored';
-        }
-      }
+      // if (this.onlyColumns.length && columnIndexToKeyMap[index] != 'ignored') {
+      //   if (!this.onlyColumns.includes(columnIndexToKeyMap[index])) {
+      //     columnIndexToKeyMap[index] = 'ignored';
+      //   }
+      // }
       this._info(`  - ${index}: ${columnIndexToKeyMap[index].padStart(8)}${this.hasHeader ? ` - ${origColumn}` : ''}`);
     }
 

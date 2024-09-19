@@ -225,7 +225,7 @@ gene00001, 300, 400, +
 
     test('- return map with updated column names (case-insensitive)', () => {
       const header = "name, start, enD";
-      const options = {columnMap: {stop: 'End'}};
+      const options = {columnMap: {name: 'name', start: 'start', stop: 'End'}};
       featureFile._status = 'success';
       const csvFile = new CSVFeatureFile(featureFile, options);
       const output = csvFile.createColumnIndexToKeyMapFromHeader(header);
@@ -235,7 +235,7 @@ gene00001, 300, 400, +
 
     test('- fail with unknown columns', () => {
       const header = "start, stop";
-      const options = {columnMap: {bob: 'end'}};
+      const options = {columnMap: {start: 'start', stop: 'stop', bob: 'end'}};
       featureFile._status = 'success';
       const csvFile = new CSVFeatureFile(featureFile, options);
       const output = csvFile.createColumnIndexToKeyMapFromHeader(header);
@@ -261,7 +261,7 @@ gene00001, 300, 400, +
 
     test('- fail with missing columns', () => {
       const header = "start, stop, direction";
-      const options = {columnMap: {strand: 'direct'}};
+      const options = {columnMap: {start: 0, stop: 1, strand: 'direct'}};
       featureFile._status = 'success';
       const csvFile = new CSVFeatureFile(featureFile, options);
       const output = csvFile.createColumnIndexToKeyMapFromHeader(header);
@@ -269,9 +269,9 @@ gene00001, 300, 400, +
       expect(csvFile.file.passed).toBe(false);
     });
 
-    test('- onlyColumns', () => {
+    test('- only extract column in columnMap', () => {
       const header = "start, stop, name";
-      const options = {onlyColumns: ['start', 'stop']};
+      const options = {columnMap: {start: 0, stop: 1}};
       featureFile._status = 'success';
       const csvFile = new CSVFeatureFile(featureFile, options);
       const output = csvFile.createColumnIndexToKeyMapFromHeader(header);

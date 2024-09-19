@@ -66,11 +66,12 @@ import * as helpers from '../Support/Helpers.js';
  * - CSV/TSV
  *   - separator: the separator used in the file (e.g. ',' or '\t') [Default: ',']
  *   - noHeader: boolean [Default: false]
- *   - onlyColumns: array of strings indicating which columns to extract. [Default: [] (all columns)]
+ *   - [REMOVED] onlyColumns: array of strings indicating which columns to extract. [Default: [] (all columns)]
  *   - columnMap: object mapping column names to new names or column number (if no header). [Default: {}]
  *     - e.g. { start: 'chromStart', stop: 'chromEnd' }
  *     - columnKeys: contig, start, stop, strand, name, type, score, legend, codonStart
  *     - Future Keys: tags, qualifiers, meta
+ *     - only the columns provided will be extracted
  */
 class FeatureFile extends Status {
 
@@ -170,7 +171,7 @@ class FeatureFile extends Status {
    * The file format being parsed: 'auto', 'gff3', 'bed', 'csv', 'tsv', 'gtf', 'unknown'
    */
   get inputFormat() {
-    return this.delegate.fileFormat;
+    return this.delegate?.fileFormat;
   }
 
   set inputFormat(format) {
@@ -382,6 +383,12 @@ class FeatureFile extends Status {
     this._info(`Parsing ${this.displayFileFormat} Feature File...`);
     try {
       records = this.parse(fileText, options);
+
+      // Only proceed if passed
+      if (!this.passed) {
+        return [];
+      }
+
       const recordsWithLocationsCount = records.filter((record) => Array.isArray(record.locations)).length;
       this._info('- Features with >1 location: ', { padded: recordsWithLocationsCount });
       this._info('- Done parsing feature file');
@@ -398,6 +405,7 @@ class FeatureFile extends Status {
    * @param {Object} options - options for validation
    */
   validateRecordsWrapper(records, options={}) {
+    if (!this.passed) { return; }
     this.logger.info(`Validating Records ...`);
     try {
       this.validateRecords(records, options);
@@ -433,7 +441,7 @@ class FeatureFile extends Status {
       if (missingStartErrors.length) {
         this._fail('- Records missing Starts: ', { padded: missingStartErrors.length });
       }
-      const missingStopErrors = validationIssues['missingStart'] || [];
+      const missingStopErrors = validationIssues['missingStop'] || [];
       if (missingStopErrors.length) {
         this._fail('- Records missing Stops: ', { padded: missingStopErrors.length });
       }

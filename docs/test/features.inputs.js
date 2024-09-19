@@ -9,6 +9,11 @@ inputs = {
     type: 'csv',
     url: '../inputs/feature_files/CSV/features.tsv',
   },
+  sample_csv_no_header: {
+    name: 'Sample CSV (NO HEADER)',
+    type: 'csv',
+    url: '../inputs/feature_files/CSV/features_no_header.csv',
+  },
   sample_gff3: {
     name: 'Sample GFF3',
     type: 'gff3',

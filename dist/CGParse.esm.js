@@ -2717,6 +2717,9 @@ class BEDFeatureFile {
 //   - column names are case-insensitive
 //   - keys are case-sensitive
 //   - default values are the internal column keys
+//   - if no header, then columnMap values must be integers
+//   - if a columnMap is provided, it must include all columns to import
+//     - missing columns will be ignored
 
 class CSVFeatureFile {
 
@@ -2727,7 +2730,7 @@ class CSVFeatureFile {
       this.logger = options.logger || new Logger();
       this._lineCount = 0;
       this._noHeader = (options.noHeader === undefined) ? false : options.noHeader;
-      this.onlyColumns = options.onlyColumns || [];
+      // this.onlyColumns = options.onlyColumns || [];
       this._columnMap = options.columnMap || {};
   }
 
@@ -2823,6 +2826,7 @@ class CSVFeatureFile {
     if (Object.keys(columnMap).length > 0) {
       displayColumnMap =  JSON.stringify(columnMap);
       displayColumnMap = displayColumnMap.replace(/{"/g, '{').replace(/,"/g, ',').replace(/":/g, ':');
+      displayColumnMap = displayColumnMap.replace(/ignored:\d+,?/, '');
     }
     this._info(`- Provided Column Map: ${displayColumnMap}`);
 
@@ -2831,9 +2835,9 @@ class CSVFeatureFile {
     this.columnCount = fields.length;
     this._info(`- First Line: ${line}`);
     this._info(`- Column Count: ${fields.length}`);
-    if (this.onlyColumns.length) {
-      this._info(`- Only Columns: ${this.onlyColumns.join(', ')}`);
-    }
+    // if (this.onlyColumns.length) {
+    //   this._info(`- Only Columns: ${this.onlyColumns.join(', ')}`);
+    // }
 
     // Return empty object if line was empty
     // Note: This actually shouldn't ever happen because we check for empty lines when parsing
@@ -2866,13 +2870,14 @@ class CSVFeatureFile {
     } else {
       // HEADER: YES
       // Merge the default column map with the provided column map
-      const newColumnMap = {...defaultColumnMap, ...columnMap};
+      // const newColumnMap = {...defaultColumnMap, ...columnMap};
+      const newColumnMap = Object.keys(columnMap).length ? columnMap : defaultColumnMap;
       invertedColumnMap = invertObject(newColumnMap, true);
     }
 
     // Create the column index to key map
     this._info("- Column Key Mapping:");
-    this._info(`    #       Key${this.hasHeader ? '   Column Name' : ''}`);
+    this._info(`    #       Key${this.hasHeader ? '   Column Header' : ''}`);
     for (const [index, origColumn] of fields.entries()) {
       if (invertedColumnMap[index]) {
         columnIndexToKeyMap[index] = invertedColumnMap[index];
@@ -2881,11 +2886,11 @@ class CSVFeatureFile {
       } else {
         columnIndexToKeyMap[index] = 'ignored';
       }
-      if (this.onlyColumns.length && columnIndexToKeyMap[index] != 'ignored') {
-        if (!this.onlyColumns.includes(columnIndexToKeyMap[index])) {
-          columnIndexToKeyMap[index] = 'ignored';
-        }
-      }
+      // if (this.onlyColumns.length && columnIndexToKeyMap[index] != 'ignored') {
+      //   if (!this.onlyColumns.includes(columnIndexToKeyMap[index])) {
+      //     columnIndexToKeyMap[index] = 'ignored';
+      //   }
+      // }
       this._info(`  - ${index}: ${columnIndexToKeyMap[index].padStart(8)}${this.hasHeader ? ` - ${origColumn}` : ''}`);
     }
 
@@ -3125,11 +3130,12 @@ class CSVFeatureFile {
  * - CSV/TSV
  *   - separator: the separator used in the file (e.g. ',' or '\t') [Default: ',']
  *   - noHeader: boolean [Default: false]
- *   - onlyColumns: array of strings indicating which columns to extract. [Default: [] (all columns)]
+ *   - [REMOVED] onlyColumns: array of strings indicating which columns to extract. [Default: [] (all columns)]
  *   - columnMap: object mapping column names to new names or column number (if no header). [Default: {}]
  *     - e.g. { start: 'chromStart', stop: 'chromEnd' }
  *     - columnKeys: contig, start, stop, strand, name, type, score, legend, codonStart
  *     - Future Keys: tags, qualifiers, meta
+ *     - only the columns provided will be extracted
  */
 class FeatureFile extends Status {
 
@@ -3229,7 +3235,7 @@ class FeatureFile extends Status {
    * The file format being parsed: 'auto', 'gff3', 'bed', 'csv', 'tsv', 'gtf', 'unknown'
    */
   get inputFormat() {
-    return this.delegate.fileFormat;
+    return this.delegate?.fileFormat;
   }
 
   set inputFormat(format) {
@@ -3441,6 +3447,12 @@ class FeatureFile extends Status {
     this._info(`Parsing ${this.displayFileFormat} Feature File...`);
     try {
       records = this.parse(fileText, options);
+
+      // Only proceed if passed
+      if (!this.passed) {
+        return [];
+      }
+
       const recordsWithLocationsCount = records.filter((record) => Array.isArray(record.locations)).length;
       this._info('- Features with >1 location: ', { padded: recordsWithLocationsCount });
       this._info('- Done parsing feature file');
@@ -3457,6 +3469,7 @@ class FeatureFile extends Status {
    * @param {Object} options - options for validation
    */
   validateRecordsWrapper(records, options={}) {
+    if (!this.passed) { return; }
     this.logger.info(`Validating Records ...`);
     try {
       this.validateRecords(records, options);
@@ -3492,7 +3505,7 @@ class FeatureFile extends Status {
       if (missingStartErrors.length) {
         this._fail('- Records missing Starts: ', { padded: missingStartErrors.length });
       }
-      const missingStopErrors = validationIssues['missingStart'] || [];
+      const missingStopErrors = validationIssues['missingStop'] || [];
       if (missingStopErrors.length) {
         this._fail('- Records missing Stops: ', { padded: missingStopErrors.length });
       }
