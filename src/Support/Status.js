@@ -68,7 +68,7 @@ export default class Status {
   }
 
   // Parsing status
-  // Should be one of: 'success', 'warnings', 'fail'
+  // Should be one of: 'success', 'warnings', 'failed'
   get status() {
     return this._status;
   }
@@ -126,7 +126,7 @@ export default class Status {
 
   _warn(message, options={}) {
     this.logger.warn(message, options);
-    if (this.status !== 'fail') {
+    if (this.status !== 'failed') {
       this._status = 'warnings';
     }
   }

@@ -228,7 +228,7 @@ export default class CGViewBuilder extends Status {
   // Check what the most common genetic code is in the features
   // Set the default genetic code to the most common one
   // Features with the default genetic code do not need to have the genetic code specified
-  // We will only keep the genetic code for a feature if is different the common case.
+  // We will only keep the genetic code for a feature if is different from the common case.
   _adjustFeatureGeneticCode(json) {
     const features = json.features;
     if (!features || features.length < 1) { return; }
@@ -237,7 +237,6 @@ export default class CGViewBuilder extends Status {
     const geneticCodes = cdsFeatures.map((f) => f.geneticCode);
     const counts = {};
     geneticCodes.forEach((code) => {
-
       counts[code] = counts[code] ? counts[code] + 1 : 1;
     });
     let maxCode = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
@@ -462,12 +461,12 @@ export default class CGViewBuilder extends Status {
         // continue;
       }
       // codonStart (from codon_start)
-      if (f.qualifiers && f.qualifiers.codon_start && parseInt(f.qualifiers.codon_start[0]) !== 1) {
-        feature.codonStart = parseInt(f.qualifiers.codon_start[0]);
+      if (f.qualifiers?.codon_start && parseInt(f.qualifiers.codon_start) !== 1) {
+        feature.codonStart = parseInt(f.qualifiers.codon_start);
       }
       // geneticCode (from transl_table)
       if (feature.type === 'CDS') {
-        const geneticCode = f.qualifiers && f.qualifiers.transl_table && parseInt(f.qualifiers.transl_table[0]);
+        const geneticCode =  f.qualifiers?.transl_table && parseInt(f.qualifiers.transl_table);
         // The default genetic code for GenBank/EMBL is 1
         feature.geneticCode = geneticCode || 1;
       }

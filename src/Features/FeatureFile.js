@@ -117,9 +117,9 @@ class FeatureFile extends Status {
       // File Format
       this._info("Checking File Format...");
       this._info('- Format Provided: ', { padded: providedFormat });
-      const detectedFormat = this.detectFormat(convertedText);
-      this._info('- Format Detected: ', { padded: detectedFormat });
-      this.inputFormat = this.chooseFormat(providedFormat, detectedFormat);
+      this.detectedFormat = this.detectFormat(convertedText);
+      this._info('- Format Detected: ', { padded: this.detectedFormat });
+      this.inputFormat = this.chooseFormat(providedFormat, this.detectedFormat);
       // Do not continue if the format is unknown
       if (!this.passed) { return; }
 

@@ -581,7 +581,7 @@ class Status {
   }
 
   // Parsing status
-  // Should be one of: 'success', 'warnings', 'fail'
+  // Should be one of: 'success', 'warnings', 'failed'
   get status() {
     return this._status;
   }
@@ -639,7 +639,7 @@ class Status {
 
   _warn(message, options={}) {
     this.logger.warn(message, options);
-    if (this.status !== 'fail') {
+    if (this.status !== 'failed') {
       this._status = 'warnings';
     }
   }
@@ -895,7 +895,7 @@ class CGViewBuilder extends Status {
   // Check what the most common genetic code is in the features
   // Set the default genetic code to the most common one
   // Features with the default genetic code do not need to have the genetic code specified
-  // We will only keep the genetic code for a feature if is different the common case.
+  // We will only keep the genetic code for a feature if is different from the common case.
   _adjustFeatureGeneticCode(json) {
     const features = json.features;
     if (!features || features.length < 1) { return; }
@@ -904,7 +904,6 @@ class CGViewBuilder extends Status {
     const geneticCodes = cdsFeatures.map((f) => f.geneticCode);
     const counts = {};
     geneticCodes.forEach((code) => {
-
       counts[code] = counts[code] ? counts[code] + 1 : 1;
     });
     let maxCode = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
@@ -1129,12 +1128,12 @@ class CGViewBuilder extends Status {
         // continue;
       }
       // codonStart (from codon_start)
-      if (f.qualifiers && f.qualifiers.codon_start && parseInt(f.qualifiers.codon_start[0]) !== 1) {
-        feature.codonStart = parseInt(f.qualifiers.codon_start[0]);
+      if (f.qualifiers?.codon_start && parseInt(f.qualifiers.codon_start) !== 1) {
+        feature.codonStart = parseInt(f.qualifiers.codon_start);
       }
       // geneticCode (from transl_table)
       if (feature.type === 'CDS') {
-        const geneticCode = f.qualifiers && f.qualifiers.transl_table && parseInt(f.qualifiers.transl_table[0]);
+        const geneticCode =  f.qualifiers?.transl_table && parseInt(f.qualifiers.transl_table);
         // The default genetic code for GenBank/EMBL is 1
         feature.geneticCode = geneticCode || 1;
       }
@@ -3181,9 +3180,9 @@ class FeatureFile extends Status {
       // File Format
       this._info("Checking File Format...");
       this._info('- Format Provided: ', { padded: providedFormat });
-      const detectedFormat = this.detectFormat(convertedText);
-      this._info('- Format Detected: ', { padded: detectedFormat });
-      this.inputFormat = this.chooseFormat(providedFormat, detectedFormat);
+      this.detectedFormat = this.detectFormat(convertedText);
+      this._info('- Format Detected: ', { padded: this.detectedFormat });
+      this.inputFormat = this.chooseFormat(providedFormat, this.detectedFormat);
       // Do not continue if the format is unknown
       if (!this.passed) { return; }
 
