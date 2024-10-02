@@ -28,7 +28,7 @@ var CGV = (function (exports, d3) {
 
   var d3__namespace = /*#__PURE__*/_interopNamespaceDefault(d3);
 
-  var version = "1.6.0";
+  var version = "1.7.0";
 
   //////////////////////////////////////////////////////////////////////////////
   // CGArray
@@ -15258,6 +15258,11 @@ var CGV = (function (exports, d3) {
       return {cgview: data};
     }
 
+    // Version 1.7 started on 2024-10-02
+    // - no update required
+
+    // Version 1.6 started on 2023-11-29
+    // - no update required
 
     // Version 1.5 started on 2023-09-28
     // Moves the minArcLength from Settings to Legend and LegendItems
