@@ -699,7 +699,7 @@ class CGViewBuilder extends Status {
     // super(options, 'BUILDING CGVIEW JSON');
     super(options);
     // this.input = input;
-    this.cgvJSONVersion = "1.6.0";
+    this.cgvJSONVersion = "1.7.0";
     // this.options = options;
 
     // this.includeFeatures = options.includeFeatures || true;
@@ -744,7 +744,7 @@ class CGViewBuilder extends Status {
     this._complexFeatures = [];
     this._skippedLocationlessFeatures = [];
     // this.logger.info(`Date: ${new Date().toUTCString()}`);
-    this.logger.info('CGViewBuilder: ', { padded: this.version });
+    this.logger.info('CGParse: ', { padded: this.version });
     this.logger.info(`Converting to CGView JSON...`);
     this.logger.info('- CGView JSON version: ', { padded: this.cgvJSONVersion });
     this.logger.info('- Input Sequence Count: ', { padded: seqRecords.length });
