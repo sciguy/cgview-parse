@@ -192,7 +192,7 @@ var CGParse = (function () {
 
   }
 
-  var version = "1.0.0";
+  var version = "1.0.1";
 
   // ----------------------------------------------------------------------------
   // CGPARSE HELPERS
@@ -870,7 +870,8 @@ var CGParse = (function () {
     // - replace nonstandard characters with underscores
     // - length of contig names should be less than 37 characters
     _adjustContigNames(seqRecords) {
-      const names = seqRecords.map((seqRecord) => seqRecord.name);
+      // const names = seqRecords.map((seqRecord) => seqRecord.name);
+      const names = seqRecords.map((seqRecord) => seqRecord.seqID || seqRecord.name);
       const adjustedNameResults = CGViewBuilder.adjustContigNames(names);
       const adjustedNames = adjustedNameResults.names;
       const reasons = adjustedNameResults.reasons;
@@ -952,7 +953,9 @@ var CGParse = (function () {
       // Replace nonstandard characters
       // Consider adding (.:#) here: https://www.ncbi.nlm.nih.gov/genbank/fastaformat/
       // - do any of these break Crispr/Other tools
-      let replacedNames = names.map((name) => name.replace(/[^a-zA-Z0-9\*\_\-]+/g, '_'));
+      // - I've removed * and - from the list as they may cause issues too ("-" failed for Crispr)
+      // let replacedNames = names.map((name) => name.replace(/[^a-zA-Z0-9\*\_\-]+/g, '_'));
+      let replacedNames = names.map((name) => name.replace(/[^a-zA-Z0-9\_]+/g, '_'));
       names.forEach((name, i) => {
         if (name !== replacedNames[i]) {
           reasons[i] = {index: i, origName: name, newName: replacedNames[i], reason: ["REPLACE"]};
@@ -2000,7 +2003,6 @@ var CGParse = (function () {
     /////////////////////////////////////////////////////////////////////////////
     // FeatureFile Methods (Delegate Owner)
     /////////////////////////////////////////////////////////////////////////////
-
     _info(message, options={}) {
       this.file._info(message, options);
     }
@@ -2012,6 +2014,7 @@ var CGParse = (function () {
     _fail(message, options={}) {
       this.file._fail(message, options);
     }
+    /////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -2243,7 +2246,6 @@ var CGParse = (function () {
     /////////////////////////////////////////////////////////////////////////////
     // FeatureFile Methods (Delegate Owner)
     /////////////////////////////////////////////////////////////////////////////
-
     _info(message, options={}) {
       this.file._info(message, options);
     }
@@ -2255,7 +2257,7 @@ var CGParse = (function () {
     _fail(message, options={}) {
       this.file._fail(message, options);
     }
-
+    /////////////////////////////////////////////////////////////////////////////
 
 
     // Returns true if the line matches the GTF format
@@ -2486,6 +2488,7 @@ var CGParse = (function () {
   }
 
   // NOTES:
+  // - Only works with tab separated files (NOT space separated)
   // - Bed is a 0-based format. The chromStart field is 0-based and the chromEnd field is 1-based.
 
   class BEDFeatureFile {
@@ -2535,7 +2538,6 @@ var CGParse = (function () {
     /////////////////////////////////////////////////////////////////////////////
     // FeatureFile Methods (Delegate Owner)
     /////////////////////////////////////////////////////////////////////////////
-
     _info(message, options={}) {
       this.file._info(message, options);
     }
@@ -2547,6 +2549,7 @@ var CGParse = (function () {
     _fail(message, options={}) {
       this.file._fail(message, options);
     }
+    /////////////////////////////////////////////////////////////////////////////
 
     /**
      * Returns true if the line matches the BED format.
@@ -2801,7 +2804,6 @@ var CGParse = (function () {
     /////////////////////////////////////////////////////////////////////////////
     // FeatureFile Methods (Delegate Owner)
     /////////////////////////////////////////////////////////////////////////////
-
     _info(message, options={}) {
       this.file._info(message, options);
     }
@@ -2813,6 +2815,7 @@ var CGParse = (function () {
     _fail(message, options={}) {
       this.file._fail(message, options);
     }
+    /////////////////////////////////////////////////////////////////////////////
 
     /**
      * Returns a map of column indexes to internal column keys.
@@ -3087,9 +3090,9 @@ var CGParse = (function () {
 
   }
 
-  // This will be the main interface to parsing Feature Files. 
+  // This will be the main interface for parsing Feature Files. 
   // For each feature file type (e.g. GFF3, GTF, BED, CSV, TSV, etc.),
-  // we will have delagates that will parse the file and return an array of
+  // we  have delagates that will parse the file and return an array of
   // of joined features.
   // The returned features are not exactly CGView feature yet, but they are
   // in a format that can be easily converted to CGView features with FeatureBuilder.
@@ -3314,7 +3317,7 @@ var CGParse = (function () {
     // EXPORTERS
     /////////////////////////////////////////////////////////////////////////////
 
-    // TODO
+    // TODO (When we need it)
     toCGViewFeaturesJSON(options={}) {
       // if (this.success) {
       //   options.logger = options.logger || this.logger
@@ -3527,7 +3530,7 @@ var CGParse = (function () {
 
   // INPUT:
   // - FeatureFile or string of feature file (e.g. GFF3, GTF, BED, CSV) that can be converted to FeatureFile
-  // OPTIONS:
+  // OPTIONS (Feature and Qualifier options NIY):
   // - FIXME: CHANGE TO includ/excludeFeatures skipTypes: boolean (TEST) [Default: ['gene', 'source', 'exon']]
   //   - If false, include ALL feature types in the JSON
   // - includeFeatures: boolean [Default: true]
@@ -3553,10 +3556,11 @@ var CGParse = (function () {
       super(options);
       this.logHeader('BUILDING FEATURES');
 
-      this.includeFeatures = (options.includeFeatures === undefined) ? true : options.includeFeatures;
-      this.excludeFeatures = options.excludeFeatures || ['gene', 'source', 'exon'];
-      this.includeQualifiers = options.includeQualifiers || false;
-      this.excludeQualifiers = options.excludeQualifiers || [];
+      // NOT IMPLEMENTED YET
+      // this.includeFeatures = (options.includeFeatures === undefined) ? true : options.includeFeatures;
+      // this.excludeFeatures = options.excludeFeatures || ['gene', 'source', 'exon'];
+      // this.includeQualifiers = options.includeQualifiers || false;
+      // this.excludeQualifiers = options.excludeQualifiers || [];
 
       this.featureFile = this._parseInput(input);
       this.inputDisplayFormat = this.featureFile.displayFileFormat;
@@ -3684,7 +3688,8 @@ var CGParse = (function () {
         }
         // Log details
         this.logger.warn(`The following contig names (${adjustedContigNameResults.reasons.length}) were adjusted:`);
-        this.logger.warn(`Reasons: DUP (duplicate), LONG (>34), REPLACE (nonstandard characters), BLANK (empty)`);
+        // Note: Not looking for duplicates (so removed from Reasons)
+        this.logger.warn(`Reasons: LONG (>34), REPLACE (nonstandard characters), BLANK (empty)`);
         for (const reason of adjustedContigNameResults.reasons) {
           messages.push(`- ${reason.origName} -> ${reason.newName} (${reason.reason.join(', ')})`);
         }

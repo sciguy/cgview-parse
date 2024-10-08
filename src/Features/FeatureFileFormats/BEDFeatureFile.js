@@ -2,6 +2,7 @@ import Logger from '../../Support/Logger.js';
 import * as helpers from '../../Support/Helpers.js';
 
 // NOTES:
+// - Only works with tab separated files (NOT space separated)
 // - Bed is a 0-based format. The chromStart field is 0-based and the chromEnd field is 1-based.
 
 class BEDFeatureFile {
@@ -51,7 +52,6 @@ class BEDFeatureFile {
   /////////////////////////////////////////////////////////////////////////////
   // FeatureFile Methods (Delegate Owner)
   /////////////////////////////////////////////////////////////////////////////
-
   _info(message, options={}) {
     this.file._info(message, options);
   }
@@ -63,6 +63,7 @@ class BEDFeatureFile {
   _fail(message, options={}) {
     this.file._fail(message, options);
   }
+  /////////////////////////////////////////////////////////////////////////////
 
   /**
    * Returns true if the line matches the BED format.

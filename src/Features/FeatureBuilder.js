@@ -1,12 +1,11 @@
 import Status from '../Support/Status.js';
-import Logger from '../Support/Logger.js';
 import FeatureFile from './FeatureFile.js';
 import CGViewBuilder from '../Sequence/CGViewBuilder.js';
 import * as helpers from '../Support/Helpers.js';
 
 // INPUT:
 // - FeatureFile or string of feature file (e.g. GFF3, GTF, BED, CSV) that can be converted to FeatureFile
-// OPTIONS:
+// OPTIONS (Feature and Qualifier options NIY):
 // - FIXME: CHANGE TO includ/excludeFeatures skipTypes: boolean (TEST) [Default: ['gene', 'source', 'exon']]
 //   - If false, include ALL feature types in the JSON
 // - includeFeatures: boolean [Default: true]
@@ -32,10 +31,11 @@ export default class FeatureBuilder extends Status {
     super(options);
     this.logHeader('BUILDING FEATURES');
 
-    this.includeFeatures = (options.includeFeatures === undefined) ? true : options.includeFeatures;
-    this.excludeFeatures = options.excludeFeatures || ['gene', 'source', 'exon'];
-    this.includeQualifiers = options.includeQualifiers || false;
-    this.excludeQualifiers = options.excludeQualifiers || [];
+    // NOT IMPLEMENTED YET
+    // this.includeFeatures = (options.includeFeatures === undefined) ? true : options.includeFeatures;
+    // this.excludeFeatures = options.excludeFeatures || ['gene', 'source', 'exon'];
+    // this.includeQualifiers = options.includeQualifiers || false;
+    // this.excludeQualifiers = options.excludeQualifiers || [];
 
     this.featureFile = this._parseInput(input);
     this.inputDisplayFormat = this.featureFile.displayFileFormat
@@ -163,7 +163,8 @@ export default class FeatureBuilder extends Status {
       }
       // Log details
       this.logger.warn(`The following contig names (${adjustedContigNameResults.reasons.length}) were adjusted:`);
-      this.logger.warn(`Reasons: DUP (duplicate), LONG (>34), REPLACE (nonstandard characters), BLANK (empty)`);
+      // Note: Not looking for duplicates (so removed from Reasons)
+      this.logger.warn(`Reasons: LONG (>34), REPLACE (nonstandard characters), BLANK (empty)`);
       for (const reason of adjustedContigNameResults.reasons) {
         messages.push(`- ${reason.origName} -> ${reason.newName} (${reason.reason.join(', ')})`);
       }

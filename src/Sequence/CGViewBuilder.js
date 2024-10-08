@@ -200,7 +200,8 @@ export default class CGViewBuilder extends Status {
   // - replace nonstandard characters with underscores
   // - length of contig names should be less than 37 characters
   _adjustContigNames(seqRecords) {
-    const names = seqRecords.map((seqRecord) => seqRecord.name);
+    // const names = seqRecords.map((seqRecord) => seqRecord.name);
+    const names = seqRecords.map((seqRecord) => seqRecord.seqID || seqRecord.name);
     const adjustedNameResults = CGViewBuilder.adjustContigNames(names);
     const adjustedNames = adjustedNameResults.names;
     const reasons = adjustedNameResults.reasons;
@@ -282,7 +283,9 @@ export default class CGViewBuilder extends Status {
     // Replace nonstandard characters
     // Consider adding (.:#) here: https://www.ncbi.nlm.nih.gov/genbank/fastaformat/
     // - do any of these break Crispr/Other tools
-    let replacedNames = names.map((name) => name.replace(/[^a-zA-Z0-9\*\_\-]+/g, '_'));
+    // - I've removed * and - from the list as they may cause issues too ("-" failed for Crispr)
+    // let replacedNames = names.map((name) => name.replace(/[^a-zA-Z0-9\*\_\-]+/g, '_'));
+    let replacedNames = names.map((name) => name.replace(/[^a-zA-Z0-9\_]+/g, '_'));
     names.forEach((name, i) => {
       if (name !== replacedNames[i]) {
         reasons[i] = {index: i, origName: name, newName: replacedNames[i], reason: ["REPLACE"]};

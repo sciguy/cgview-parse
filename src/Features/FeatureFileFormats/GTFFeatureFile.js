@@ -37,7 +37,6 @@ class GTFFeatureFile {
   /////////////////////////////////////////////////////////////////////////////
   // FeatureFile Methods (Delegate Owner)
   /////////////////////////////////////////////////////////////////////////////
-
   _info(message, options={}) {
     this.file._info(message, options);
   }
@@ -49,7 +48,7 @@ class GTFFeatureFile {
   _fail(message, options={}) {
     this.file._fail(message, options);
   }
-
+  /////////////////////////////////////////////////////////////////////////////
 
 
   // Returns true if the line matches the GTF format

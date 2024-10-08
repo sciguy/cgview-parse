@@ -1,6 +1,6 @@
-// This will be the main interface to parsing Feature Files. 
+// This will be the main interface for parsing Feature Files. 
 // For each feature file type (e.g. GFF3, GTF, BED, CSV, TSV, etc.),
-// we will have delagates that will parse the file and return an array of
+// we  have delagates that will parse the file and return an array of
 // of joined features.
 // The returned features are not exactly CGView feature yet, but they are
 // in a format that can be easily converted to CGView features with FeatureBuilder.
@@ -29,7 +29,6 @@ import GFF3FeatureFile from './FeatureFileFormats/GFF3FeatureFile.js';
 import GTFFeatureFile from './FeatureFileFormats/GTFFeatureFile.js';
 import BEDFeatureFile from './FeatureFileFormats/BEDFeatureFile.js';
 import CSVFeatureFile from './FeatureFileFormats/CSVFeatureFile.js';
-// import FeatureBuilder from './FeatureBuilder.js';
 import * as helpers from '../Support/Helpers.js';
 
 /**
@@ -248,7 +247,7 @@ class FeatureFile extends Status {
   // EXPORTERS
   /////////////////////////////////////////////////////////////////////////////
 
-  // TODO
+  // TODO (When we need it)
   toCGViewFeaturesJSON(options={}) {
     // if (this.success) {
     //   options.logger = options.logger || this.logger

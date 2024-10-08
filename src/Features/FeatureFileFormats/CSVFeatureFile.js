@@ -97,7 +97,6 @@ class CSVFeatureFile {
   /////////////////////////////////////////////////////////////////////////////
   // FeatureFile Methods (Delegate Owner)
   /////////////////////////////////////////////////////////////////////////////
-
   _info(message, options={}) {
     this.file._info(message, options);
   }
@@ -109,6 +108,7 @@ class CSVFeatureFile {
   _fail(message, options={}) {
     this.file._fail(message, options);
   }
+  /////////////////////////////////////////////////////////////////////////////
 
   /**
    * Returns a map of column indexes to internal column keys.

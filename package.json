@@ -1,6 +1,6 @@
 {
-  "name": "cgview-parsers",
-  "version": "1.0.0",
+  "name": "cgview-parse",
+  "version": "1.0.1",
   "description": "Parsers to and from CGView JSON",
   "main": "index.js",
   "author": "Jason Grant",
@@ -20,8 +20,5 @@
     "@rollup/plugin-terser": "^0.4.4",
     "es-jest": "^2.1.0",
     "jest": "^29.7.0"
-  },
-  "dependencies": {
-    "@teselagen/bio-parsers": "^0.4.10"
   }
 }
