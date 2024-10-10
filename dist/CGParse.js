@@ -2014,6 +2014,9 @@ var CGParse = (function () {
     _fail(message, options={}) {
       this.file._fail(message, options);
     }
+    addValidationIssue(issueCode, message) {
+      this.file.addValidationIssue(issueCode, message);
+    }
     /////////////////////////////////////////////////////////////////////////////
 
 
@@ -2066,8 +2069,7 @@ var CGParse = (function () {
       this._lineCount++;
       const fields = line.split('\t').map((field) => field.trim());
       if (fields.length < 9) {
-        this._fail(`- Line does not have 9 fields: ${line}`);
-        // this.logger.error(`- Line does not have 9 fields: ${line}`);
+        this.addValidationIssue('lineError', `  - Line does not have 9 fields: ${line}`);
         return null;
       }
       const record = {
@@ -2257,6 +2259,9 @@ var CGParse = (function () {
     _fail(message, options={}) {
       this.file._fail(message, options);
     }
+    addValidationIssue(issueCode, message) {
+      this.file.addValidationIssue(issueCode, message);
+    }
     /////////////////////////////////////////////////////////////////////////////
 
 
@@ -2311,8 +2316,8 @@ var CGParse = (function () {
       this._lineCount++;
       const fields = line.split('\t').map((field) => field.trim());
       if (fields.length < 9) {
-        this._fail(`- Line does not have 9 fields: ${line}`);
-        // this.logger.warn(`- Skipping line: ${line}`);
+        this.addValidationIssue('lineError', `  - Line does not have 9 fields: ${line}`);
+        // this._fail(`- Line does not have 9 fields: ${line}`);
         return null;
       }
       const record = {
@@ -2549,6 +2554,9 @@ var CGParse = (function () {
     _fail(message, options={}) {
       this.file._fail(message, options);
     }
+    addValidationIssue(issueCode, message) {
+      this.file.addValidationIssue(issueCode, message);
+    }
     /////////////////////////////////////////////////////////////////////////////
 
     /**
@@ -2607,8 +2615,8 @@ var CGParse = (function () {
       this._lineCount++;
       const fields = line.split('\t').map((field) => field.trim());
       if (fields.length < 3) {
-        this._fail(`- Line does not have at least 3 fields: ${line}`);
-        // this.logger.warn(`- Skipping line: ${line}`);
+        this.addValidationIssue('lineError', `  - Line does not have at least 3 fields: ${line}`);
+        // this._fail(`- Line does not have at least 3 fields: ${line}`);
         return null;
       }
       // Bsic fields
@@ -2814,6 +2822,9 @@ var CGParse = (function () {
 
     _fail(message, options={}) {
       this.file._fail(message, options);
+    }
+    addValidationIssue(issueCode, message) {
+      this.file.addValidationIssue(issueCode, message);
     }
     /////////////////////////////////////////////////////////////////////////////
 
@@ -3032,7 +3043,8 @@ var CGParse = (function () {
       this._lineCount++;
       const fields = line.split(this.separator).map((field) => field.trim());
       if (fields.length < 2) {
-        this._fail(`- Line does not have at least 2 fields: ${line}`);
+        this.addValidationIssue('lineError', `  - Line does not have at least 2 fields: ${line}`);
+        // this._fail(`- Line does not have at least 2 fields: ${line}`);
         return null;
       }
 
@@ -3209,12 +3221,19 @@ var CGParse = (function () {
     /////////////////////////////////////////////////////////////////////////////
 
     // File specific issue codes can be set in the delegate: VALIDATION_ISSUE_CODES
+    // - missingStart: record is missing a start value
+    // - missingStop: record is missing a stop value
+    // - lineError: line does not match the expected format
     static get COMMON_VALIDATION_ISSUE_CODES() {
-      return ['missingStart', 'missingStop'];
+      return ['missingStart', 'missingStop', 'lineError'];
     }
 
     get validationIssues() {
       return this._validationIssues || {};
+    }
+
+    validationIssueCount(issueCode) {
+      return this.validationIssues[issueCode]?.length || 0;
     }
 
     addValidationIssue(issueCode, message) {
@@ -3475,6 +3494,16 @@ var CGParse = (function () {
      */
     validateRecordsWrapper(records, options={}) {
       if (!this.passed) { return; }
+
+      // Line Errors
+      const lineErrors = this.validationIssues['lineError'] || [];
+      if (lineErrors.length) {
+        this._fail('- Line Errors: ', { padded: lineErrors.length });
+        this._fail(lineErrors);
+      }
+
+      if (!this.passed) { return; }
+
       this.logger.info(`Validating Records ...`);
       try {
         this.validateRecords(records, options);
@@ -3488,6 +3517,7 @@ var CGParse = (function () {
         if (records.length === 0) {
           this._fail('- Failed: No records found in the file.');
         }
+
 
         // Common Validations
         // - required keys: start, stops

@@ -48,6 +48,9 @@ class GTFFeatureFile {
   _fail(message, options={}) {
     this.file._fail(message, options);
   }
+  addValidationIssue(issueCode, message) {
+    this.file.addValidationIssue(issueCode, message);
+  }
   /////////////////////////////////////////////////////////////////////////////
 
 
@@ -111,8 +114,8 @@ class GTFFeatureFile {
     this._lineCount++;
     const fields = line.split('\t').map((field) => field.trim());
     if (fields.length < 9) {
-      this._fail(`- Line does not have 9 fields: ${line}`);
-      // this.logger.warn(`- Skipping line: ${line}`);
+      this.addValidationIssue('lineError', `  - Line does not have 9 fields: ${line}`);
+      // this._fail(`- Line does not have 9 fields: ${line}`);
       return null;
     }
     const record = {

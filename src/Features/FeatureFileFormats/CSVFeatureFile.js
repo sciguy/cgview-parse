@@ -108,6 +108,9 @@ class CSVFeatureFile {
   _fail(message, options={}) {
     this.file._fail(message, options);
   }
+  addValidationIssue(issueCode, message) {
+    this.file.addValidationIssue(issueCode, message);
+  }
   /////////////////////////////////////////////////////////////////////////////
 
   /**
@@ -335,7 +338,8 @@ class CSVFeatureFile {
     this._lineCount++;
     const fields = line.split(this.separator).map((field) => field.trim());
     if (fields.length < 2) {
-      this._fail(`- Line does not have at least 2 fields: ${line}`);
+      this.addValidationIssue('lineError', `  - Line does not have at least 2 fields: ${line}`);
+      // this._fail(`- Line does not have at least 2 fields: ${line}`);
       return null;
     }
 

@@ -139,12 +139,19 @@ class FeatureFile extends Status {
   /////////////////////////////////////////////////////////////////////////////
 
   // File specific issue codes can be set in the delegate: VALIDATION_ISSUE_CODES
+  // - missingStart: record is missing a start value
+  // - missingStop: record is missing a stop value
+  // - lineError: line does not match the expected format
   static get COMMON_VALIDATION_ISSUE_CODES() {
-    return ['missingStart', 'missingStop'];
+    return ['missingStart', 'missingStop', 'lineError'];
   }
 
   get validationIssues() {
     return this._validationIssues || {};
+  }
+
+  validationIssueCount(issueCode) {
+    return this.validationIssues[issueCode]?.length || 0;
   }
 
   addValidationIssue(issueCode, message) {
@@ -405,6 +412,16 @@ class FeatureFile extends Status {
    */
   validateRecordsWrapper(records, options={}) {
     if (!this.passed) { return; }
+
+    // Line Errors
+    const lineErrors = this.validationIssues['lineError'] || [];
+    if (lineErrors.length) {
+      this._fail('- Line Errors: ', { padded: lineErrors.length });
+      this._fail(lineErrors);
+    }
+
+    if (!this.passed) { return; }
+
     this.logger.info(`Validating Records ...`);
     try {
       this.validateRecords(records, options);
@@ -418,6 +435,7 @@ class FeatureFile extends Status {
       if (records.length === 0) {
         this._fail('- Failed: No records found in the file.');
       }
+
 
       // Common Validations
       // - required keys: start, stops

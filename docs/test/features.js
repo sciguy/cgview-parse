@@ -261,7 +261,7 @@ function createCSVColumns(providedColumnMap={}) {
   const csvColumns = document.getElementById('csv-columns');
   const csvText = document.getElementById('input-text').textContent;
 
-  const featureFile = new CGParse.FeatureFile(csvText, {format: selectedFormat, maxLogCount: 1, columnMap: providedColumnMap, noHeader: noHeader});
+  const featureFile = new CGParse.FeatureFile(csvText, {format: selectedFormat, maxLogCount: 3, columnMap: providedColumnMap, noHeader: noHeader});
 
 
   const columnKeys = CGParse.CSVFeatureFile.columnKeys;
@@ -351,7 +351,7 @@ function runParse(columnMap) {
 
   // Parse to featureJson
   const featureJsonStartTime = new Date().getTime();
-  const featureFile = new CGParse.FeatureFile(inputText, {format: selectedFormat, maxLogCount: 1, noHeader: noHeaderCheckbox.checked, columnMap: parseColumnMap});
+  const featureFile = new CGParse.FeatureFile(inputText, {format: selectedFormat, maxLogCount: 3, noHeader: noHeaderCheckbox.checked, columnMap: parseColumnMap});
   const featureJSON = featureFile.records;
   json.featureFile = featureFile; // For debugging
   console.log(featureJSON)
