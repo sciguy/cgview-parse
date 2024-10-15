@@ -120,6 +120,8 @@ main.landing {
   font-size: 12px;
   display: flex;
   justify-content: space-between;
+  max-height: 200px;
+  overflow: auto;
 }
 
 .sidebar-log {

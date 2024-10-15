@@ -5,6 +5,7 @@ import * as helpers from '../../Support/Helpers.js';
 // - CSV is a 1-based format. The start field is 1-based and the stop field is 1-based.
 // - Can be CSV or TSV
 // - header line can be optional but then you need to state what each column is with columnMap
+// - maxColumns: maximum number of columns to read (default is 30)
 // - columnMap: internal column names (keys) to column names in the file (or indexes)
 //   - column keys: contig, start, stop, name, score, strand, type, legend, codonStart
 //   - possible future keys:
@@ -30,6 +31,7 @@ class CSVFeatureFile {
       this._noHeader = (options.noHeader === undefined) ? false : options.noHeader;
       // this.onlyColumns = options.onlyColumns || [];
       this._columnMap = options.columnMap || {};
+      this._maxColumns = options.maxColumns || CSVFeatureFile.defaultMaxColumns;
   }
 
   static get defaultColumnMap() {
@@ -44,6 +46,10 @@ class CSVFeatureFile {
       legend: 'legend',
       codonStart: 'codonStart',
     };
+  }
+
+  static get defaultMaxColumns() {
+    return 30;
   }
 
   static get columnKeys() {
@@ -93,6 +99,10 @@ class CSVFeatureFile {
     return this._noHeader;
   }
 
+  get maxColumns() {
+    return this._maxColumns;
+  }
+
 
   /////////////////////////////////////////////////////////////////////////////
   // FeatureFile Methods (Delegate Owner)
@@ -132,10 +142,21 @@ class CSVFeatureFile {
     this._info(`- Provided Column Map: ${displayColumnMap}`);
 
     // Split the line into fields and get the column count
-    const fields = line.split(this.separator).map((field) => field.trim().toLowerCase());
+    let fields = line.split(this.separator).map((field) => field.trim().toLowerCase());
     this.columnCount = fields.length;
-    this._info(`- First Line: ${line}`);
-    this._info(`- Column Count: ${fields.length}`);
+    if (fields.length > this.maxColumns) {
+      // Get first maxColumns columns
+      const maxFields = fields.slice(0, this.maxColumns);
+      const extraCount = fields.length - this.maxColumns;
+      this._info(`- First Line: ${[...maxFields, `...${extraCount} more`].join(this.separator)}`);
+      this._warn(`- Column Count: ${fields.length}`);
+      this._warn(`- Only looking at first ${this.maxColumns} columns`);
+      fields = maxFields;
+    } else {
+      this._info(`- First Line: ${line}`);
+      this._info(`- Column Count: ${fields.length}`);
+    }
+
     // if (this.onlyColumns.length) {
     //   this._info(`- Only Columns: ${this.onlyColumns.join(', ')}`);
     // }

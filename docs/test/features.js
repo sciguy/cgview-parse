@@ -9,7 +9,8 @@
 // const defaultMap = 'file'; // File Choose
 // const defaultMap = 'sample_gff3';
 // const defaultMap = 'sample_gtf';
-const defaultMap = 'sample_csv';
+// const defaultMap = 'sample_csv';
+const defaultMap = 'sample_csv_40_columns';
 // const defaultMap = 'sample_tsv';
 // const defualtMap = 'arabidopsis_gtf';
 // const defaultMap = 'bed12';
@@ -269,7 +270,8 @@ function createCSVColumns(providedColumnMap={}) {
 
   const csvFile = featureFile.delegate;
   const columnIndexToKeyMap = csvFile?.columnIndexToKeyMap || {};
-  const columnCount = csvFile?.columnCount;
+  let columnCount = csvFile?.columnCount;
+  columnCount = columnCount > CGParse.CSVFeatureFile.defaultMaxColumns ? CGParse.CSVFeatureFile.defaultMaxColumns : columnCount;
 
   const separator = (selectedFormat === 'csv') ? ',' : '\t';
   const columnData = CGParse.CSVFeatureFile.columnData(csvText, separator, 5);

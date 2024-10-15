@@ -1,6 +1,6 @@
 {
   "name": "cgview-parse",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "Parsers to and from CGView JSON",
   "main": "index.js",
   "author": "Jason Grant",

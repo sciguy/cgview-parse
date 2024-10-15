@@ -14,6 +14,11 @@ inputs = {
     type: 'csv',
     url: '../inputs/feature_files/CSV/features_no_header.csv',
   },
+  sample_csv_40_columns: {
+    name: 'Sample CSV (40 Columns)',
+    type: 'csv',
+    url: '../inputs/feature_files/CSV/features.40Columns.csv',
+  },
   sample_gff3: {
     name: 'Sample GFF3',
     type: 'gff3',
