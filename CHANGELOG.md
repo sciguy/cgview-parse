@@ -6,6 +6,7 @@
   
 ## v1.0.3 - 2024-10-15
 - CSV maxColumns (default 30). Only look at first maxColumns columns. 
+- Fix contig names for fasta files (use seqID, not name)
 
 ## v1.0.2 - 2024-10-10
 - Combine/summarize  line error messages (prevent entire file from printing to log)

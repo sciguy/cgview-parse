@@ -313,7 +313,7 @@ class SequenceFile extends Status {
     }
   }
 
-  // Get a sequence accessiona and version from a GenBank or EMBL record
+  // Get a sequence accession and version from a GenBank or EMBL record
   // in GenBank look for e.g.:
   // VERSION     NC_001823.1  GI:11466495
   // in EMBL look for e.g.:

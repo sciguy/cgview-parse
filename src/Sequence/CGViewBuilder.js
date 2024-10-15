@@ -203,15 +203,24 @@ export default class CGViewBuilder extends Status {
     // const names = seqRecords.map((seqRecord) => seqRecord.name);
     const names = seqRecords.map((seqRecord) => seqRecord.seqID || seqRecord.name);
     const adjustedNameResults = CGViewBuilder.adjustContigNames(names);
+    console.log("AdjustedNameResults", adjustedNameResults);
     const adjustedNames = adjustedNameResults.names;
     const reasons = adjustedNameResults.reasons;
     this.logger.info('- Checking contig names...');
     const changedNameIndexes = Object.keys(reasons);
+
+    // Change SeqRecord names
+    // We do this even if there are no reasons
+    // because this will set names to seqID instead of name (if seqID exists)
+    seqRecords.forEach((seqRecord, i) => {
+      seqRecord.name = adjustedNames[i];
+    });
+
     if (changedNameIndexes.length > 0) {
       // Change SeqRecord names
-      seqRecords.forEach((seqRecord, i) => {
-        seqRecord.name = adjustedNames[i];
-      });
+      // seqRecords.forEach((seqRecord, i) => {
+      //   seqRecord.name = adjustedNames[i];
+      // });
       // Log details
       this._warn(`The following contig names (${changedNameIndexes.length}) were adjusted:`);
       this._warn(`Reasons: DUP (duplicate), LONG (>34), REPLACE (nonstandard characters), BLANK (empty)`);
@@ -287,13 +296,14 @@ export default class CGViewBuilder extends Status {
     // let replacedNames = names.map((name) => name.replace(/[^a-zA-Z0-9\*\_\-]+/g, '_'));
     let replacedNames = names.map((name) => name.replace(/[^a-zA-Z0-9\_]+/g, '_'));
     names.forEach((name, i) => {
+      console.log(name, replacedNames[i])
       if (name !== replacedNames[i]) {
         reasons[i] = {index: i, origName: name, newName: replacedNames[i], reason: ["REPLACE"]};
       }
     });
     // Blank names
     // NOTE: Blank names should not have been changed by above (they would have been replaced with '_')
-    // - So we don't need to push to reasons, we can just set he reason here
+    // - So we don't need to push to reasons, we can just set the reason here
     replacedNames.forEach((name, i) => {
       const newName = 'Unknown';
       if (name === '') {
