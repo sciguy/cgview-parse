@@ -203,7 +203,7 @@ export default class CGViewBuilder extends Status {
     // const names = seqRecords.map((seqRecord) => seqRecord.name);
     const names = seqRecords.map((seqRecord) => seqRecord.seqID || seqRecord.name);
     const adjustedNameResults = CGViewBuilder.adjustContigNames(names);
-    console.log("AdjustedNameResults", adjustedNameResults);
+    // console.log("AdjustedNameResults", adjustedNameResults);
     const adjustedNames = adjustedNameResults.names;
     const reasons = adjustedNameResults.reasons;
     this.logger.info('- Checking contig names...');
@@ -296,7 +296,7 @@ export default class CGViewBuilder extends Status {
     // let replacedNames = names.map((name) => name.replace(/[^a-zA-Z0-9\*\_\-]+/g, '_'));
     let replacedNames = names.map((name) => name.replace(/[^a-zA-Z0-9\_]+/g, '_'));
     names.forEach((name, i) => {
-      console.log(name, replacedNames[i])
+      // console.log(name, replacedNames[i])
       if (name !== replacedNames[i]) {
         reasons[i] = {index: i, origName: name, newName: replacedNames[i], reason: ["REPLACE"]};
       }
