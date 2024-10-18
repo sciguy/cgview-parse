@@ -225,6 +225,10 @@ export function complement(dna) {
     return type;
   }
 
+  export function reverseComplement(seq) {
+    return complement( seq.split('').reverse().join('') );
+  }
+
   // Given a sequence, return an array of unique characters that are not IUPAC characters
   export function findNonIUPACCharacters(seq, type) {
     const seqType = type.toLowerCase();

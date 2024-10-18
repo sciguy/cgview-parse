@@ -192,7 +192,7 @@ var CGParse = (function () {
 
   }
 
-  var version = "1.0.3";
+  var version = "1.0.4";
 
   // ----------------------------------------------------------------------------
   // CGPARSE HELPERS
@@ -418,6 +418,10 @@ var CGParse = (function () {
       return type;
     }
 
+    function reverseComplement(seq) {
+      return complement( seq.split('').reverse().join('') );
+    }
+
     // Given a sequence, return an array of unique characters that are not IUPAC characters
     function findNonIUPACCharacters(seq, type) {
       const seqType = type.toLowerCase();
@@ -513,6 +517,7 @@ var CGParse = (function () {
     removeNewlines: removeNewlines,
     removeWhiteSpace: removeWhiteSpace,
     reverse: reverse,
+    reverseComplement: reverseComplement,
     uniqueId: uniqueId,
     uniqueName: uniqueName
   });
@@ -673,6 +678,256 @@ var CGParse = (function () {
 
   }
 
+  /**
+   * This class contains all the codon table definitions and has the ability to translate
+   * DNA seqeunces to protein.
+   * NOTE: THIS WAS COPIED DIRECTLY FROM CGView.js [2024-10-17]
+   */
+  class CodonTable {
+
+    /**
+     * Create a new codon table
+     * @param {Number} geneticCodeID - ID for the genetic code (e.g. 1 for 'Standard' code)
+     */
+    constructor(geneticCodeID) {
+      this._codons = this.generateCodons();
+      this._geneticCodeID = geneticCodeID && geneticCodeID.toString();
+      this._generateTable();
+    }
+
+    /**
+     * Return the class name as a string.
+     * @return {String} - 'CodonTable'
+     */
+    toString() {
+      return 'CodonTable';
+    }
+
+    /**
+     * Return array of all the available genetic code IDs
+     */
+    static get availableGeneticCodeIDs() {
+      return Object.keys(CodonTable.definitions);
+    }
+
+    /**
+     * Return a list of the 64 codons, sorted in the following order: T, C, A, G
+     */
+    get codons() {
+      return this._codons;
+    }
+
+    /**
+     * Return the genetic code for this codon table
+     */
+    get geneticCodeID() {
+      return this._geneticCodeID;
+    }
+
+    /**
+     * Return the name for this codon table
+     */
+    get name() {
+      return this._name;
+    }
+
+    /**
+     * Return the table for this codon table
+     */
+    get table() {
+      return this._table;
+    }
+
+    /**
+     * Return the start codons for this codon table
+     */
+    get starts() {
+      return this._starts;
+    }
+
+    /**
+     * Return the stop codons for this codon table
+     */
+    get stops() {
+      return this._stops;
+    }
+
+    /**
+     * Creates the table for this codon table
+     * @private
+     */
+    _generateTable() {
+      const codeID = this.geneticCodeID;
+      if (CodonTable.availableGeneticCodeIDs.includes(codeID)) {
+        const definition = CodonTable.definitions[codeID];
+        // Name
+        this._name = definition.name;
+        // Table, starts, stops
+        const table = {};
+        const starts = [];
+        const stops = [];
+        for (const [i, codon] of this.codons.entries()) {
+          table[codon] = definition.aa[i];
+          if (definition.starts[i] === 'M') {
+            starts.push(codon);
+          }
+          if (definition.aa[i] === '*') {
+            stops.push(codon);
+          }
+        }
+        this._table = table;
+        this._starts = starts;
+        this._stops = stops;
+      } else {
+        console.error(`Unknown Codon Table ID: '${codeID}'`);
+      }
+    }
+
+    /**
+     * Generate the codons using the nucleotides sorted by: T, C, A, G
+     * @private
+     */
+    generateCodons() {
+      // Base1 = TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG
+      // Base2 = TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG
+      // Base3 = TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG
+      const bases = ['T', 'C', 'A', 'G'];
+      const codons = [];
+      for (const b1 of bases) {
+        for (const b2 of bases) {
+          for (const b3 of bases) {
+            codons.push(`${b1}${b2}${b3}`);
+          }
+        }
+      }
+      return codons;
+    }
+
+    /**
+     * Returns all the available codon table definitions
+     */
+    static get definitions() {
+      //   Base1 = TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG
+      //   Base2 = TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG
+      //   Base3 = TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG
+      const definitions = {
+        1: {
+          name:   'Standard',
+          aa:     'FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG',
+          starts: '---M---------------M---------------M----------------------------',
+        },
+        2: {
+          name:   'Vertebrate Mitochondrial',
+          aa:     'FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSS**VVVVAAAADDEEGGGG',
+          starts: '--------------------------------MMMM---------------M------------',
+        },
+        3: {
+          name:   'Yeast Mitochondrial',
+          aa:     'FFLLSSSSYY**CCWWTTTTPPPPHHQQRRRRIIMMTTTTNNKKSSRRVVVVAAAADDEEGGGG',
+          starts: '----------------------------------MM----------------------------',
+        },
+        4: {
+          name:   'Mold, Protozoan, Coelenterate Mitochondrial and Mycoplasma/Spiroplasma',
+          aa:     'FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG',
+          starts: '--MM---------------M------------MMMM---------------M------------',
+        },
+        5: {
+          name:   'Invertebrate Mitochondrial',
+          aa:     'FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSSSSVVVVAAAADDEEGGGG',
+          starts: '---M----------------------------MMMM---------------M------------',
+        },
+        6: {
+          name:   'Ciliate, Dasycladacean and Hexamita Nuclear',
+          aa:     'FFLLSSSSYYQQCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG',
+          starts: '-----------------------------------M----------------------------',
+        },
+        9: {
+          name:   'Echinoderm and Flatworm Mitochondrial',
+          aa:     'FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNNKSSSSVVVVAAAADDEEGGGG',
+          starts: '-----------------------------------M---------------M------------',
+        },
+        10: {
+          name:   'Euplotid Nuclear',
+          aa:     'FFLLSSSSYY**CCCWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG',
+          starts: '-----------------------------------M----------------------------',
+        },
+        11: {
+          name:   'Bacterial and Plant Plastid',
+          aa:     'FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG',
+          starts: '---M---------------M------------MMMM---------------M------------',
+        },
+        12: {
+          name:   'Alternative Yeast Nuclear',
+          aa:     'FFLLSSSSYY**CC*WLLLSPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG',
+          starts: '-------------------M---------------M----------------------------',
+        },
+        13: {
+          name:   'Ascidian Mitochondrial',
+          aa:     'FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSSGGVVVVAAAADDEEGGGG',
+          starts: '---M------------------------------MM---------------M------------',
+        },
+        14: {
+          name:   'Alternative Flatworm Mitochondrial',
+          aa:     'FFLLSSSSYYY*CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNNKSSSSVVVVAAAADDEEGGGG',
+          starts: '-----------------------------------M----------------------------',
+        },
+        15: {
+          name:   'Blepharisma Nuclear',
+          aa:     'FFLLSSSSYY*QCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG',
+          starts: '-----------------------------------M----------------------------',
+        },
+        16: {
+          name:   'Chlorophycean Mitochondrial',
+          aa:     'FFLLSSSSYY*LCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG',
+          starts: '-----------------------------------M----------------------------',
+        },
+        21: {
+          name:   'Trematode Mitochondrial',
+          aa:     'FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNNKSSSSVVVVAAAADDEEGGGG',
+          starts: '-----------------------------------M---------------M------------',
+        },
+        22: {
+          name:   'Scenedesmus obliquus mitochondrial',
+          aa:     'FFLLSS*SYY*LCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG',
+          starts: '-----------------------------------M----------------------------',
+        },
+        23: {
+          name:   'Thraustochytrium Mitochondrial',
+          aa:     'FF*LSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG',
+          starts: '--------------------------------M--M---------------M------------',
+        },
+      };
+      return definitions;
+    }
+
+    /**
+     * Translate a sequence using this codon table. If the first codon, is a start codon,
+     * it will be translated as 'M' instead of the amino acid.
+     * @param {String} rawSeq - The sequence to translate
+     * @param {Number} codonStart - Position (bp) of the first codon
+     */
+    translate(rawSeq, codonStart=1) {
+      const codonSize = 3;
+      const seq = rawSeq.toUpperCase();
+      let index = -1 + codonStart;
+      let codon = seq.slice(index, index + codonSize);
+      let translated = '';
+      let firstCodon = true;
+      while (codon.length === codonSize) {
+        if (firstCodon && this.starts.includes(codon)) {
+          translated += 'M';
+        } else {
+          translated += this.table[codon] || 'X';
+        }
+        index += codonSize;
+        codon = seq.slice(index, index + codonSize);
+        firstCodon = false;
+      }
+      return translated;
+    }
+
+  }
+
   // INPUT:
   // - SequenceFile or string of sequence file (e.g. GenBank, FASTA) that can be converted to SequenceFile
   // OPTIONS:
@@ -696,6 +951,9 @@ var CGParse = (function () {
   // - includeCaption: boolean [Default: true]
   //   - NOTE: captions could come from the config (like I did for cgview_builder.rb)
   // - maxLogCount: number (undefined means no limit) [Default: undefined]
+  //
+  // NOTES:
+  // - Dashes and periods (ie Gaps) sequences are replaced with Ns
   class CGViewBuilder extends Status {
 
     constructor(input, options = {}) {
@@ -746,6 +1004,8 @@ var CGParse = (function () {
       this._skippedComplexFeatures = []; // not skipped anymore
       this._complexFeatures = [];
       this._skippedLocationlessFeatures = [];
+      this._featuresWithTranslationCount = 0;
+      this._featuresWithTranslationMismatches = [];
       // this.logger.info(`Date: ${new Date().toUTCString()}`);
       this.logger.info('CGParse: ', { padded: this.version });
       this.logger.info(`Converting to CGView JSON...`);
@@ -932,6 +1192,14 @@ var CGParse = (function () {
           delete f.geneticCode;
         }
       });
+      // Log translations that do not match
+      this._info(`- Features with Translations: ${this._featuresWithTranslationCount.toLocaleString()}`);
+      if (this._featuresWithTranslationMismatches.length > 0) {
+        this._warn(`- Translation Mismatches: ${this._featuresWithTranslationMismatches.length.toLocaleString()} (out of ${this._featuresWithTranslationCount.toLocaleString()})`);
+        this._warn(`  - Feature names: ${this._featuresWithTranslationMismatches.map((f) => f.name).join(', ')}`);
+        this._warn("  - Feature qualifier translation does not match the translation from the sequence");
+        this._warn('  - These qualifer translations will be saved with the feature');
+      }
     }
 
     // Based on seq records, determine the format of the sequence:
@@ -1017,8 +1285,11 @@ var CGParse = (function () {
       const features = [];
       this._featureTypesSetup();
       seqJson.forEach((seqRecord) => {
-        contigs.push({name: seqRecord.name, length: seqRecord.sequence.length, seq: seqRecord.sequence});
-        const contigFeatures = this._extractFeatures(seqRecord, seqRecord.name, seqRecord.inputType);
+        // Convert all periods and dashes to N's
+        const seq = seqRecord.sequence.replace(/[.-]/g, 'N');
+        // contigs.push({name: seqRecord.name, length: seqRecord.sequence.length, seq: seqRecord.sequence});
+        contigs.push({name: seqRecord.name, length: seqRecord.sequence.length, seq});
+        const contigFeatures = this._extractFeatures(seqRecord, seqRecord.name, seqRecord.inputType, seqRecord.sequence);
         features.push(...contigFeatures);
       });
       json.sequence = {contigs};
@@ -1108,7 +1379,7 @@ var CGParse = (function () {
       return json
     }
 
-    _extractFeatures(seqContig, contigName, inputType) {
+    _extractFeatures(seqContig, contigName, inputType, contigSequence) {
       const features = [];
       const source = inputType ? `${inputType}-features` : "features";
       for (const f of seqContig.features) {
@@ -1153,15 +1424,54 @@ var CGParse = (function () {
           // The default genetic code for GenBank/EMBL is 1
           feature.geneticCode = geneticCode || 1;
         }
+        // Grab translation from qualifiers before filtering them
+        const qualifierTranslation = f.qualifiers?.translation;
         const qualifiers = CGViewBuilder.extractQualifiers(f.qualifiers, this.includeQualifiers, this.excludeQualifiers);
         if (qualifiers) {
           feature.qualifiers = qualifiers;
+        }
+        if (feature.type?.toUpperCase() === 'CDS' && qualifierTranslation) {
+          this._featuresWithTranslationCount++;
+          let translation = this._extractTranslation(feature, contigSequence);
+          if (translation.slice(-1) === "*") {
+            translation = translation.slice(0, -1);
+          }
+          // Replace the first AA with M
+          // This should depend on the genetic code
+          // translation = "M" + translation.slice(1);
+          if (translation !== qualifierTranslation) {
+            this._featuresWithTranslationMismatches.push(feature);
+            feature.translation = qualifierTranslation;
+          }
         }
 
         // Add feature to list
         features.push(feature);
       }    return features;
     }
+
+    _extractTranslation(feature, contigSequence) {
+      const codonTable = new CodonTable(feature.geneticCode);
+      let seq = '';
+      const revComp = feature.strand === -1;
+      if (feature.locations) {
+        for (const location of feature.locations) {
+          seq += this._extractSequenceRange(contigSequence, location[0], location[1], revComp);
+        }
+      } else {
+        seq = this._extractSequenceRange(contigSequence, feature.start, feature.stop, revComp);
+      }
+      return codonTable?.translate(seq, feature.codonStart);
+    }
+
+    _extractSequenceRange(sequence, start, stop, revComp=false) {
+      let extract = sequence.substring(start - 1, stop);
+      if (revComp) {
+        extract = reverseComplement(extract);
+      }
+      return extract;
+    }
+
 
     static extractQualifiers(qualifiersIn, includeQualifiers, excludeQualifiers) {
       let qualifiersOut = {};

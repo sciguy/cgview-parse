@@ -24,6 +24,11 @@ inputs = {
     type: 'genbank',
     url: '../inputs/sequence_files/CP021212.gbk',
   },
+  ecoli: {
+    name: 'E. coli [4,641,652 bp]',
+    type: 'genbank',
+    url: '../inputs/sequence_files/NC_000913.gbk',
+  },
   contigs: {
     name: 'Contigs: MNHM01000001 [133,342 bp]',
     type: 'genbank',

@@ -6,7 +6,8 @@
 // const defaultMap = '';     // Empty
 // const defaultMap = 'file'; // File Choose
 // const defaultMap = 'mito_fa';
-const defaultMap = 'mito_gb';
+// const defaultMap = 'mito_gb';
+const defaultMap = 'ecoli';
 // const defaultMap = 'pa2';
 // const defaultMap = 'contigs';
 

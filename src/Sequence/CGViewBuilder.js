@@ -1,6 +1,7 @@
 import Status from '../Support/Status.js';
 import Logger from '../Support/Logger.js';
 import SequenceFile from './SequenceFile.js';
+import CodonTable from '../Support/CodonTable.js';
 import * as helpers from '../Support/Helpers.js';
 
 // INPUT:
@@ -26,6 +27,9 @@ import * as helpers from '../Support/Helpers.js';
 // - includeCaption: boolean [Default: true]
 //   - NOTE: captions could come from the config (like I did for cgview_builder.rb)
 // - maxLogCount: number (undefined means no limit) [Default: undefined]
+//
+// NOTES:
+// - Dashes and periods (ie Gaps) sequences are replaced with Ns
 export default class CGViewBuilder extends Status {
 
   constructor(input, options = {}) {
@@ -76,6 +80,8 @@ export default class CGViewBuilder extends Status {
     this._skippedComplexFeatures = []; // not skipped anymore
     this._complexFeatures = [];
     this._skippedLocationlessFeatures = [];
+    this._featuresWithTranslationCount = 0;
+    this._featuresWithTranslationMismatches = [];
     // this.logger.info(`Date: ${new Date().toUTCString()}`);
     this.logger.info('CGParse: ', { padded: this.version });
     this.logger.info(`Converting to CGView JSON...`);
@@ -262,6 +268,14 @@ export default class CGViewBuilder extends Status {
         delete f.geneticCode;
       }
     });
+    // Log translations that do not match
+    this._info(`- Features with Translations: ${this._featuresWithTranslationCount.toLocaleString()}`);
+    if (this._featuresWithTranslationMismatches.length > 0) {
+      this._warn(`- Translation Mismatches: ${this._featuresWithTranslationMismatches.length.toLocaleString()} (out of ${this._featuresWithTranslationCount.toLocaleString()})`);
+      this._warn(`  - Feature names: ${this._featuresWithTranslationMismatches.map((f) => f.name).join(', ')}`);
+      this._warn("  - Feature qualifier translation does not match the translation from the sequence");
+      this._warn('  - These qualifer translations will be saved with the feature');
+    }
   }
 
   // Based on seq records, determine the format of the sequence:
@@ -347,8 +361,11 @@ export default class CGViewBuilder extends Status {
     const features = [];
     this._featureTypesSetup();
     seqJson.forEach((seqRecord) => {
-      contigs.push({name: seqRecord.name, length: seqRecord.sequence.length, seq: seqRecord.sequence});
-      const contigFeatures = this._extractFeatures(seqRecord, seqRecord.name, seqRecord.inputType);
+      // Convert all periods and dashes to N's
+      const seq = seqRecord.sequence.replace(/[.-]/g, 'N');
+      // contigs.push({name: seqRecord.name, length: seqRecord.sequence.length, seq: seqRecord.sequence});
+      contigs.push({name: seqRecord.name, length: seqRecord.sequence.length, seq});
+      const contigFeatures = this._extractFeatures(seqRecord, seqRecord.name, seqRecord.inputType, seqRecord.sequence);
       features.push(...contigFeatures);
     });
     json.sequence = {contigs};
@@ -438,7 +455,7 @@ export default class CGViewBuilder extends Status {
     return json
   }
 
-  _extractFeatures(seqContig, contigName, inputType) {
+  _extractFeatures(seqContig, contigName, inputType, contigSequence) {
     const features = [];
     const source = inputType ? `${inputType}-features` : "features";
     for (const f of seqContig.features) {
@@ -483,9 +500,25 @@ export default class CGViewBuilder extends Status {
         // The default genetic code for GenBank/EMBL is 1
         feature.geneticCode = geneticCode || 1;
       }
+      // Grab translation from qualifiers before filtering them
+      const qualifierTranslation = f.qualifiers?.translation;
       const qualifiers = CGViewBuilder.extractQualifiers(f.qualifiers, this.includeQualifiers, this.excludeQualifiers);
       if (qualifiers) {
         feature.qualifiers = qualifiers;
+      }
+      if (feature.type?.toUpperCase() === 'CDS' && qualifierTranslation) {
+        this._featuresWithTranslationCount++;
+        let translation = this._extractTranslation(feature, contigSequence);
+        if (translation.slice(-1) === "*") {
+          translation = translation.slice(0, -1);
+        }
+        // Replace the first AA with M
+        // This should depend on the genetic code
+        // translation = "M" + translation.slice(1);
+        if (translation !== qualifierTranslation) {
+          this._featuresWithTranslationMismatches.push(feature);
+          feature.translation = qualifierTranslation;
+        }
       }
 
       // Add feature to list
@@ -493,6 +526,30 @@ export default class CGViewBuilder extends Status {
     };
     return features;
   }
+
+  _extractTranslation(feature, contigSequence) {
+    const codonTable = new CodonTable(feature.geneticCode);
+    let seq = '';
+    let translation = '';
+    const revComp = feature.strand === -1;
+    if (feature.locations) {
+      for (const location of feature.locations) {
+        seq += this._extractSequenceRange(contigSequence, location[0], location[1], revComp);
+      }
+    } else {
+      seq = this._extractSequenceRange(contigSequence, feature.start, feature.stop, revComp);
+    }
+    return codonTable?.translate(seq, feature.codonStart);
+  }
+
+  _extractSequenceRange(sequence, start, stop, revComp=false) {
+    let extract = sequence.substring(start - 1, stop);
+    if (revComp) {
+      extract = helpers.reverseComplement(extract);
+    }
+    return extract;
+  }
+
 
   static extractQualifiers(qualifiersIn, includeQualifiers, excludeQualifiers) {
     let qualifiersOut = {};
