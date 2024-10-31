@@ -208,7 +208,7 @@ export function complement(dna) {
   // - allow n's and -'s
   export function determineSeqMolType(sequence) {
     let type;
-    const commonDNAChars = "ATGC";
+    const commonDNAChars = "ATGCN";
     const commonProteinChars = "ACDEFGHIKLMNPQRSTVWY";
     const seqLength = sequence.length;
     const numCommonDNAChars = countCharactersInSequence(sequence, commonDNAChars);

@@ -189,7 +189,7 @@ class Logger {
 
 }
 
-var version = "1.0.4";
+var version = "1.0.5";
 
 // ----------------------------------------------------------------------------
 // CGPARSE HELPERS
@@ -398,7 +398,7 @@ function complement(dna) {
   // - allow n's and -'s
   function determineSeqMolType(sequence) {
     let type;
-    const commonDNAChars = "ATGC";
+    const commonDNAChars = "ATGCN";
     const commonProteinChars = "ACDEFGHIKLMNPQRSTVWY";
     const seqLength = sequence.length;
     const numCommonDNAChars = countCharactersInSequence(sequence, commonDNAChars);
@@ -1275,13 +1275,20 @@ class CGViewBuilder extends Status {
 
     return {names: finalNames, reasons: Object.values(reasons)};
   }
+  _countPeriodsAndDashes(str) {
+    const match = str.match(/[.-]/g);
+    return match ? match.length : 0;
+  }
 
-  // TODO: contig names MUST BE UNIQUE
   _extractSequenceAndFeatures(json, seqJson) {
     const contigs = [];
     const features = [];
+  // TODO: contig names MUST BE UNIQUE
+    let sequencePeriodsAndDashes = 0;
     this._featureTypesSetup();
     seqJson.forEach((seqRecord) => {
+      // Get count of periods and dashes in the sequence
+      sequencePeriodsAndDashes += this._countPeriodsAndDashes(seqRecord.sequence);
       // Convert all periods and dashes to N's
       const seq = seqRecord.sequence.replace(/[.-]/g, 'N');
       // contigs.push({name: seqRecord.name, length: seqRecord.sequence.length, seq: seqRecord.sequence});
@@ -1289,6 +1296,9 @@ class CGViewBuilder extends Status {
       const contigFeatures = this._extractFeatures(seqRecord, seqRecord.name, seqRecord.inputType, seqRecord.sequence);
       features.push(...contigFeatures);
     });
+    if (sequencePeriodsAndDashes) {
+      this._warn(`- Sequence ./- replaced with 'N': ${sequencePeriodsAndDashes}`);
+    }
     json.sequence = {contigs};
     json.features = features;
     return json;
@@ -1407,16 +1417,16 @@ class CGViewBuilder extends Status {
         legend: f.type,
       };
       if (f.locations.length > 1) {
+        // this.logger.info(`- locs: ${f.locations.length}; ${f.type}; ${f.name}; trans: ${!!f.qualifiers?.translation}; pseudo: ${!!f.qualifiers?.pseudo}`);
         feature.locations = f.locations;
         this._complexFeatures.push(f);
-        // continue;
       }
       // codonStart (from codon_start)
       if (f.qualifiers?.codon_start && parseInt(f.qualifiers.codon_start) !== 1) {
         feature.codonStart = parseInt(f.qualifiers.codon_start);
       }
       // geneticCode (from transl_table)
-      if (feature.type === 'CDS') {
+      if (feature.type?.toUpperCase() === 'CDS') {
         const geneticCode =  f.qualifiers?.transl_table && parseInt(f.qualifiers.transl_table);
         // The default genetic code for GenBank/EMBL is 1
         feature.geneticCode = geneticCode || 1;
@@ -1453,7 +1463,9 @@ class CGViewBuilder extends Status {
     const revComp = feature.strand === -1;
     if (feature.locations) {
       for (const location of feature.locations) {
-        seq += this._extractSequenceRange(contigSequence, location[0], location[1], revComp);
+        // seq += this._extractSequenceRange(contigSequence, location[0], location[1], revComp);
+        const locationSeq = this._extractSequenceRange(contigSequence, location[0], location[1], revComp);
+        seq = revComp ? locationSeq + seq : seq + locationSeq;
       }
     } else {
       seq = this._extractSequenceRange(contigSequence, feature.start, feature.stop, revComp);

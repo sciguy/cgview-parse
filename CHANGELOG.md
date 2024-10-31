@@ -4,9 +4,14 @@
 
 ## Unreleased
 
+## v1.0.5 - 2024-10-23
+- DNA vs Protein check: include N with DNA
+- Fix translation check for -1 strand features with locations
+
 ## v1.0.4 - 2024-10-18
-- CGViewBUilder.js: Dashes and periods in sequences are replaced by N's
+- CGViewBuilder.js: Dashes and periods in sequences are replaced by N's
 - Compare qualifier translation with translated from the sequence
+- Add non-sequence based translations to feature translation property
 
 ## v1.0.3 - 2024-10-15
 - CSV maxColumns (default 30). Only look at first maxColumns columns. 
