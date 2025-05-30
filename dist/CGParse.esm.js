@@ -1,3 +1,20 @@
+/*!
+ * CGParse.js – Sequence & Feature Parser for CGView.js
+ * Copyright © 2024–2025 Jason R. Grant
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 // OPTIONS:
 // - logToConsole [Default: true]: log to console
 // - showTimestamps [Default: true]: Add time stamps
@@ -190,6 +207,23 @@ class Logger {
 }
 
 var version = "1.0.5";
+
+/*!
+ * CGParse.js – Sequence & Feature Parser for CGView.js
+ * Copyright © 2024–2025 Jason R. Grant
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 // ----------------------------------------------------------------------------
 // CGPARSE HELPERS
@@ -519,7 +553,25 @@ var helpers = /*#__PURE__*/Object.freeze({
   uniqueName: uniqueName
 });
 
-/**
+/*!
+ * CGParse.js – Sequence & Feature Parser for CGView.js
+ * Copyright © 2024–2025 Jason R. Grant
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
+ /**
    * Base class for FeatureFile, SequenceFile, FeatureBuilder, CGViewBuilder
    * - Provides logging and status tracking
    * 
@@ -674,6 +726,23 @@ class Status {
   // }
 
 }
+
+/*!
+ * CGParse.js – Sequence & Feature Parser for CGView.js
+ * Copyright © 2024–2025 Jason R. Grant
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 /**
  * This class contains all the codon table definitions and has the ability to translate
@@ -925,6 +994,24 @@ class CodonTable {
 
 }
 
+/*!
+ * CGParse.js – Sequence & Feature Parser for CGView.js
+ * Copyright © 2024–2025 Jason R. Grant
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
 // INPUT:
 // - SequenceFile or string of sequence file (e.g. GenBank, FASTA) that can be converted to SequenceFile
 // OPTIONS:
@@ -986,8 +1073,8 @@ class CGViewBuilder extends Status {
   _parseInput(input) {
     // console.log("Parse input")
     if (typeof input === "string") {
-      return new SequenceFile$1(input, {logger: this.logger});
-    } else if (input instanceof SequenceFile$1) {
+      return new SequenceFile(input, {logger: this.logger});
+    } else if (input instanceof SequenceFile) {
       return input;
     } else {
       this._fail("Invalid input: must be a string (from GenBank, EMBL, FASTA, Raw) or SequenceFile object");
@@ -1522,11 +1609,22 @@ class CGViewBuilder extends Status {
 
 }
 
-// Holds a sequence and features from a sequence file: genbank, embl, fasta, raw
-// Parses text from sequence file
-// Creates sequence records json that can be converted to CGView JSON
-// Array of sequence records containing array of features
-// TODO: Give examples of output (the record format)
+/*!
+ * CGParse.js – Sequence & Feature Parser for CGView.js
+ * Copyright © 2024–2025 Jason R. Grant
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 
 class SequenceFile extends Status {
@@ -2294,7 +2392,23 @@ class SequenceFile extends Status {
 
 }
 
-var SequenceFile$1 = SequenceFile;
+/*!
+ * CGParse.js – Sequence & Feature Parser for CGView.js
+ * Copyright © 2024–2025 Jason R. Grant
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 
 class GFF3FeatureFile {
 
@@ -2540,6 +2654,24 @@ class GFF3FeatureFile {
   }
 
 }
+
+/*!
+ * CGParse.js – Sequence & Feature Parser for CGView.js
+ * Copyright © 2024–2025 Jason R. Grant
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 
 class GTFFeatureFile {
 
@@ -2821,6 +2953,24 @@ class GTFFeatureFile {
 
 }
 
+/*!
+ * CGParse.js – Sequence & Feature Parser for CGView.js
+ * Copyright © 2024–2025 Jason R. Grant
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
 // NOTES:
 // - Only works with tab separated files (NOT space separated)
 // - Bed is a 0-based format. The chromStart field is 0-based and the chromEnd field is 1-based.
@@ -3044,6 +3194,24 @@ class BEDFeatureFile {
   }
 
 }
+
+/*!
+ * CGParse.js – Sequence & Feature Parser for CGView.js
+ * Copyright © 2024–2025 Jason R. Grant
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 
 // NOTES:
 // - CSV is a 1-based format. The start field is 1-based and the stop field is 1-based.
@@ -3452,15 +3620,22 @@ class CSVFeatureFile {
 
 }
 
-// This will be the main interface for parsing Feature Files. 
-// For each feature file type (e.g. GFF3, GTF, BED, CSV, TSV, etc.),
-// we  have delagates that will parse the file and return an array of
-// of joined features.
-// The returned features are not exactly CGView feature yet, but they are
-// in a format that can be easily converted to CGView features with FeatureBuilder.
-// This raw format contains all the attributes from GFF3 and GTF files.
-// Any attributes that are qualifiers, will also be available
-// in the 'qualifiers' object.
+/*!
+ * CGParse.js – Sequence & Feature Parser for CGView.js
+ * Copyright © 2024–2025 Jason R. Grant
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 
 /**
@@ -3908,6 +4083,24 @@ class FeatureFile extends Status {
 
 }
 
+/*!
+ * CGParse.js – Sequence & Feature Parser for CGView.js
+ * Copyright © 2024–2025 Jason R. Grant
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
 // INPUT:
 // - FeatureFile or string of feature file (e.g. GFF3, GTF, BED, CSV) that can be converted to FeatureFile
 // OPTIONS (Feature and Qualifier options NIY):
@@ -4016,6 +4209,9 @@ class FeatureBuilder extends Status {
     if (record.source) {
       feature.source = record.source;
     }
+    if (record.legend) {
+      feature.legend = record.legend;
+    }
     // TODO: CODON
     // if (record.frame) {
     //   feature.frame = record.frame;
@@ -4085,7 +4281,7 @@ const CGParse = {};
 CGParse.version = CGPARSE_VERSION;
 CGParse.Logger = Logger;
 CGParse.helpers = helpers;
-CGParse.SequenceFile = SequenceFile$1;
+CGParse.SequenceFile = SequenceFile;
 CGParse.CGViewBuilder = CGViewBuilder;
 CGParse.FeatureFile = FeatureFile;
 CGParse.FeatureBuilder = FeatureBuilder;

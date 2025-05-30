@@ -1,3 +1,20 @@
+/*!
+ * CGParse.js – Sequence & Feature Parser for CGView.js
+ * Copyright © 2024–2025 Jason R. Grant
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import Status from '../Support/Status.js';
 import FeatureFile from './FeatureFile.js';
 import CGViewBuilder from '../Sequence/CGViewBuilder.js';
@@ -110,6 +127,9 @@ export default class FeatureBuilder extends Status {
     }
     if (record.source) {
       feature.source = record.source;
+    }
+    if (record.legend) {
+      feature.legend = record.legend;
     }
     // TODO: CODON
     // if (record.frame) {

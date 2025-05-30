@@ -9,8 +9,8 @@
 // const defaultMap = 'file'; // File Choose
 // const defaultMap = 'sample_gff3';
 // const defaultMap = 'sample_gtf';
-// const defaultMap = 'sample_csv';
-const defaultMap = 'sample_csv_40_columns';
+const defaultMap = 'sample_csv';
+// const defaultMap = 'sample_csv_40_columns';
 // const defaultMap = 'sample_tsv';
 // const defualtMap = 'arabidopsis_gtf';
 // const defaultMap = 'bed12';

@@ -1,7 +1,7 @@
 
 # My test file
-name,type ,blAh,Start,STOP,strand
-Bob,CDS,blah,100,1000,+
- Spaces name , CDS ,blah,15000 ,17000,+ 
-"Carl name",tRNA,blah,3000,9000,-
+name,type ,blAh,Start,STOP,strand,legend,score
+Bob,CDS,blah,100,1000,+,my_legend,1
+ Spaces name , CDS ,blah,15000 ,17000,+,my_legend,0.5
+"Carl name",tRNA,blah,3000,9000,-,my_legend,2
 
