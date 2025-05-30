@@ -1,217 +1,289 @@
 # CGParse
 
-CGParse consists of file parsers and builders to take sequence or feature files and convert them to CGView JSON or features that can be added to CGView JSON. The parsers (SequenceFile.js and FeatureFile.js) create an intermediate JSON format with all the data possible to extract. This intermediate JSON data can be used by other programs or converted to CGView JSON data via the builders (CGViewBuilder.js and CGFeatureBuilder.js). When building CGView data, options can be provied to filter the data (e.g. qualifiers).
+[![npm version](https://img.shields.io/npm/v/cgparse)](https://www.npmjs.com/package/cgparse)
+![bundle size](https://img.shields.io/bundlephobia/min/cgparse)
+[![jsDelivr hits](https://data.jsdelivr.com/v1/package/npm/cgparse/badge)](https://www.jsdelivr.com/package/npm/cgparse)
+![Last Commit](https://img.shields.io/github/last-commit/stothard-group/CGView-Parse.svg)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![Docs](https://img.shields.io/badge/docs-available-blue)](https://parse.cgview.ca)
 
-[CGParse Test Page](https://stothard-group.github.io/cgview-parse)
+A JavaScript library for parsing biological sequence and feature files (GenBank, EMBL, FASTA, GFF3, BED, etc.) and converting them to CGView-compatible JSON format for genome visualization.
 
-### Sequence File Overview
+🔗 **[Live Demo & Test Page](https://sciguy.github.io/cgview-parse)**
 
+## Features
+
+- **Multi-format support**: GenBank, EMBL, FASTA, RAW, GFF3, GTF, BED, CSV, TSV
+- **Two-stage pipeline**: Parse to intermediate JSON → Build to CGView JSON
+- **Flexible filtering**: Include/exclude features by type, qualifiers, etc.
+- **Robust validation**: Comprehensive error checking and warnings
+- **Structured logging**: Built-in logger with levels, icons, and history
+- **Browser & Node.js**: Works in both environments
+
+## Installation
+
+```bash
+npm install cgparse
+# or
+yarn add cgparse
 ```
-                SequenceFile.js               CGViewBuilder.js
-          Input --------------> Sequence JSON ---------------> CGView.json
-(GenBank, EMBL, FASTA)        [Sequence Records]
-```
 
-### Feature File Overview
+## Quick Start
 
-```
-                  FeatureFile.js              FeatureBuilder.js
-            Input -------------> Feature JSON ----------------> features.cgv.json
-(GFF3, GTF, BED, CSV, TSV)    [Feature Records]
-```
-
-# TODO:
-- Add options to select qualifiers and feature types for FeatureBuilder.js
-
-This package consists of 3 main components:
-- SequenceFile.js
-- CGViewBuilder.js
-- Logger.js: 
-
-# Usage
-
-# Notes:
-- feature keys: ~53
-- qualifiers: ~103
-
-## SequenceFile
-Parser for converting sequence files (e.g. GenBank, EMBL, FASTA) to CGView JSON via our own intermediate SequenceFile JSON format. The SequenceFile parser is based on Paul's [seq_to_json.py](https://github.com/paulstothard/seq_to_json) parser.
-
+### Sequence Files (GenBank, EMBL, FASTA)
 
 ```js
-// inputText: text from a GenBank, EMBL, FASTA, or RAW file
-// Options:
-// - addFeatureSequences: boolean [Default: false]. This can increase run time ~3x.
-// - logger: logger object (undefined uses a new logger) [Default: undefined]
-// - maxLogCount: number (undefined means no limit) [Default: undefined]
-seqFile = new CGParse.SequenceFile(inputText, options);
+import { SequenceFile, CGViewBuilder } from 'cgparse';
 
-// -----------------
-// Helpful methods:
+// Parse sequence file
+const genbankText = `LOCUS AF177870 3123 bp DNA...`;
+const seqFile = new SequenceFile(genbankText);
 
-// Get sequence record JSON array
-seFile.records
+console.log(seqFile.summary);
+// { inputType: 'genbank', sequenceType: 'dna', sequenceCount: 1, ... }
 
-// Convert to CGView JSON directly from the SequenceFile
-seqFile.toCGViewJSON()
-
-// Return a summary object of the parsing with the following keys:
-// inputType, sequenceType, sequenceCount, featureCount, totalLength, status, success
-seqFile.summary
-
-// Return status of parsing: success, failed
-seqFile.status
-
-// Return success boolean: true or false
-seqFile.success 
-
-// Get the logger
-seqFile.logger
+// Convert to CGView JSON
+const cgvJSON = seqFile.toCGViewJSON({
+  includeQualifiers: ['gene', 'product'],
+  excludeFeatures: ['source']
+});
 ```
 
+### Feature Files (GFF3, BED, GTF)
 
-## CGViewBuilder
 ```js
-// input:
-// - SequenceFile or string of sequence file (e.g. GenBank, FASTA) that can be converted to SequenceFile
-// options:
-// - config: jsonConfig
-// - skipTypes: boolean [Default: ['gene', 'source', 'exon']]
-//   - If false, include ALL feature types in the JSON
-// - includeQualifiers: boolean [Default: false]
-//   - If true, include ALL qualifiers in the JSON
-//   - If array of strings, include only those qualifiers
-//   - If false, include NO qualifiers
-// - includeCaption: boolean [Defualt: true]
-//   - NOTE: captions could come from the config (like I did for cgview_builder.rb)
-// - skipComplexLocations: boolean (not implemented yet) [Defualt: true]
-//   - need to decide how to handle these
-// - maxLogCount: number (undefined means no limit) [Default: undefined]
-builder = new CGParse.CGViewBuilder(input, options);
+import { FeatureFile, FeatureBuilder } from 'cgparse';
 
-// Examples
-genbankString = "LOCUS...";
+const gff3Text = `##gff-version 3
+chr1	.	gene	1000	2000	.	+	.	ID=gene1;Name=myGene`;
 
-// Via SequenceFile
-seqFile = new CGParse.SequenceFile(inputText, options);
-builder = new CGParse.CGViewBuilder(seqFile);
-cgviewJSON = builder.toJSON();
-
-// Use genbankString directly
-builder = new CGParse.CGViewBuilder(genbankString);
-cgviewJSON = builder.toJSON();
-// A seqFile is still created internally and can be accessed with:
-builder.seqFile
-
-
-// -----------------
-// Helpful methods:
-
-// Return status of parsing: success, failed, warnings
-builder.status
-
-// Return success boolean: true or false
-builder.success 
-
-// Get the logger
-builder.logger
+const featureFile = new FeatureFile(gff3Text);
+const builder = new FeatureBuilder(featureFile);
+const featuresJSON = builder.toJSON();
 ```
 
-## Logger
-The logger logs, info, warnings, errors to the console and to a histoy that can be extracted later. Log messages can have timestamps and icons (e.g. ️🛑)
+## Architecture
 
-``` js
-// Options:
-// - logToConsole [Default: true]: log to console
-// - showTimestamps [Default: true]: Add time stamps
-// - showIcons: Add level as icon: warn, info, etc
-// - maxLogCount: Maximum number of similar log messages to keep
-// Log Levels: log, info, warn, error
-// Log messages can be a simgle message or an array of messages
-// - When an array of messages is provided, if the count is more than maxLogCount
-//   then only the first maxLogCount messages are shown.
-
-logger = new Logger(options)
-
-// -----------------
-// Helpful methods:
-
-// Log some messages
-logger.info("My very useful message")
-logger.warn("Be warned")
-logger.error("Well, that didn't work")
-
-// How many messages have been logged
-logger.count
-
-// Log a message break. This will appear in the history
-// Default is "\n" to add a blank line
-logger.break("-------")
-
-
-// Get the entire log history
-logger.history()
-
-// Log Icons:
-// - log:     '📝'
-// - info:    'ℹ️'
-// - warn:    '⚠️'
-// - error:   '🛑'
-// - success: '✅'
-// - fail:    '🛑'
-// - none:    ' '
+```
+Sequence Files:    GenBank/EMBL/FASTA  →  SequenceFile  →  CGViewBuilder  →  CGView JSON
+Feature Files:     GFF3/BED/GTF/CSV   →  FeatureFile   →  FeatureBuilder →  Features JSON
 ```
 
+## API Reference
 
-# Building
+### SequenceFile
+
+Parse biological sequence files and extract sequences, features, and metadata.
+
+```js
+const seqFile = new SequenceFile(inputText, {
+  addFeatureSequences: false,  // Extract DNA sequences for features
+  nameKeys: ['gene', 'locus_tag', 'product'],  // Feature naming priority
+  logger: myLogger,
+  maxLogCount: 100
+});
+
+// Properties
+seqFile.records        // Array of parsed sequence records
+seqFile.summary        // Parsing summary statistics  
+seqFile.inputType      // 'genbank', 'embl', 'fasta', 'raw'
+seqFile.sequenceType   // 'dna', 'protein', 'unknown'
+seqFile.status         // 'success', 'warnings', 'failed'
+seqFile.logger         // Logger instance
+
+// Methods
+seqFile.toCGViewJSON(options)  // Convert directly to CGView JSON
+```
+
+### CGViewBuilder
+
+Convert parsed sequence data to CGView JSON format with filtering options.
+
+```js
+const builder = new CGViewBuilder(seqFile, {
+  config: configJSON,              // CGView configuration
+  includeFeatures: true,           // true, false, or array of types
+  excludeFeatures: ['gene', 'source'],
+  includeQualifiers: ['gene', 'product'],  // true, false, or array
+  includeCaption: true
+});
+
+const cgvJSON = builder.toJSON();
+```
+
+### FeatureFile
+
+Parse feature annotation files in various formats.
+
+```js
+const featureFile = new FeatureFile(inputText, {
+  format: 'auto',  // 'auto', 'gff3', 'bed', 'gtf', 'csv', 'tsv'
+  nameKeys: ['Name', 'gene', 'ID'],
+  logger: myLogger
+});
+
+// Properties
+featureFile.records       // Array of parsed feature records
+featureFile.inputFormat   // Detected format
+featureFile.summary       // Parsing summary
+```
+
+### Logger
+
+Structured logging with levels, icons, timestamps, and history.
+
+```js
+const logger = new Logger({
+  logToConsole: true,
+  showTimestamps: true,
+  showIcons: true,
+  maxLogCount: undefined  // No limit
+});
+
+logger.info('Processing started');     // ℹ️ Processing started
+logger.warn('Invalid feature found');  // ⚠️ Invalid feature found  
+logger.error('Parse failed');          // 🛑 Parse failed
+
+console.log(logger.count);            // Total messages logged
+console.log(logger.history());        // Full log history
+```
+
+## Examples
+
+### Basic GenBank Parsing
+
+```js
+import CGParse from 'cgparse';
+
+const genbank = `
+LOCUS       AF177870     3123 bp    DNA     linear   INV 31-OCT-1999
+DEFINITION  Reclinomonas americana mitochondrion, partial genome.
+FEATURES             Location/Qualifiers
+     gene            1..1200
+                     /gene="cox1"
+                     /product="cytochrome c oxidase subunit I"
+ORIGIN      
+        1 atgttcgcta ccataaccaa aatgagcagg ctcctattcg
+//`;
+
+const seqFile = new CGParse.SequenceFile(genbank);
+if (seqFile.passed) {
+  const cgvJSON = seqFile.toCGViewJSON();
+  console.log('Generated CGView JSON:', cgvJSON);
+}
+```
+
+### Advanced Feature Filtering
+
+```js
+const builder = new CGViewBuilder(seqFile, {
+  includeFeatures: ['CDS', 'gene', 'tRNA'],  // Only these types
+  excludeFeatures: ['source'],               // Skip these
+  includeQualifiers: ['gene', 'product', 'note'],
+  excludeQualifiers: ['translation']
+});
+
+const result = builder.toJSON();
+```
+
+### Custom Logging
+
+```js
+const logger = new Logger({ 
+  logToConsole: false,
+  showTimestamps: true 
+});
+
+const seqFile = new SequenceFile(input, { logger });
+
+// Extract log messages
+const logHistory = logger.history();
+console.log('Parsing log:', logHistory);
+```
+
+## Error Handling
+
+CGParse provides detailed error reporting and validation:
+
+```js
+const seqFile = new SequenceFile(problematicInput);
+
+console.log(seqFile.status);  // 'failed', 'warnings', or 'success'
+
+if (!seqFile.passed) {
+  console.log('Errors occurred:');
+  seqFile.logger.history().forEach(log => {
+    if (log.level === 'error') {
+      console.log('-', log.message);
+    }
+  });
+}
+```
+
+## File Format Support
+
+| Format | Input Type | Description |
+|--------|------------|-------------|
+| GenBank | Sequence | NCBI GenBank format (.gb, .gbk) |
+| EMBL | Sequence | EMBL/ENA format (.embl) |
+| FASTA | Sequence | FASTA sequence format (.fa, .fasta) |
+| RAW | Sequence | Plain sequence text |
+| GFF3 | Features | Generic Feature Format v3 (.gff3) |
+| GTF | Features | Gene Transfer Format (.gtf) |
+| BED | Features | Browser Extensible Data (.bed) |
+| CSV/TSV | Features | Comma/tab-separated values |
+
+## Browser Usage
+
+```html
+<script src="https://unpkg.com/cgparse/dist/cgparse.min.js"></script>
+<script>
+  const seqFile = new CGParse.SequenceFile(genbankText);
+  const cgvJSON = seqFile.toCGViewJSON();
+</script>
+```
+
+## Development
+
 ```bash
-yarn build
-// Built files can be found in `docs/dist`
-```
+# Install dependencies
+yarn install
 
-# Testing
-```bash
-// Run tests
+# Run tests
 yarn test
+
+# Build for distribution
+yarn build
+
+# Start development server
+yarn dev
 ```
-## Live Test Page
-[Test Page](https://stothard-group.github.io/cgview-parse/test/)
-The testing html page can open predefined sequence files as well as use a file chooser to open custom files. The test page consists of
-- the input file
-- the intermediate Sequence Record JSON
-- the final CGView JSON
-- the CGView Map created from the JSON
-- a log of output messages
-- an Open in Proksee button
 
-### Eventually (Ideas for the Test Page)
-- feature (or antything) name search box
-  - Moves to first occurance of feature in both genbank and json so you can see side by side
-- Would it be possible to click on a feature in input/output and see it highlighted in other file
+## Contributing
 
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes and add tests
+4. Commit your changes (`git commit -am 'Add amazing feature'`)
+5. Push to the branch (`git push origin feature/amazing-feature`)
+6. Open a Pull Request
 
-# TODO
-- Warning/Error should occur if certain qualifiers have more than one:
-  - locus_tag, start_codon
-- Sort Errors vs Warnings
-- Have ability to return a results object with the JSON, summary, stats and log
-- Add file tests
-  - have directory of input files one for good other for bad
-  - use fs.readFileSync to read in a file
-  - use CGViewBuilder to convert the file
-  - see if they pass or fail
+## Resources
 
+- **[CGView.js](https://github.com/stothard-group/cgview-js)** - Circular genome viewer
+- **[Proksee](https://proksee.ca)** - Online genome visualization platform
+- **[seq_to_json.py](https://github.com/paulstothard/seq_to_json)** - Original Python parser inspiration
+- **[EMBL Feature Table](https://www.ebi.ac.uk/ena/WebFeat/)** - Feature format reference
 
-# Resources
-- Paul's Python Sequence Parser
-  - https://github.com/paulstothard/seq_to_json
-- Web interface for EMBL/GenBank Features and Qualifiers
-  - https://www.ebi.ac.uk/ena/WebFeat/
-- ENA (European Nucleotide Archive) source for EMBL files
-  - https://www.ebi.ac.uk/ena/browser/view/CP027060
-- Teselagen
-  - [Teselagene](https://github.com/TeselaGen/tg-oss/tree/master)
-  - [bio-parsers](https://github.com/TeselaGen/tg-oss/tree/master/packages/bio-parsers)
+## License
 
-# Notes
-Rollup version being used for cgview: rollup v2.51.1
+TODO
+
+## Citation
+
+If you use CGParse in your research, please cite:
+
+```
+CGParse: A JavaScript library for parsing biological sequence and feature files
+https://github.com/stothard-group/cgview-parse
+```
