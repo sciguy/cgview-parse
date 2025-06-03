@@ -83,7 +83,6 @@ main.landing {
 }
 
 .section-seq-json,
-.section-tes-json,
 .section-cgv-json {
   flex-grow: 5;
 }
