@@ -15,7 +15,6 @@ const defaultMap = 'ecoli';
 const prettyPrint = false;
 const showInput = true;
 const showSeqJson = true;
-const showTesJson = false;
 const showCgvJson = true;
 const showMap = true;
 const showAllText = false; // or only the first 1000 lines
@@ -128,7 +127,6 @@ function clearText() {
   // Clear inputs and outpus
   document.getElementById('input-text').innerHTML = "Empty..."
   document.getElementById('output-seq-json').innerHTML = "Empty..."
-  document.getElementById('output-tes-json').innerHTML = "Empty..."
   document.getElementById('output-cgv-json').innerHTML = "Empty..."
   document.getElementById('map-name').innerHTML = 'Empty'
   // Clear runtimes
@@ -198,11 +196,9 @@ async function runParse() {
   window.json = {}; // For debugging
   const inputTextDiv = document.getElementById('input-text');
   const outputSeqJsonDiv = document.getElementById('output-seq-json');
-  const outputTesJsonDiv = document.getElementById('output-tes-json');
   const outputCgvJsonDiv = document.getElementById('output-cgv-json');
   // Clear outputs
   outputSeqJsonDiv.innerHTML = "Loading...";
-  outputTesJsonDiv.innerHTML = "Loading...";
   outputCgvJsonDiv.innerHTML = "Loading...";
   // Using prism can be slow for large files
   const prismMode = prettyPrintCheckbox.checked;
@@ -260,10 +256,6 @@ async function runParse() {
 
   // MESSAGES
   // let messages = "";
-  // tesJSON.forEach((tes, index) => {
-  //   const status = tes.success ? 'PASS' : 'FAIL';
-  //   messages += `Sequence ${index + 1} [${status}]: ${tes?.parsedSequence?.name}\n`;
-  // });
   const logDiv = document.getElementById('log-text');
   // const messages = seqFile.logger.history({showTimestamps: false});
   // const messages = seqFile.logger.history({showIcons: true});
@@ -319,9 +311,6 @@ showInputCheckbox.addEventListener('click', (e) => {
   updatePageLayout();
 });
 showSeqJsonCheckbox.addEventListener('click', (e) => {
-  updatePageLayout();
-});
-showTesJsonCheckbox.addEventListener('click', (e) => {
   updatePageLayout();
 });
 showCgvJsonCheckbox.addEventListener('click', (e) => {
