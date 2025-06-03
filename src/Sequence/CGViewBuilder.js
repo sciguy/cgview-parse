@@ -24,6 +24,10 @@ import * as helpers from '../Support/Helpers.js';
 // INPUT:
 // - SequenceFile or string of sequence file (e.g. GenBank, FASTA) that can be converted to SequenceFile
 // OPTIONS:
+// TODO:
+// - change these to featureTypes and qualifiers with each being an object with {mode, items}
+//   - mode: 'include', 'exclude', 'all', 'none'
+//   - items: array of strings (feature types or qualifiers) to include or exclude
 // - config: jsonConfig
 // - FIXME: CHANGE TO includ/excludeFeatures skipTypes: boolean (TEST) [Default: ['gene', 'source', 'exon']]
 //   - If false, include ALL feature types in the JSON

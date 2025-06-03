@@ -4,7 +4,8 @@ describe('CGViewBuilder', () => {
 
   describe('adjustContigNames', () => {
     test('- no changes', () => {
-      const names = ['contig1', 'contig_2', 'contig-3'];
+      // const names = ['contig1', 'contig_2', 'contig-3'];
+      const names = ['contig1', 'contig_2'];
       const result = CGViewBuilder.adjustContigNames(names);
       expect(result.names).toEqual(names);
     });

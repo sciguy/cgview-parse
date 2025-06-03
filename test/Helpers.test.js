@@ -1,4 +1,4 @@
-import * as helpers from '../src/Helpers.js';
+import * as helpers from '../src/Support/Helpers.js';
 
 describe('Helpers', () => {
 

@@ -68,6 +68,7 @@ import * as helpers from '../Support/Helpers.js';
  * REQUIRED:
  * - inputText: string from GFF3, BED, CSV, TSV, or GTF file
  *
+ * 
  * OPTIONS:
  * - GENERAL (All Formats)
  *   - format: The file format being parsed (e.g. 'auto', 'gff3', 'bed', 'csv', 'tsv', 'gtf') [Default: 'auto'].

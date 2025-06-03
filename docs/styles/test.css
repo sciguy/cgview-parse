@@ -138,13 +138,16 @@ main.landing {
   line-height: 1.5;;
 }
 
-.note-text {
+.sidebar-help ul {
+  padding-left: 10px;
+  margin-left: 0;
+  list-style-position: outside;
+}
+.sidebar-help li {
   font-family: monospace;
   font-size: 10px;
   color: gray;
   margin: 5px;
-  white-space: pre;
-  /* line-height: 1.5;; */
 }
 
 #reparse-btn {
@@ -256,4 +259,31 @@ pre[class*="language-"] {
 ::-webkit-scrollbar-thumb {
   background: var(--theme-text-color-muted);
   border-radius: 4px;
+}
+
+/* Sidebar Help/Logs */
+.sidebar-help-logs {
+  overflow: scroll;
+}
+.sidebar-help {
+  overflow: scroll;
+}
+.sidebar-nav-btns {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+}
+.sidebar-nav-btns .btn-separator {
+  padding: 0 5px;
+}
+.sidebar-nav-btns .btn-selected {
+  color: black;
+  font-size: 18px;
+  cursor: default;
+}
+.sidebar-nav-btns .btn-selected:hover {
+  text-decoration: none;
 }

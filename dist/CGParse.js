@@ -1018,6 +1018,10 @@ var CGParse = (function () {
   // INPUT:
   // - SequenceFile or string of sequence file (e.g. GenBank, FASTA) that can be converted to SequenceFile
   // OPTIONS:
+  // TODO:
+  // - change these to featureTypes and qualifiers with each being an object with {mode, items}
+  //   - mode: 'include', 'exclude', 'all', 'none'
+  //   - items: array of strings (feature types or qualifiers) to include or exclude
   // - config: jsonConfig
   // - FIXME: CHANGE TO includ/excludeFeatures skipTypes: boolean (TEST) [Default: ['gene', 'source', 'exon']]
   //   - If false, include ALL feature types in the JSON
@@ -3661,6 +3665,7 @@ var CGParse = (function () {
    * REQUIRED:
    * - inputText: string from GFF3, BED, CSV, TSV, or GTF file
    *
+   * 
    * OPTIONS:
    * - GENERAL (All Formats)
    *   - format: The file format being parsed (e.g. 'auto', 'gff3', 'bed', 'csv', 'tsv', 'gtf') [Default: 'auto'].
@@ -4289,13 +4294,6 @@ var CGParse = (function () {
   CGParse.FeatureFile = FeatureFile;
   CGParse.FeatureBuilder = FeatureBuilder;
   CGParse.CSVFeatureFile = CSVFeatureFile;
-
-  // Teselagen (For development only; Useful for comparison):
-  // This should be removed for production
-  // import { genbankToJson as genbankToTeselagen} from "@teselagen/bio-parsers";
-  // CGViewParse.genbankToTeselagen = genbankToTeselagen;
-  // import { anyToJson as anyToTeselagen} from "@teselagen/bio-parsers";
-  // CGVParse.anyToTeselagen = anyToTeselagen;
 
   return CGParse;
 

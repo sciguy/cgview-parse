@@ -7,9 +7,15 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Docs](https://img.shields.io/badge/docs-available-blue)](https://parse.cgview.ca)
 
-A JavaScript library for parsing biological sequence and feature files (GenBank, EMBL, FASTA, GFF3, BED, etc.) and converting them to CGView-compatible JSON format for genome visualization.
+A JavaScript library for parsing biological sequence and feature files (GenBank, EMBL, FASTA, GFF3, BED, etc.) and converting them to CGView-compatible JSON format for genome visualization with [CGView.js](https://js.cgview.ca).
 
 🔗 **[Live Demo & Test Page](https://sciguy.github.io/cgview-parse)**
+
+
+## Table of Contents
+
+1. [Features](#features)  
+2. [Installation](#installation)  
 
 ## Features
 
@@ -18,7 +24,6 @@ A JavaScript library for parsing biological sequence and feature files (GenBank,
 - **Flexible filtering**: Include/exclude features by type, qualifiers, etc.
 - **Robust validation**: Comprehensive error checking and warnings
 - **Structured logging**: Built-in logger with levels, icons, and history
-- **Browser & Node.js**: Works in both environments
 
 ## Installation
 
@@ -40,12 +45,19 @@ const genbankText = `LOCUS AF177870 3123 bp DNA...`;
 const seqFile = new SequenceFile(genbankText);
 
 console.log(seqFile.summary);
-// { inputType: 'genbank', sequenceType: 'dna', sequenceCount: 1, ... }
+// {
+//   inputType: 'genbank',
+//   sequenceType: 'dna',
+//   sequenceCount: 1,
+//   featureCount: ??,
+//   totalLength: 3123,
+//   status: 'success'
+// }
 
 // Convert to CGView JSON
 const cgvJSON = seqFile.toCGViewJSON({
-  includeQualifiers: ['gene', 'product'],
-  excludeFeatures: ['source']
+  featureTypes: { mode: 'exclude', items: ['gene', 'product'] },
+  qualifiers: { mode: 'all' },
 });
 ```
 
@@ -62,11 +74,29 @@ const builder = new FeatureBuilder(featureFile);
 const featuresJSON = builder.toJSON();
 ```
 
-## Architecture
+## Workflows
 
-```
-Sequence Files:    GenBank/EMBL/FASTA  →  SequenceFile  →  CGViewBuilder  →  CGView JSON
-Feature Files:     GFF3/BED/GTF/CSV   →  FeatureFile   →  FeatureBuilder →  Features JSON
+Therea are several ways to convert a sequence file to the CGView JSON format
+```js
+import { SequenceFile, CGViewBuilder } from 'cgparse';
+
+const genbankText = `LOCUS AF177870 3123 bp DNA...`;
+const seqFile = new SequenceFile(genbankText);
+// The seqFile is an intermediate JSON format that contains most of the information of the sequence file
+// This JSON format can used be used by other programs.
+// The intermediate form is converte to CGView JSON with CGView Builder
+const builder = new CGParse.CGViewBuilder(seqFile);
+const cgviewJSON = builder.toJSON();
+
+// There are also convienence methods
+// Convert to CGView JSON directly from the seqFile:
+const cgviewJSON = seqFile.toCGViewJSON();
+
+// Or use the sequence string directly in CGVIewBuilder
+builder = new CGParse.CGViewBuilder(genbankString);
+cgviewJSON = builder.toJSON();
+// A seqFile is still created internally and can be accessed with:
+builder.seqFile
 ```
 
 ## API Reference
@@ -176,6 +206,18 @@ if (seqFile.passed) {
 ### Advanced Feature Filtering
 
 ```js
+// NEW
+const builder = new CGViewBuilder(seqFile, {
+  featureTypes: {
+    mode: 'exclude',
+    items: ['gene', 'source']
+  },
+  qualifiers: {
+    mode: 'exclude',
+    items: ['translation']
+  }
+});
+// OLD
 const builder = new CGViewBuilder(seqFile, {
   includeFeatures: ['CDS', 'gene', 'tRNA'],  // Only these types
   excludeFeatures: ['source'],               // Skip these
@@ -255,18 +297,9 @@ yarn test
 # Build for distribution
 yarn build
 
-# Start development server
+# Start development server (NIY)
 yarn dev
 ```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes and add tests
-4. Commit your changes (`git commit -am 'Add amazing feature'`)
-5. Push to the branch (`git push origin feature/amazing-feature`)
-6. Open a Pull Request
 
 ## Resources
 
@@ -275,15 +308,11 @@ yarn dev
 - **[seq_to_json.py](https://github.com/paulstothard/seq_to_json)** - Original Python parser inspiration
 - **[EMBL Feature Table](https://www.ebi.ac.uk/ena/WebFeat/)** - Feature format reference
 
-## License
-
-TODO
 
 ## Citation
 
 If you use CGParse in your research, please cite:
 
 ```
-CGParse: A JavaScript library for parsing biological sequence and feature files
-https://github.com/stothard-group/cgview-parse
+Publication in progress...
 ```

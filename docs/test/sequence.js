@@ -50,9 +50,6 @@ showInputCheckbox.checked = showInput;
 // Show/Hide Seq JSON
 const showSeqJsonCheckbox = document.querySelector('#option-show-seq-json');
 showSeqJsonCheckbox.checked = showSeqJson;
-// Show/Hide Teselagen JSON
-const showTesJsonCheckbox = document.querySelector('#option-show-tes-json');
-showTesJsonCheckbox.checked = showTesJson;
 // Show/Hide CGV JSON
 const showCgvJsonCheckbox = document.querySelector('#option-show-cgv-json');
 showCgvJsonCheckbox.checked = showCgvJson;
@@ -195,6 +192,7 @@ function loadInputFromID(id) {
 // - When using innerHTML, it is faster when the sequence is replaced
 // - Prism.highlight is slowest step
 // Notes:
+// FIXME:
 // - async is only for anyToTeselagen
 async function runParse() {
   window.json = {}; // For debugging
@@ -236,23 +234,6 @@ async function runParse() {
   outputSeqJsonDiv.innerHTML = filterJSONText(seqString);
   window.json.seq = seqJSON; // For debugging
   // return;
-
-  // Parse to teselagen JSON
-  if (showTesJsonCheckbox.checked) {
-    const tesJsonStartTime = new Date().getTime();
-    const tesJSON = await CGParse.anyToTeselagen(inputText, {inclusive1BasedStart: true, inclusive1BasedEnd: true});
-    const tesJsonRunTime = elapsedTime(tesJsonStartTime);
-    updateTime('time-tes-json', tesJsonRunTime);
-    // Convert to string (and pretty print with 2 spaces)
-    let tesString = JSON.stringify(tesJSON, null, 2);
-    if (filterSeqMode) {
-      tesString = tesString.replace(/"sequence": ".*"/g, '"sequence": "..."');
-    }
-    // outputTesJsonDiv.innerHTML = prismMode ? Prism.highlight(tesString, Prism.languages.json, 'json') : tesString;
-    outputTesJsonDiv.innerHTML = filterJSONText(tesString);
-    window.json.tes = tesJSON; // For debugging
-  }
-
 
   // Parse to CGView JSON
   let cgvJSON;
@@ -296,6 +277,10 @@ async function runParse() {
     cgv.io.loadJSON(cgvJSON);
     const mapName = document.getElementById('map-name');
     mapName.innerHTML = cgv.name;
+    cgv.legend.update({defaultFont: 'sans-serif, plain, 6', position: 'top-left'});
+    cgv.captions(1)?.update({font: 'sans-serif, plain, 7'});
+    cgv.annotation.update({font: 'sans-serif, plain, 8'});
+    cgv.ruler.update({font: 'sans-serif, plain, 6'});
     cgv.draw();
     myResize();
   }
@@ -353,9 +338,6 @@ function updatePageLayout() {
   // Sequence JSON
   const seqJsonDiv = document.querySelector('.section-seq-json');
   seqJsonDiv.style.display = showSeqJsonCheckbox.checked ? 'flex' : 'none';
-  // Teselagen JSON
-  const tesJsonDiv = document.querySelector('.section-tes-json');
-  tesJsonDiv.style.display = showTesJsonCheckbox.checked ? 'flex' : 'none';
   // CGView JSON
   const cgvJsonDiv = document.querySelector('.section-cgv-json');
   cgvJsonDiv.style.display = showCgvJsonCheckbox.checked ? 'flex' : 'none';
@@ -442,4 +424,30 @@ function openInProksee(cgv, origin, open=false) {
 const openInProkseeBtn = document.getElementById('open-in-proksee-btn');
 openInProkseeBtn.addEventListener('click', (e) => {
   openInProksee(cgv, 'CGParse', true)
+});
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Sidebar Logs/Help 
+///////////////////////////////////////////////////////////////////////////////
+
+const logLink = document.getElementById('show-log');
+const helpLink = document.getElementById('show-help');
+const logSection = document.querySelector('.sidebar-log');
+const helpSection = document.querySelector('.sidebar-help');
+
+logLink.addEventListener('click', (e) => {
+  e.preventDefault();
+  logSection.style.display = 'block';
+  helpSection.style.display = 'none';
+  logLink.classList.add('btn-selected');
+  helpLink.classList.remove('btn-selected');
+});
+
+helpLink.addEventListener('click', (e) => {
+  e.preventDefault();
+  logSection.style.display = 'none';
+  helpSection.style.display = 'block';
+  helpLink.classList.add('btn-selected');
+  logLink.classList.remove('btn-selected');
 });
