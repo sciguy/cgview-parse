@@ -27,11 +27,19 @@ A JavaScript library for parsing biological sequence and feature files (GenBank,
 
 ## Installation
 
+### Installing from npm
 ```bash
 npm install cgparse
 # or
 yarn add cgparse
 ```
+
+### Installing as a script from jsDilvr
+```html
+<script src="https://cdn.jsdelivr.net/npm/cgview/dist/CGParse.min.js"></script>
+<!-- CGParse will be available as a global variable -->
+```
+
 
 ## Quick Start
 
@@ -131,7 +139,7 @@ Convert parsed sequence data to CGView JSON format with filtering options.
 
 ```js
 const builder = new CGViewBuilder(seqFile, {
-  config: configJSON,              // CGView configuration
+  config: configJSON,              // CGView configuration (see below)
   includeFeatures: true,           // true, false, or array of types
   excludeFeatures: ['gene', 'source'],
   includeQualifiers: ['gene', 'product'],  // true, false, or array
@@ -139,6 +147,65 @@ const builder = new CGViewBuilder(seqFile, {
 });
 
 const cgvJSON = builder.toJSON();
+```
+
+#### Builder Config
+
+The config file are options that are added to the CGView JSON.
+They can be any setting availalbe for the following components:
+[settings](https://js.cgview.ca/docs.html#s.Settings),
+[backbone](https://js.cgview.ca/docs.html#s.Backbone),
+[ruler](https://js.cgview.ca/docs.html#s.Ruler),
+[dividers](https://js.cgview.ca/docs.html#s.Divider),
+[annotation](https://js.cgview.ca/docs.html#s.Annotation),
+[sequence](https://js.cgview.ca/docs.html#s.Sequence),
+[legend](https://js.cgview.ca/docs.html#s.Legend),
+[track](https://js.cgview.ca/docs.html#s.Track)
+
+```js
+// Example Config
+let configJSON = {
+  "settings": {
+    "backgroundColor": "white",
+    "showShading": true,
+    "arrowHeadLength": 0.3
+  },
+  "ruler": {
+    "font": "sans-serif, plain, 10",
+    "color": "black"
+  },
+  "legend": {
+    "position": "top-right",
+    "defaultFont": "sans-serif, plain, 14",
+    "items": [
+      {
+        "name": "CDS",
+        "swatchColor": "rgba(0,0,153,0.5)",
+        "decoration": "arrow"
+      }
+    ]
+  },
+  "tracks": [
+    {
+      "name": "CG Content",
+      "thicknessRatio": 2,
+      "position": "inside",
+      "dataType": "plot",
+      "dataMethod": "sequence",
+      "dataKeys": "gc-content"
+    },
+    {
+      "name": "CG Skew",
+      "thicknessRatio": 2,
+      "position": "inside",
+      "dataType": "plot",
+      "dataMethod": "sequence",
+      "dataKeys": "gc-skew"
+    }
+  ]
+}
+
+
 ```
 
 ### FeatureFile
