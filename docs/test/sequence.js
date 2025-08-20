@@ -67,11 +67,33 @@ loadInputFromID(defaultMap);
 // Config JSON passed to parser
 ///////////////////////////////////////////////////////////////////////////////
 const jsonConfig = {
+  annotation: {
+    font: 'sans-serif, plain, 8'
+  },
+  ruler: {
+    font: 'sans-serif, plain, 6'
+  },
+  captions: [
+    {
+      name: 'DEFINITION',
+      textAlignment: "center",
+      font: "sans-serif,plain,7",
+      fontColor: "darkblue",
+      position: "bottom-center",
+    },
+    {
+      name: 'ID',
+      textAlignment: "right",
+      font: "sans-serif,bold,10",
+      fontColor: "darkgreen",
+      position: "top-right",
+    },
+  ],
   legend: {
-    position: 'top-right',
+    position: 'top-left',
     alignment: 'left',
     backgroundColor: 'rgba(255,255,255,0.75)',
-    defaultFont: 'sans-serif, plain, 14',
+    defaultFont: 'sans-serif, plain, 6',
     defaultFontColor: 'black',
     items: [
       {name: 'CDS', swatchColor: 'rgba(0,0,153,0.5)', decoration: 'arrow'},
@@ -264,15 +286,17 @@ async function runParse() {
   console.log(messages)
   logDiv.innerHTML = messages;
 
+
+
   // Load Map with JSON
   if (cgvJSON) {
     cgv.io.loadJSON(cgvJSON);
     const mapName = document.getElementById('map-name');
     mapName.innerHTML = cgv.name;
-    cgv.legend.update({defaultFont: 'sans-serif, plain, 6', position: 'top-left'});
-    cgv.captions(1)?.update({font: 'sans-serif, plain, 7'});
-    cgv.annotation.update({font: 'sans-serif, plain, 8'});
-    cgv.ruler.update({font: 'sans-serif, plain, 6'});
+    // cgv.legend.update({defaultFont: 'sans-serif, plain, 6', position: 'top-left'});
+    // cgv.captions(1)?.update({font: 'sans-serif, plain, 7'});
+    // cgv.annotation.update({font: 'sans-serif, plain, 8'});
+    // cgv.ruler.update({font: 'sans-serif, plain, 6'});
     cgv.draw();
     myResize();
   }

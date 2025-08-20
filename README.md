@@ -84,8 +84,6 @@ cgv.addFeatures(features);
 const builder = new CGViewBuilder(seqString, {
   // CGView configuration (see below for example)
   config: configJSON, 
-  // FIXME: (should be part of config)
-  includeCaption: true,
   // Feature types to include/exclude (see below for options)
   features: { exclude: ['gene', 'source', 'exon'] }, // Default
   // Qulaifers to include/exclude (see below for options)
@@ -96,14 +94,14 @@ const builder = new CGViewBuilder(seqString, {
   // - false (none)
   // - array of types
   includeFeatures: true,
-  // Feature types to exclude [Default: ['gene', 'source', 'exon']]. Ignored unless includeFeatures is true
+  // Feature types to exclude. Ignored unless includeFeatures is true
   excludeFeatures: ['gene', 'source', 'exon'],
   // Qualifiers to include:
   // - true (all) [Default]
   // - false (none)
   // - array of qualifiers
   includeQualifiers: true,
-  // Qualifiers to exclude [Default: ['translation']]. Ignored unless includeQualifiers is true
+  // Qualifiers to exclude. Ignored unless includeQualifiers is true
   excludeQualifiers: ['translation'],
 });
 
@@ -464,7 +462,6 @@ const builder = new CGViewBuilder(seqFile, {
   includeFeatures: true,           // true, false, or array of types
   excludeFeatures: ['gene', 'source'],
   includeQualifiers: ['gene', 'product'],  // true, false, or array
-  includeCaption: true
 });
 
 const cgvJSON = builder.toJSON();
@@ -481,6 +478,7 @@ They can be any setting availalbe for the following components:
 [annotation](https://js.cgview.ca/docs.html#s.Annotation),
 [sequence](https://js.cgview.ca/docs.html#s.Sequence),
 [legend](https://js.cgview.ca/docs.html#s.Legend),
+[captions](https://js.cgview.ca/docs.html#s.Caption),
 [track](https://js.cgview.ca/docs.html#s.Track)
 
 ```js
@@ -523,6 +521,15 @@ let configJSON = {
       "dataMethod": "sequence",
       "dataKeys": "gc-skew"
     }
+  ],
+  captions: [
+    {
+      // For name you can provide static text or use special keywords to get dynamic text
+      name: "my map",         // Shows 'my map' as the caption
+      // name: "DEFINITION",  // Shows the sequence definition (e.g. Escherichia coli str. K-12 substr. MG1655, complete genome.)
+      // name: "ID",          // Shows the sequence accession/version (e.g. NC_000913.3)
+      position: "bottom-center",
+    },
   ]
 }
 ```

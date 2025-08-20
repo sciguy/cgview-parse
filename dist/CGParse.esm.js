@@ -1111,11 +1111,11 @@ class CGViewBuilder extends Status {
       return;
     }
     // Here json refers to the CGView JSON
-    let json = this._addConfigToJSON({}, this.options.config); 
+    let json = this._addConfigToJSON({}, this.options.config, seqRecords); 
     // Version: we should keep the version the same as the latest for CGView.js
     json.version = this.cgvJSONVersion;
     this._adjustContigNames(seqRecords);
-    json.captions = this._getCaptions(json, seqRecords);
+    // json.captions = this._getCaptions(json, seqRecords);
     json.settings.format = CGViewBuilder.determineFormat(seqRecords);
     json = this._extractSequenceAndFeatures(json, seqRecords);
     this._summarizeSkippedFeatures();
@@ -1133,17 +1133,17 @@ class CGViewBuilder extends Status {
     return { cgview: json };
   }
 
-  _getCaptions(json, seqRecords) {
-    const captions = json.captions ? [...json.captions] : [];
-    // console.log(this.includeCaption)
-    if (this.includeCaption) {
-      this.logger.info(`- Adding caption...`);
-      const captionText = seqRecords[0]?.definition || seqRecords[0].seqID || "Untitled";
-      const caption = {name: captionText, textAlignment: "center", font: "sans-serif,plain,24", fontColor: "darkblue", position: "bottom-center"};
-      captions.push(caption);
-    }
-    return captions;
-  }
+  // _getCaptions(json, seqRecords) {
+  //   const captions = json.captions ? [...json.captions] : [];
+  //   // console.log(this.includeCaption)
+  //   if (this.includeCaption) {
+  //     this.logger.info(`- Adding caption...`);
+  //     const captionText = seqRecords[0]?.definition || seqRecords[0].seqID || "Untitled";
+  //     const caption = {name: captionText, textAlignment: "center", font: "sans-serif,plain,24", fontColor: "darkblue", position: "bottom-center"}
+  //     captions.push(caption);
+  //   }
+  //   return captions;
+  // }
 
   _buildSummary(json) {
     const contigs = json.sequence?.contigs || [];
@@ -1197,18 +1197,32 @@ class CGViewBuilder extends Status {
     }
   }
   // Add config to JSON. Note that no validation of the config is done.
-  _addConfigToJSON(json, config) {
+  _addConfigToJSON(json, config = {}, seqRecords = {}) {
     const configKeys = config ? Object.keys(config) : ['none'];
     this.logger.info(`- Config properties provided: ${configKeys.join(', ')}`);
 
-    json.settings = (config && config.settings) ? config.settings : {};
-    json.backbone = (config && config.backbone) ? config.backbone : {};
-    json.ruler = (config && config.ruler) ? config.ruler : {};
-    json.dividers = (config && config.dividers) ? config.dividers : {};
-    json.annotation = (config && config.annotation) ? config.annotation : {};
-    json.sequence = (config && config.sequence) ? config.sequence : {};
-    json.legend = (config && config.legend) ? config.legend : {};
-    json.tracks = (config && config.tracks) ? config.tracks : [];
+    json.settings   = config?.settings || {};
+    json.backbone   = config?.backbone || {};
+    json.ruler      = config?.ruler    || {};
+    json.dividers   = config?.dividers || {};
+    json.annotation = config?.annotation ||  {};
+    json.sequence   = config?.sequence || {};
+    json.legend     = config?.legend   || {};
+    json.tracks     = config?.tracks   || [];
+    json.captions   = config?.captions || [];
+
+    if (json.captions.length > 0) {
+      json.captions.forEach((caption) => {
+        // NOTE: we could have additional types here: LENGTH, VERSION, etc
+        if (caption.name == 'DEFINITION') {
+          caption.name = seqRecords[0]?.definition || "Untitled";
+          this.logger.info(`- Adding caption (DEFINITION): '${caption.name}'`);
+        } else if (caption.name == 'ID') {
+          caption.name = seqRecords[0].seqID || "Untitled";
+          this.logger.info(`- Adding caption (ID): '${caption.name}'`);
+        }
+      });
+    }
 
     return json;
   }
@@ -1631,6 +1645,23 @@ class CGViewBuilder extends Status {
  */
 
 
+/**
+ * SequenceFile
+ *
+ * Parses biological sequence files (GenBank, EMBL, FASTA, RAW) into an intermediate JSON format.
+ * Each parsed sequence record includes metadata (name, accession, definition, length, topology, comments),
+ * the nucleotide or protein sequence, and associated features with qualifiers.
+ *
+ * Provides validation, logging, and convenient export to CGView-compatible JSON via CGViewBuilder.
+ *
+ * NOTES:
+ * - This code is heavily based on Paul's seq_to_json.py script with some exceptions.
+ * 
+ * TODO:
+ * - Test start_codon
+ * - consider changing type to molType
+ * - consider changing inputType to fileType
+ */
 class SequenceFile extends Status {
 
   /**
@@ -1656,7 +1687,6 @@ class SequenceFile extends Status {
    * - maxLogCount: number (undefined means no limit) [Default: undefined]
    */
   constructor(inputText, options={}) {
-    // super(options, 'PARSING SEQUENCE FILE');
     super(options);
     this.logHeader('PARSING SEQUENCE FILE');
     const convertedText = convertLineEndingsToLF(inputText);
@@ -1707,7 +1737,7 @@ class SequenceFile extends Status {
   /////////////////////////////////////////////////////////////////////////////
 
   /**
-   * Converts the seqeunce records to CGView JSON using CGViewBuilder
+   * Converts the sequence records to CGView JSON using CGViewBuilder
    * @param {Object} options - passed to CGViewBuilder
    * @returns {Object} - CGView JSON
    */
@@ -2355,7 +2385,6 @@ class SequenceFile extends Status {
 
     // Feature locations are empty
 
-
     // Features start or end/stop is greater than sequence length
     // Features end is less than start
     // - NOTE: we may want to allow features that wrap around the sequence
@@ -2364,7 +2393,6 @@ class SequenceFile extends Status {
     for (const record of records) {
       for (const feature of record.features) {
         if (feature.start > record.length || feature.stop > record.length) {
-          // featureStartEndErrors.push(`${record.name} [${record.length.toLocaleString()} bp]: ${feature.name} ${feature.start}..${feature.stop}`);
           featureStartEndErrors.push(`- ${record.name} [${record.length.toLocaleString()} bp]: '${feature.name}' [${feature.start}..${feature.stop}]`);
         }
         if (feature.start > feature.stop) {
