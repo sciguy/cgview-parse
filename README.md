@@ -27,6 +27,8 @@ A JavaScript library for parsing biological sequence and feature files (GenBank,
 
 ## Installation
 
+CGParse.js has no dependencies. Simply install from npm or jsDelivr.
+
 ### Installing from npm
 ```bash
 npm install cgparse
@@ -34,7 +36,7 @@ npm install cgparse
 yarn add cgparse
 ```
 
-### Installing as a script from jsDilvr
+### Installing as a script from jsDelivr
 ```html
 <script src="https://cdn.jsdelivr.net/npm/cgview/dist/CGParse.min.js"></script>
 <!-- CGParse will be available as a global variable -->
@@ -42,6 +44,276 @@ yarn add cgparse
 
 
 ## Quick Start
+
+### Create CGView JSON from a sequence file (e.g. GenBank, EMBL, FASTA)
+
+```js
+import * as CGParse from 'cgparse'
+
+// Create a string for the sequence file (e.g GenBank)
+const seqString = `LOCUS AF177870 3123 bp DNA...`;
+// Create a new CGView builder for the sequence
+const cgvBuilder = new CGParse.CGViewBuilder(seqString);
+// Convert to CGView JSON
+const cgviewJSON = cgvBuilder.toJSON();
+
+// The json can then be loaded into a previously created CGView instance
+cgv.io.loadJSON(cgviewJSON);
+```
+
+### Create CGView Features from a feature file (e.g. CSV, GFF3, GTF, BED)
+
+```js
+import * as CGParse from 'cgparse'
+
+// Create a string for the feature file (e.g GFF3)
+const gff3String = `##gff-version 3
+chr1	.	gene	1000	2000	.	+	.	ID=gene1;Name=myGene`;
+// Create a new feature builder for the features
+const featureBuilder = new CGParse.FeatureBuilder(gff3String);
+// Convert to an array of CGView features
+const features = featureBuilder.toJSON();
+
+// The features can then be added to a previously created CGView instance
+cgv.addFeatures(features);
+```
+
+### CGViewBuilder Options
+
+```js
+const builder = new CGViewBuilder(seqString, {
+  // CGView configuration (see below for example)
+  config: configJSON, 
+  // FIXME: (should be part of config)
+  includeCaption: true,
+  // Feature types to include/exclude (see below for options)
+  features: { exclude: ['gene', 'source', 'exon'] }, // Default
+  // Qulaifers to include/exclude (see below for options)
+  qualifiers: { exclude: ['translation'] } // Default
+});
+
+const cgvJSON = builder.toJSON();
+```
+
+#### Including/Excluding Feature Types and Qualifers
+
+When building from a GenBank or EMBL file, you can choose which features types (e.g. CDS, gene, rRNA) and qualifiers (e.g. product, note, locus_tag) to include or exclude.
+
+
+For the `features` and `qualifiers` arguments, the following options are possible:
+```js
+// Showing examples for features (the same applies for qualifiers)
+// - 'all':                        include all feature types (default)
+// - 'none':                       include no feature types
+// - { include: ['CDS', 'rRNA'] }: include only the listed feature types
+// - { exclude: ['gene'] }:        include all feature types except those listed
+```
+
+For list of qualifiers and feature types see the following resources:
+
+Qualifiers:
+- [List from INSDC](https://www.insdc.org/submitting-standards/feature-table/#7.3.1)
+- [Local List](./docs/reference/qualifiers.txt)
+
+Features Types/Keys:
+- [List from INSDC](https://www.insdc.org/submitting-standards/feature-table/#7.2)
+- [Local List](./docs/reference/feature_types.txt)
+
+
+> [!Note]
+> Why not just always include all the features and qualifiers? This may make sense for smaller genomes/plasmids but for larger genomes, saving all this data in the JSON may slow performance. Other reasons to exclude some feautres and qualifiers:
+> - Typically there is no need to include the translation with the feature as they can be extracted directly from the sequence. In fact, the builder, check the AA sequence for each CDS feature and will automatically store the translation if it's different than the direct translation. We recommend instead of using `all` for qualifiers to use `exclude: ['translations'] instead.
+> - For bacterial genomes, there is typically no need to add the gene and CDS features as they will appear at the same position on the map and the CDS features contain more information
+
+
+#### CGViewBuilder Config
+
+The config file are options that are added to the CGView JSON.
+They can be any setting availalbe for the following components:
+[settings](https://js.cgview.ca/docs.html#s.Settings),
+[backbone](https://js.cgview.ca/docs.html#s.Backbone),
+[ruler](https://js.cgview.ca/docs.html#s.Ruler),
+[dividers](https://js.cgview.ca/docs.html#s.Divider),
+[annotation](https://js.cgview.ca/docs.html#s.Annotation),
+[sequence](https://js.cgview.ca/docs.html#s.Sequence),
+[legend](https://js.cgview.ca/docs.html#s.Legend),
+[track](https://js.cgview.ca/docs.html#s.Track)
+
+```js
+// Example Config
+let configJSON = {
+  "settings": {
+    "backgroundColor": "white",
+    "showShading": true,
+    "arrowHeadLength": 0.3
+  },
+  "ruler": {
+    "font": "sans-serif, plain, 10",
+    "color": "black"
+  },
+  "legend": {
+    "position": "top-right",
+    "defaultFont": "sans-serif, plain, 14",
+    "items": [
+      {
+        "name": "CDS",
+        "swatchColor": "rgba(0,0,153,0.5)",
+        "decoration": "arrow"
+      }
+    ]
+  },
+  "tracks": [
+    {
+      "name": "CG Content",
+      "thicknessRatio": 2,
+      "position": "inside",
+      "dataType": "plot",
+      "dataMethod": "sequence",
+      "dataKeys": "gc-content"
+    },
+    {
+      "name": "CG Skew",
+      "thicknessRatio": 2,
+      "position": "inside",
+      "dataType": "plot",
+      "dataMethod": "sequence",
+      "dataKeys": "gc-skew"
+    }
+  ]
+}
+```
+
+## Intermediate Sequence/Feature JSON formats
+
+Internally CGViewBuilder and FeatureBuilder are first taking the input file and converting it to an intermediate JSON format that contains most of the data from the input file. This intermediate format could be used by other projects.
+
+### Sequence Files (GenBank, EMBL, FASTA)
+
+```js
+import * as CGParse from 'cgparse';
+
+// Parse sequence file
+const genbankText = `LOCUS AF177870 3123 bp DNA...`;
+const seqFile = new CGParse.SequenceFile(genbankText);
+
+console.log(seqFile.summary);
+// Example Output:
+// {
+//   inputType: 'genbank',
+//   sequenceType: 'dna',
+//   sequenceCount: 1,
+//   featureCount: 12,
+//   totalLength: 3123,
+//   status: 'success'
+// }
+console.log(seqFile.records)
+// Example Output:
+// [
+//   {
+//     "inputType": "genbank",
+//     "name": "AF177870",
+//     "seqID": "AF177870.1",
+//     "definition": "Escherichia coli B171 plasmid pB171_90, complete sequence.",
+//     "length": 90229,
+//     "topology": "circular",
+//     "comments": "##Genome-Assembly-Data-START##\nAssembly Date...",
+//     "sequence": "...",
+//     "features": [
+//       {
+//         "type": "source",
+//         "strand": 1,
+//         "locationText": "1..90229",
+//         "locations": [[1,90229]],
+//         "start": 1,
+//         "stop": 90229,
+//         "qualifiers": {
+//           "organism": "Escherichia coli B171",
+//           "mol_type": "genomic DNA",
+//           "strain": "B171",
+//           "db_xref": "taxon:344601",
+//           "plasmid": "pB171_90"
+//         },
+//         "name": "taxon:344601"
+//       },
+//       ...
+//     ]
+//   },
+//   ...
+// ]
+
+// The sequence file can be directly converted to CGView JSON
+const cgvJSON = seqFile.toCGViewJSON();
+// Or passed to the builder
+const builder = new CGParse.CGViewBuilder(seqFile);
+const cgvJSON = builder.toJSON();
+```
+
+
+## Live Test Page
+
+🔗 **[Live Demo & Test Page](https://sciguy.github.io/cgview-parse)**
+
+This test page allows you to see how the example sequence/feature files are converted to there intermediate formats and the final format used by CGView.js. You can also test your own files and see how they are converted.
+
+
+
+## Error Handling
+
+CGParse provides detailed error reporting and validation:
+
+```js
+const seqFile = new SequenceFile(problematicInput);
+
+console.log(seqFile.status);  // 'failed', 'warnings', or 'success'
+
+if (!seqFile.passed) {
+  console.log('Errors occurred:');
+  seqFile.logger.history().forEach(log => {
+    if (log.level === 'error') {
+      console.log('-', log.message);
+    }
+  });
+}
+```
+
+
+## Development
+
+```bash
+# Install dependencies
+yarn install
+
+# Run tests
+yarn test
+
+# Build for distribution
+yarn build
+
+# Start development server (NIY)
+yarn dev
+```
+
+
+## Resources
+
+- **[CGView.js](https://github.com/stothard-group/cgview-js)** - Circular genome viewer
+- **[Proksee](https://proksee.ca)** - Online genome visualization platform
+- **[seq_to_json.py](https://github.com/paulstothard/seq_to_json)** - Original Python parser inspiration
+- **[EMBL Feature Table](https://www.ebi.ac.uk/ena/WebFeat/)** - Feature format reference
+
+
+## Citation
+
+If you use CGParse in your research, please cite:
+
+```
+Publication in progress...
+```
+---
+
+- Features
+- Intermediate forms
+- Logger
 
 ### Sequence Files (GenBank, EMBL, FASTA)
 
@@ -61,6 +333,36 @@ console.log(seqFile.summary);
 //   totalLength: 3123,
 //   status: 'success'
 // }
+
+console.log(seqFile.records)
+
+// [
+//   {
+//     "inputType": "genbank",
+//     "name": "CP021212",
+//     "seqID": "CP021212.1",
+//     "definition": "Escherichia coli B171 plasmid pB171_90, complete sequence.",
+//     "length": 90229,
+//     "topology": "circular",
+//     "comments": "##Genome-Assembly-Data-START##\nAssembly Date          :: 2016\nAssembly Method        :: Canu v. 1.2\nExpected Final Version :: no\nGenome Coverage        :: 13.4x\nSequencing Technology  :: PacBio\n##Genome-Assembly-Data-END##",
+//     "sequence": "...",
+//     "features": [
+//       {
+//         "type": "source",
+//         "strand": 1,
+//         "locationText": "1..90229",
+//         "locations": [[1,90229]],
+//         "start": 1,
+//         "stop": 90229,
+//         "qualifiers": {
+//           "organism": "Escherichia coli B171",
+//           "mol_type": "genomic DNA",
+//           "strain": "B171",
+//           "db_xref": "taxon:344601",
+//           "plasmid": "pB171_90"
+//         },
+//         "name": "taxon:344601"
+//       },
 
 // Convert to CGView JSON
 const cgvJSON = seqFile.toCGViewJSON({
@@ -204,8 +506,6 @@ let configJSON = {
     }
   ]
 }
-
-
 ```
 
 ### FeatureFile
@@ -227,10 +527,12 @@ featureFile.summary       // Parsing summary
 
 ### Logger
 
-Structured logging with levels, icons, timestamps, and history.
+The main classes (CGViewBuilder, SequenceFile, FeatureFile, and FeatureBuilder) contain a custom Logger with levels, icons, timestamps, and history. The logger can be access via the `logger` property on any instance.
+
+The Logger can also be used on its own:
 
 ```js
-const logger = new Logger({
+const logger = new CGParse.Logger({
   logToConsole: true,
   showTimestamps: true,
   showIcons: true,
@@ -270,63 +572,29 @@ if (seqFile.passed) {
 }
 ```
 
-### Advanced Feature Filtering
 
+---
+
+# OLD
 ```js
-// NEW
-const builder = new CGViewBuilder(seqFile, {
-  featureTypes: {
-    mode: 'exclude',
-    items: ['gene', 'source']
+const builder = new CGViewBuilder(seqString, {
+  config: configJSON,                        // CGView configuration (see below)
+  includeCaption: true,                      // FIXME: (should be part of config)
+  features: { exclude: ['gene', 'source'] }, // Feature types to include/exclude
+  qualifiers: 'none',                        // Qualifiers to include/exclude
+
+
+  feature: {
+    mode: 'exclude',            // one of: include, exclude, all, none
+    items: ['gene', 'source']   // feature types to include or exclude (ignored if mode is all or none)
   },
   qualifiers: {
-    mode: 'exclude',
-    items: ['translation']
+    mode: 'include',            // one of: include, exclude, all, none
+    items: ['gene', 'product']  // qualifiers to include or exclude (ignored if mode is all or none)
   }
 });
-// OLD
-const builder = new CGViewBuilder(seqFile, {
-  includeFeatures: ['CDS', 'gene', 'tRNA'],  // Only these types
-  excludeFeatures: ['source'],               // Skip these
-  includeQualifiers: ['gene', 'product', 'note'],
-  excludeQualifiers: ['translation']
-});
 
-const result = builder.toJSON();
-```
-
-### Custom Logging
-
-```js
-const logger = new Logger({ 
-  logToConsole: false,
-  showTimestamps: true 
-});
-
-const seqFile = new SequenceFile(input, { logger });
-
-// Extract log messages
-const logHistory = logger.history();
-console.log('Parsing log:', logHistory);
-```
-
-## Error Handling
-
-CGParse provides detailed error reporting and validation:
-
-```js
-const seqFile = new SequenceFile(problematicInput);
-
-console.log(seqFile.status);  // 'failed', 'warnings', or 'success'
-
-if (!seqFile.passed) {
-  console.log('Errors occurred:');
-  seqFile.logger.history().forEach(log => {
-    if (log.level === 'error') {
-      console.log('-', log.message);
-    }
-  });
-}
+const cgvJSON = builder.toJSON();
 ```
 
 ## File Format Support
@@ -352,34 +620,43 @@ if (!seqFile.passed) {
 </script>
 ```
 
-## Development
+### Advanced Feature Filtering
 
-```bash
-# Install dependencies
-yarn install
+```js
+// NEW
+const builder = new CGViewBuilder(seqFile, {
+  featureTypes: {
+    mode: 'exclude',
+    items: ['gene', 'source']
+  },
+  qualifiers: {
+    mode: 'exclude',
+    items: ['translation']
+  }
+});
+// OLD
+const builder = new CGViewBuilder(seqFile, {
+  includeFeatures: ['CDS', 'gene', 'tRNA'],  // Only these types
+  excludeFeatures: ['source'],               // Skip these
+  includeQualifiers: ['gene', 'product', 'note'],
+  excludeQualifiers: ['translation']
+});
 
-# Run tests
-yarn test
-
-# Build for distribution
-yarn build
-
-# Start development server (NIY)
-yarn dev
+const result = builder.toJSON();
 ```
 
-## Resources
 
-- **[CGView.js](https://github.com/stothard-group/cgview-js)** - Circular genome viewer
-- **[Proksee](https://proksee.ca)** - Online genome visualization platform
-- **[seq_to_json.py](https://github.com/paulstothard/seq_to_json)** - Original Python parser inspiration
-- **[EMBL Feature Table](https://www.ebi.ac.uk/ena/WebFeat/)** - Feature format reference
+### Custom Logging
 
+```js
+const logger = new Logger({ 
+  logToConsole: false,
+  showTimestamps: true 
+});
 
-## Citation
+const seqFile = new SequenceFile(input, { logger });
 
-If you use CGParse in your research, please cite:
-
-```
-Publication in progress...
+// Extract log messages
+const logHistory = logger.history();
+console.log('Parsing log:', logHistory);
 ```
