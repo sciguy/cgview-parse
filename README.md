@@ -89,8 +89,26 @@ const builder = new CGViewBuilder(seqString, {
   // Feature types to include/exclude (see below for options)
   features: { exclude: ['gene', 'source', 'exon'] }, // Default
   // Qulaifers to include/exclude (see below for options)
-  qualifiers: { exclude: ['translation'] } // Default
+  qualifiers: { exclude: ['translation'] }, // Default
+
+  // Feature types to include:
+  // - true (all) [Default]
+  // - false (none)
+  // - array of types
+  includeFeatures: true,
+  // Feature types to exclude [Default: ['gene', 'source', 'exon']]. Ignored unless includeFeatures is true
+  excludeFeatures: ['gene', 'source', 'exon'],
+  // Qualifiers to include:
+  // - true (all) [Default]
+  // - false (none)
+  // - array of qualifiers
+  includeQualifiers: true,
+  // Qualifiers to exclude [Default: ['translation']]. Ignored unless includeQualifiers is true
+  excludeQualifiers: ['translation'],
 });
+
+
+
 
 const cgvJSON = builder.toJSON();
 ```
@@ -98,7 +116,6 @@ const cgvJSON = builder.toJSON();
 #### Including/Excluding Feature Types and Qualifers
 
 When building from a GenBank or EMBL file, you can choose which features types (e.g. CDS, gene, rRNA) and qualifiers (e.g. product, note, locus_tag) to include or exclude.
-
 
 For the `features` and `qualifiers` arguments, the following options are possible:
 ```js
@@ -193,11 +210,12 @@ Internally CGViewBuilder and FeatureBuilder are first taking the input file and 
 import * as CGParse from 'cgparse';
 
 // Parse sequence file
+// TODO: give accession number
 const genbankText = `LOCUS AF177870 3123 bp DNA...`;
 const seqFile = new CGParse.SequenceFile(genbankText);
 
-console.log(seqFile.summary);
-// Example Output:
+seqFile.summary;
+// =>
 // {
 //   inputType: 'genbank',
 //   sequenceType: 'dna',
@@ -206,8 +224,9 @@ console.log(seqFile.summary);
 //   totalLength: 3123,
 //   status: 'success'
 // }
-console.log(seqFile.records)
-// Example Output:
+
+seqFile.records;
+// =>
 // [
 //   {
 //     "inputType": "genbank",
@@ -659,4 +678,35 @@ const seqFile = new SequenceFile(input, { logger });
 // Extract log messages
 const logHistory = logger.history();
 console.log('Parsing log:', logHistory);
+```
+
+
+### CGViewBuilder Options
+
+```js
+const builder = new CGViewBuilder(seqString, {
+  // CGView configuration (see below for example)
+  config: configJSON, 
+  // FIXME: (should be part of config)
+  includeCaption: true,
+  // Feature types to include/exclude (see below for options)
+  features: { exclude: ['gene', 'source', 'exon'] }, // Default
+  // Qulaifers to include/exclude (see below for options)
+  qualifiers: { exclude: ['translation'] } // Default
+});
+
+const cgvJSON = builder.toJSON();
+```
+
+#### Including/Excluding Feature Types and Qualifers
+
+When building from a GenBank or EMBL file, you can choose which features types (e.g. CDS, gene, rRNA) and qualifiers (e.g. product, note, locus_tag) to include or exclude.
+
+For the `features` and `qualifiers` arguments, the following options are possible:
+```js
+// Showing examples for features (the same applies for qualifiers)
+// - 'all':                        include all feature types (default)
+// - 'none':                       include no feature types
+// - { include: ['CDS', 'rRNA'] }: include only the listed feature types
+// - { exclude: ['gene'] }:        include all feature types except those listed
 ```

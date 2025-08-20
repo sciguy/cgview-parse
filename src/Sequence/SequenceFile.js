@@ -15,31 +15,35 @@
  * limitations under the License.
  */
 
-// Holds a sequence and features from a sequence file: genbank, embl, fasta, raw
-// Parses text from sequence file
-// Creates sequence records json that can be converted to CGView JSON
-// Array of sequence records containing array of features
-// TODO: Give examples of output (the record format)
 
-// NOTES:
-// - This code is heavily based on Paul's seq_to_json.py script with some exceptions.
-// - Maybe most errors will be warnings and those features are removed. We could
-//   let it continue but warn the user. The status could be WARNING. For feature
-//   based errors
-// - In proksee, if there are warnings, the user has to click a checkbox to
-//   remove the features when submitting. 
-// TODO:
-// - Test start_codon
-// - consider changing type to molType
-// - consider changing inputType to fileType
-// - Note, feature locations that can't be parsed are not handled here. They are
-//   handled/added in the CGViewBuilder.
+// Holds a sequence and features from a sequence file: genbank, embl, fasta, raw
+// Parses text from sequence file (may contain multiple sequences) into an array of sequence records
+// Each sequence record contains an array of features
+
+
 
 import Status from '../Support/Status.js';
 import Logger from '../Support/Logger.js';
 import CGViewBuilder from './CGViewBuilder.js';
 import * as helpers from '../Support/Helpers.js';
 
+/**
+ * SequenceFile
+ *
+ * Parses biological sequence files (GenBank, EMBL, FASTA, RAW) into an intermediate JSON format.
+ * Each parsed sequence record includes metadata (name, accession, definition, length, topology, comments),
+ * the nucleotide or protein sequence, and associated features with qualifiers.
+ *
+ * Provides validation, logging, and convenient export to CGView-compatible JSON via CGViewBuilder.
+ *
+ * NOTES:
+ * - This code is heavily based on Paul's seq_to_json.py script with some exceptions.
+ * 
+ * TODO:
+ * - Test start_codon
+ * - consider changing type to molType
+ * - consider changing inputType to fileType
+ */
 class SequenceFile extends Status {
 
   /**
@@ -65,7 +69,6 @@ class SequenceFile extends Status {
    * - maxLogCount: number (undefined means no limit) [Default: undefined]
    */
   constructor(inputText, options={}) {
-    // super(options, 'PARSING SEQUENCE FILE');
     super(options);
     this.logHeader('PARSING SEQUENCE FILE');
     const convertedText = helpers.convertLineEndingsToLF(inputText);
@@ -116,7 +119,7 @@ class SequenceFile extends Status {
   /////////////////////////////////////////////////////////////////////////////
 
   /**
-   * Converts the seqeunce records to CGView JSON using CGViewBuilder
+   * Converts the sequence records to CGView JSON using CGViewBuilder
    * @param {Object} options - passed to CGViewBuilder
    * @returns {Object} - CGView JSON
    */
@@ -768,7 +771,6 @@ class SequenceFile extends Status {
 
     // Feature locations are empty
 
-
     // Features start or end/stop is greater than sequence length
     // Features end is less than start
     // - NOTE: we may want to allow features that wrap around the sequence
@@ -777,7 +779,6 @@ class SequenceFile extends Status {
     for (const record of records) {
       for (const feature of record.features) {
         if (feature.start > record.length || feature.stop > record.length) {
-          // featureStartEndErrors.push(`${record.name} [${record.length.toLocaleString()} bp]: ${feature.name} ${feature.start}..${feature.stop}`);
           featureStartEndErrors.push(`- ${record.name} [${record.length.toLocaleString()} bp]: '${feature.name}' [${feature.start}..${feature.stop}]`);
         }
         if (feature.start > feature.stop) {
