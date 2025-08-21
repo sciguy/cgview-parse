@@ -156,6 +156,7 @@ They can be any setting available for the following components:
 [sequence](https://js.cgview.ca/docs.html#s.Sequence),
 [legend](https://js.cgview.ca/docs.html#s.Legend),
 [track](https://js.cgview.ca/docs.html#s.Track)
+[captions](https://js.cgview.ca/docs.html#s.Caption)
 
 ```js
 // Example Config
