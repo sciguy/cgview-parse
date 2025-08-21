@@ -8,7 +8,8 @@
   "scripts": {
     "dev": "echo \"Error: no dev specified\" && exit 1",
     "build": "rollup --config --watch",
-    "test": "jest --watch --silent"
+    "test": "jest --watch --silent",
+    "gh-test": "jest --silent"
   },
   "jest": {
     "testMatch": ["<rootDir>/test/*.test.js"],

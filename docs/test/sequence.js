@@ -100,7 +100,8 @@ const jsonConfig = {
     ]
   }
 };
-
+const jsonSpan = document.querySelector('#json-config');
+jsonSpan.innerHTML = JSON.stringify(jsonConfig, null, 2);
 ///////////////////////////////////////////////////////////////////////////////
 // Map Creation and Selection
 ///////////////////////////////////////////////////////////////////////////////
@@ -211,10 +212,7 @@ function loadInputFromID(id) {
 // - Fastest is going right to map (no innerHTML)
 // - When using innerHTML, it is faster when the sequence is replaced
 // - Prism.highlight is slowest step
-// Notes:
-// FIXME:
-// - async is only for anyToTeselagen
-async function runParse() {
+function runParse() {
   window.json = {}; // For debugging
   const inputTextDiv = document.getElementById('input-text');
   const outputSeqJsonDiv = document.getElementById('output-seq-json');
@@ -232,7 +230,6 @@ async function runParse() {
 
   // Parse to seqJson
   const seqJsonStartTime = new Date().getTime();
-  // const seqJSON = CGParse.seqToSeqJSON(inputText, {config: jsonConfig});
   // const seqFile = new CGParse.SequenceFile(inputText, {addFeatureSequences: true});
   const seqFile = new CGParse.SequenceFile(inputText, {maxLogCount: 1});
   const seqJSON = seqFile.records;
@@ -258,8 +255,13 @@ async function runParse() {
   let builder;
   if (showCgvJsonCheckbox.checked) {
     const cgvJsonStartTime = new Date().getTime();
-    // cgvJSON = CGParse.seqJSONToCgvJSON(seqJSON, {config: jsonConfig});
-    builder = new CGParse.CGViewBuilder(seqFile, {logger: seqFile.logger, config: jsonConfig, includeQualifiers: true, maxLogCount: 2});
+    builder = new CGParse.CGViewBuilder(seqFile, {
+      logger: seqFile.logger,
+      config: jsonConfig,
+      excludeFeatures: ['source', 'gene', 'exon'],
+      excludeQualifiers: ['translation'],
+      maxLogCount: 2
+    });
     // cgvJSON = seqFile.toCGViewJSON({config: jsonConfig, includeQualifiers: true, maxLogCount: 2});
     cgvJSON = builder.toJSON();
 

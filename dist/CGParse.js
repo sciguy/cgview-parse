@@ -1015,49 +1015,50 @@ var CGParse = (function () {
    */
 
 
-  // INPUT:
-  // - SequenceFile or string of sequence file (e.g. GenBank, FASTA) that can be converted to SequenceFile
-  // OPTIONS:
-  // TODO:
-  // - change these to featureTypes and qualifiers with each being an object with {mode, items}
-  //   - mode: 'include', 'exclude', 'all', 'none'
-  //   - items: array of strings (feature types or qualifiers) to include or exclude
-  // - config: jsonConfig
-  // - FIXME: CHANGE TO includ/excludeFeatures skipTypes: boolean (TEST) [Default: ['gene', 'source', 'exon']]
-  //   - If false, include ALL feature types in the JSON
-  // - includeFeatures: boolean [Default: true]
-  //   - If true, include ALL feature types in the JSON
-  //   - If array of strings, include only those feature type
-  //   - If false, include NO features
-  // - excludeFeatures: array of string [Default: undefined]
-  //   - include all feature types except for these
-  //   - ignored unless includeFeatures is true
-  // - includeQualifiers: boolean [Default: false]
-  //   - If true, include ALL qualifiers in the JSON
-  //   - If array of strings, include only those qualifiers
-  //   - If false, include NO qualifiers
-  // - excludeQualifiers: array of string [Default: undefined]
-  //   - include all qualifiers except for these
-  //   - ignored unless includeQualifiers is true
-  // - includeCaption: boolean [Default: true]
-  //   - NOTE: captions could come from the config (like I did for cgview_builder.rb)
-  // - maxLogCount: number (undefined means no limit) [Default: undefined]
-  //
-  // NOTES:
-  // - Dashes and periods (ie Gaps) sequences are replaced with Ns
+  /**
+   * @class CGViewBuilder
+   * @classdesc Builds CGView-compatible JSON from biological sequence files (GenBank, EMBL, FASTA, raw) or a {@link SequenceFile}.
+   * 
+   * NOTES:
+   * - Dashes and periods (ie Gaps) sequences are replaced with Ns
+   *
+   * @example
+   * // From a raw GenBank/EMBL/FASTA string
+   * const builder = new CGParse.CGViewBuilder(genbankText, {
+   *   includeFeatures: ['CDS', 'rRNA'],
+   *   excludeQualifiers: ['translation']
+   * });
+   * const cgviewJSON = builder.toJSON();
+   *
+   * @example
+   * // From a SequenceFile instance with a config
+   * const seqFile = new CGParse.SequenceFile(genbankText);
+   * const builder = new CGParse.CGViewBuilder(seqFile);
+   * const cgviewJSON = builder.toJSON();
+   */
   class CGViewBuilder extends Status {
 
+      /**
+     * Create a CGViewBuilder.
+     *
+     * @param {string|SequenceFile} input - A string containing a sequence file (GenBank, EMBL, FASTA, Raw) or a {@link SequenceFile} instance.
+     * @param {Object} [options] - Builder options.
+     * @param {Object} [options.config] - CGView configuration JSON to merge into the output.
+     * @param {boolean|string[]} [options.includeFeatures=true] - If `true`, include all feature types. If an array of strings, include only those types. If `false`, include no features.
+     * @param {string[]} [options.excludeFeatures=['gene','source','exon']] - Feature types to exclude. Ignored unless `includeFeatures` is `true`.
+     * @param {boolean|string[]} [options.includeQualifiers=false] - If `true`, include all qualifiers. If an array of strings, include only those qualifiers. If `false`, include no qualifiers.
+     * @param {string[]} [options.excludeQualifiers=[]] - Qualifiers to exclude. Ignored unless `includeQualifiers` is `true`.
+     * @param {boolean} [options.includeCaption=true] - Whether to include a default caption derived from the sequence definition or ID.
+     * @param {string[]} [options.nameKeys=['gene','locus_tag','product','note','db_xref']] - Ordered qualifier keys used to derive a feature name. Only used when the input is a string (passed to {@link SequenceFile})
+     * @param {number} [options.maxLogCount] - Maximum number of log messages to keep. `undefined` means no limit.
+     */
     constructor(input, options = {}) {
-      // super(options, 'BUILDING CGVIEW JSON');
       super(options);
-      // this.input = input;
       this.cgvJSONVersion = "1.7.0";
-      // this.options = options;
 
-      // this.includeFeatures = options.includeFeatures || true;
       this.includeFeatures = (options.includeFeatures === undefined) ? true : options.includeFeatures;
-      this.excludeFeatures = options.excludeFeatures || ['gene', 'source', 'exon'];
-      this.includeQualifiers = options.includeQualifiers || false;
+      this.excludeFeatures = options.excludeFeatures || [];
+      this.includeQualifiers = (options.includeQualifiers === undefined) ? true : options.includeQualifiers;
       this.excludeQualifiers = options.excludeQualifiers || [];
       this.includeCaption = (options.includeCaption === undefined) ? true : options.includeCaption;
 
@@ -1080,7 +1081,10 @@ var CGParse = (function () {
     _parseInput(input) {
       // console.log("Parse input")
       if (typeof input === "string") {
-        return new SequenceFile(input, {logger: this.logger});
+        return new SequenceFile(input, {
+          nameKeys: this.options.nameKeys,
+          logger: this.logger
+        });
       } else if (input instanceof SequenceFile) {
         return input;
       } else {
@@ -1626,8 +1630,6 @@ var CGParse = (function () {
       return {json: builder.toJSON(), log: builder.logger.history()};
     }
 
-
-
   }
 
   /*!
@@ -1649,17 +1651,31 @@ var CGParse = (function () {
 
 
   /**
-   * SequenceFile
-   *
-   * Parses biological sequence files (GenBank, EMBL, FASTA, RAW) into an intermediate JSON format.
+   * @class SequenceFile
+   * @classdesc Parses biological sequence files (GenBank, EMBL, FASTA, RAW) into an intermediate JSON format.
    * Each parsed sequence record includes metadata (name, accession, definition, length, topology, comments),
    * the nucleotide or protein sequence, and associated features with qualifiers.
    *
-   * Provides validation, logging, and convenient export to CGView-compatible JSON via CGViewBuilder.
+   * Provides validation, logging, and convenient export to CGView-compatible JSON via {@link CGViewBuilder}.
    *
-   * NOTES:
-   * - This code is heavily based on Paul's seq_to_json.py script with some exceptions.
+   * @example
+   * // From a GenBank string
+   * const seqText = 'LOCUS AF177870 3123 bp DNA...';
+   * const seqFile = new CGParse.SequenceFile(seqText);
+   * console.log(seqFile.summary); // { inputType: 'genbank', sequenceType: 'dna', ... }
+   * const cgviewJSON = seqFile.toCGViewJSON();
+   *
+   * @example
+   * // With options
+   * const seqFile = new CGParse.SequenceFile(seqText, {
+   *   addFeatureSequences: true,
+   *   nameKeys: ['gene','locus_tag','product'],
+   * });
+   *
+   * @see CGParse.CGViewBuilder
    * 
+   * NOTES:
+   * - This code is heavily based on Paul's sequence parsing code.
    * TODO:
    * - Test start_codon
    * - consider changing type to molType
@@ -1680,14 +1696,14 @@ var CGParse = (function () {
     }
 
     /**
-     * Create a new SequenceFile object
-     * @param {String} inputText - string from GenBank, EMBL, Fasta, or Raw [Required]
-     * @param {*} options - 
-     * - addFeatureSequences: boolean [Default: false]. This can increase run time ~3x.
-     * - nameKeys: The order of preference for the name of a feature
-     *   - array of strings [Default: ['gene', 'locus_tag', 'product', 'note', 'db_xref']]
-     * - logger: logger object
-     * - maxLogCount: number (undefined means no limit) [Default: undefined]
+     * Create a SequenceFile parser.
+     *
+     * @param {string} inputText - Text from a sequence file (GenBank, EMBL, FASTA, or raw sequence).
+     * @param {Object} [options]
+     * @param {boolean} [options.addFeatureSequences=false] - If true, include the nucleotide sequence for each feature (slower; ~3× runtime).
+     * @param {string[]} [options.nameKeys=['gene','locus_tag','product','note','db_xref']] - Ordered qualifier keys used to derive a feature name.
+     * @param {Logger} [options.logger] - Optional Logger instance. If omitted, an internal logger is created.
+     * @param {number} [options.maxLogCount] - Max number of log messages to keep (undefined = no limit).
      */
     constructor(inputText, options={}) {
       super(options);
@@ -3693,7 +3709,6 @@ var CGParse = (function () {
    * REQUIRED:
    * - inputText: string from GFF3, BED, CSV, TSV, or GTF file
    *
-   * 
    * OPTIONS:
    * - GENERAL (All Formats)
    *   - format: The file format being parsed (e.g. 'auto', 'gff3', 'bed', 'csv', 'tsv', 'gtf') [Default: 'auto'].
@@ -4140,22 +4155,6 @@ var CGParse = (function () {
   // INPUT:
   // - FeatureFile or string of feature file (e.g. GFF3, GTF, BED, CSV) that can be converted to FeatureFile
   // OPTIONS (Feature and Qualifier options NIY):
-  // - FIXME: CHANGE TO includ/excludeFeatures skipTypes: boolean (TEST) [Default: ['gene', 'source', 'exon']]
-  //   - If false, include ALL feature types in the JSON
-  // - includeFeatures: boolean [Default: true]
-  //   - If true, include ALL feature types in the JSON
-  //   - If array of strings, include only those feature type
-  //   - If false, include NO features
-  // - excludeFeatures: array of string [Default: undefined]
-  //   - include all feature types except for these
-  //   - ignored unless includeFeatures is true
-  // - includeQualifiers: boolean [Default: false]
-  //   - If true, include ALL qualifiers in the JSON
-  //   - If array of strings, include only those qualifiers
-  //   - If false, include NO qualifiers
-  // - excludeQualifiers: array of string [Default: undefined]
-  //   - include all qualifiers except for these
-  //   - ignored unless includeQualifiers is true
   // - maxLogCount: number (undefined means no limit) [Default: undefined]
 
   class FeatureBuilder extends Status {

@@ -42,7 +42,7 @@
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
-        <a class="navbar-brand" href="../index.html">CGParse</a>
+        <a class="navbar-brand" href="../index.html">CGParse.js</a>
         <div class="collapse navbar-collapse" id="navbarNavDropdown">
           <div class="navbar-nav">
             <a class="nav-link active" aria-current="page"  href="sequence.html">Sequence</a>
@@ -144,6 +144,26 @@
               <li>Options with (r), require clicking the <strong>Reparse</strong> button before taking effect.</li>
               <li>Clicking <strong>Open in Proksee</strong> will send the CGView JSON to <a href='https://proksee.ca'>Proksee</a> to start a new project.</li>
             </ul>
+            <pre><code class='language-javascript'>// Commands and Config
+
+// SequenceFile command
+const seqFile = new CGParse.SequenceFile( inputText, {
+  maxLogCount: 1
+});
+
+// CGViewBuilder command
+const builder = new CGParse.CGViewBuilder(seqFile, {
+  logger: seqFile.logger,
+  config: jsonConfig, // See below
+  excludeFeatures: ['source', 'gene', 'exon'],
+  excludeQualifiers: ['translation'],
+  maxLogCount: 2
+});
+
+// jsonConfig
+const jsonConfig = <span id="json-config"></span>
+              </code></pre>
+
           </div>
         </div>
 			</div>

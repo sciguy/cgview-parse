@@ -20,25 +20,37 @@
 // Parses text from sequence file (may contain multiple sequences) into an array of sequence records
 // Each sequence record contains an array of features
 
-
-
 import Status from '../Support/Status.js';
 import Logger from '../Support/Logger.js';
 import CGViewBuilder from './CGViewBuilder.js';
 import * as helpers from '../Support/Helpers.js';
 
 /**
- * SequenceFile
- *
- * Parses biological sequence files (GenBank, EMBL, FASTA, RAW) into an intermediate JSON format.
+ * @class SequenceFile
+ * @classdesc Parses biological sequence files (GenBank, EMBL, FASTA, RAW) into an intermediate JSON format.
  * Each parsed sequence record includes metadata (name, accession, definition, length, topology, comments),
  * the nucleotide or protein sequence, and associated features with qualifiers.
  *
- * Provides validation, logging, and convenient export to CGView-compatible JSON via CGViewBuilder.
+ * Provides validation, logging, and convenient export to CGView-compatible JSON via {@link CGViewBuilder}.
  *
- * NOTES:
- * - This code is heavily based on Paul's seq_to_json.py script with some exceptions.
+ * @example
+ * // From a GenBank string
+ * const seqText = 'LOCUS AF177870 3123 bp DNA...';
+ * const seqFile = new CGParse.SequenceFile(seqText);
+ * console.log(seqFile.summary); // { inputType: 'genbank', sequenceType: 'dna', ... }
+ * const cgviewJSON = seqFile.toCGViewJSON();
+ *
+ * @example
+ * // With options
+ * const seqFile = new CGParse.SequenceFile(seqText, {
+ *   addFeatureSequences: true,
+ *   nameKeys: ['gene','locus_tag','product'],
+ * });
+ *
+ * @see CGParse.CGViewBuilder
  * 
+ * NOTES:
+ * - This code is heavily based on Paul's sequence parsing code.
  * TODO:
  * - Test start_codon
  * - consider changing type to molType
@@ -59,14 +71,14 @@ class SequenceFile extends Status {
   }
 
   /**
-   * Create a new SequenceFile object
-   * @param {String} inputText - string from GenBank, EMBL, Fasta, or Raw [Required]
-   * @param {*} options - 
-   * - addFeatureSequences: boolean [Default: false]. This can increase run time ~3x.
-   * - nameKeys: The order of preference for the name of a feature
-   *   - array of strings [Default: ['gene', 'locus_tag', 'product', 'note', 'db_xref']]
-   * - logger: logger object
-   * - maxLogCount: number (undefined means no limit) [Default: undefined]
+   * Create a SequenceFile parser.
+   *
+   * @param {string} inputText - Text from a sequence file (GenBank, EMBL, FASTA, or raw sequence).
+   * @param {Object} [options]
+   * @param {boolean} [options.addFeatureSequences=false] - If true, include the nucleotide sequence for each feature (slower; ~3× runtime).
+   * @param {string[]} [options.nameKeys=['gene','locus_tag','product','note','db_xref']] - Ordered qualifier keys used to derive a feature name.
+   * @param {Logger} [options.logger] - Optional Logger instance. If omitted, an internal logger is created.
+   * @param {number} [options.maxLogCount] - Max number of log messages to keep (undefined = no limit).
    */
   constructor(inputText, options={}) {
     super(options);
