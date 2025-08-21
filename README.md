@@ -1,4 +1,4 @@
-# CGParse
+# CGParse.js
 
 [![Pages Status](https://github.com/sciguy/cgview-parse/actions/workflows/pages.yml/badge.svg)](https://github.com/sciguy/cgview-parse/actions/workflows/pages.yml)
 [![Tests Status](https://github.com/sciguy/cgview-parse/actions/workflows/tests.yml/badge.svg)](https://github.com/sciguy/cgview-parse/actions/workflows/tests.yml)
@@ -8,13 +8,13 @@
 ![Last Commit](https://img.shields.io/github/last-commit/sciguy/CGView-Parse.svg)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
-CGParse is a lightweight JavaScript library for parsing biological sequence and feature files (GenBank, EMBL, FASTA, GFF3, BED, etc.). It converts these files into CGView-compatible JSON, making them ready for visualization with [CGView.js](https://js.cgview.ca).
+CGParse.js is a lightweight JavaScript library for parsing biological sequence and feature files (GenBank, EMBL, FASTA, GFF3, BED, etc.). It converts these files into CGView-compatible JSON, making them ready for visualization with [CGView.js](https://js.cgview.ca).
 
-🔗 **[Live Demo & Test Page](https://sciguy.github.io/cgview-parse)**
+🔗 **[Live Demo & Test Page](https://parse.cgview.ca)**
 
 
 ## Table of Contents
-- [CGParse](#cgparse)
+- [CGParse.js](#cgparsejs)
   - [Table of Contents](#table-of-contents)
   - [Installation](#installation)
     - [Installing from npm](#installing-from-npm)
@@ -322,7 +322,7 @@ console.log(logger.history());        // Full log history as a string
 
 ## Live Test Page
 
-🔗 **[Live Demo & Test Page](https://sciguy.github.io/cgview-parse)**
+🔗 **[Live Demo & Test Page](https://parse.cgview.ca)**
 
 The test page lets you upload or choose example files, view intermediate JSON, final CGView JSON, rendered maps, log output, and open results in Proksee.
 
