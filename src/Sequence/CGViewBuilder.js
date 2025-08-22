@@ -54,7 +54,6 @@ export default class CGViewBuilder extends Status {
    * @param {string[]} [options.excludeFeatures=['gene','source','exon']] - Feature types to exclude. Ignored unless `includeFeatures` is `true`.
    * @param {boolean|string[]} [options.includeQualifiers=false] - If `true`, include all qualifiers. If an array of strings, include only those qualifiers. If `false`, include no qualifiers.
    * @param {string[]} [options.excludeQualifiers=[]] - Qualifiers to exclude. Ignored unless `includeQualifiers` is `true`.
-   * @param {boolean} [options.includeCaption=true] - Whether to include a default caption derived from the sequence definition or ID.
    * @param {string[]} [options.nameKeys=['gene','locus_tag','product','note','db_xref']] - Ordered qualifier keys used to derive a feature name. Only used when the input is a string (passed to {@link SequenceFile})
    * @param {number} [options.maxLogCount] - Maximum number of log messages to keep. `undefined` means no limit.
    */
@@ -66,7 +65,6 @@ export default class CGViewBuilder extends Status {
     this.excludeFeatures = options.excludeFeatures || [];
     this.includeQualifiers = (options.includeQualifiers === undefined) ? true : options.includeQualifiers;
     this.excludeQualifiers = options.excludeQualifiers || [];
-    this.includeCaption = (options.includeCaption === undefined) ? true : options.includeCaption;
 
     this.seqFile = this._parseInput(input);
     this.inputType = this.seqFile.inputType
@@ -210,7 +208,7 @@ export default class CGViewBuilder extends Status {
     }
   }
   // Add config to JSON. Note that no validation of the config is done.
-  _addConfigToJSON(json, config = {}, seqRecords = {}) {
+  _addConfigToJSON(json, config, seqRecords = {}) {
     const configKeys = config ? Object.keys(config) : ['none'];
     this.logger.info(`- Config properties provided: ${configKeys.join(', ')}`);
 
@@ -222,7 +220,8 @@ export default class CGViewBuilder extends Status {
     json.sequence   = config?.sequence || {};
     json.legend     = config?.legend   || {};
     json.tracks     = config?.tracks   || [];
-    json.captions   = config?.captions || [];
+    // json.captions   = config?.captions || [];
+    json.captions = (config?.captions || []).map(caption => ({ ...caption }));
 
     if (json.captions.length > 0) {
       json.captions.forEach((caption) => {

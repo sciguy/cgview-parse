@@ -226,7 +226,7 @@ function runParseWrapped() {
 // - When using innerHTML, it is faster when the sequence is replaced
 // - Prism.highlight is slowest step
 function runParse() {
-  window.json = {}; // For debugging
+  window.parse = {}; // For debugging
   const inputTextDiv = document.getElementById('input-text');
   const outputSeqJsonDiv = document.getElementById('output-seq-json');
   const outputCgvJsonDiv = document.getElementById('output-cgv-json');
@@ -239,14 +239,15 @@ function runParse() {
 
   // Get input text
   const inputText = inputTextDiv.textContent;
-  console.log("Input Text", inputText)
+  // console.log("Input Text", inputText)
+  window.parse.input = inputText; // For debugging
 
   // Parse to seqJson
   const seqJsonStartTime = new Date().getTime();
   // const seqFile = new CGParse.SequenceFile(inputText, {addFeatureSequences: true});
   const seqFile = new CGParse.SequenceFile(inputText, {maxLogCount: 1});
   const seqJSON = seqFile.records;
-  json.seqFile = seqFile; // For debugging
+  window.parse.seqFile = seqFile; // For debugging
   console.log(seqJSON)
   const seqJsonRunTime = elapsedTime(seqJsonStartTime);
   updateTime('time-seq-json', seqJsonRunTime);
@@ -260,7 +261,7 @@ function runParse() {
   });
   // outputSeqJsonDiv.innerHTML = prismMode ? Prism.highlight(seqString, Prism.languages.json, 'json') : seqString;
   outputSeqJsonDiv.innerHTML = filterJSONText(seqString);
-  window.json.seq = seqJSON; // For debugging
+  window.parse.seqJSON = seqJSON; // For debugging
   // return;
 
   // Parse to CGView JSON
@@ -276,6 +277,7 @@ function runParse() {
       maxLogCount: 2
     });
     // cgvJSON = seqFile.toCGViewJSON({config: jsonConfig, includeQualifiers: true, maxLogCount: 2});
+    window.parse.cgvBuilder = builder; // For debugging
     cgvJSON = builder.toJSON();
 
     const cgvJsonRunTime = elapsedTime(cgvJsonStartTime);
@@ -288,7 +290,7 @@ function runParse() {
       }
       outputCgvJsonDiv.innerHTML = prismMode ? Prism.highlight(cgvString, Prism.languages.json, 'json') : cgvString;
     }
-    window.json.cgv = cgvJSON; // For debugging
+    window.parse.cgvJSON = cgvJSON; // For debugging
   }
 
   // MESSAGES

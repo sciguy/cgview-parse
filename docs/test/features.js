@@ -328,7 +328,7 @@ function getCSVColumnMap() {
 // - When using innerHTML, it is faster when the sequence is replaced
 // - Prism.highlight is slowest step
 function runParse(columnMap) {
-  window.json = {}; // For debugging
+  window.parse = {}; // For debugging
   const inputTextDiv = document.getElementById('input-text');
   const outputSeqJsonDiv = document.getElementById('output-seq-json');
   const outputCgvJsonDiv = document.getElementById('output-cgv-json');
@@ -340,7 +340,8 @@ function runParse(columnMap) {
 
   // Get input text
   const inputText = inputTextDiv.textContent;
-  console.log("Input Text", inputText)
+  // console.log("Input Text", inputText)
+  window.parse.input = inputText;
 
   const selectedFormat = formatSelect.value;
 
@@ -357,7 +358,7 @@ function runParse(columnMap) {
   const featureJsonStartTime = new Date().getTime();
   const featureFile = new CGParse.FeatureFile(inputText, {format: selectedFormat, maxLogCount: 3, noHeader: noHeaderCheckbox.checked, columnMap: parseColumnMap});
   const featureJSON = featureFile.records;
-  json.featureFile = featureFile; // For debugging
+  window.parse.featureFile = featureFile; // For debugging
   console.log(featureJSON)
   const featureJsonRunTime = elapsedTime(featureJsonStartTime);
   updateTime('time-seq-json', featureJsonRunTime);
@@ -368,7 +369,7 @@ function runParse(columnMap) {
   // });
   seqString = compacetLocations(seqString);
   outputSeqJsonDiv.innerHTML = filterJSONText(seqString);
-  window.json.feature = featureJSON; // For debugging
+  window.parse.featureJSON = featureJSON; // For debugging
   // return;
 
   // Parse to CGView Feature JSON
@@ -390,7 +391,8 @@ function runParse(columnMap) {
       cgvString = compacetLocations(cgvString);
       outputCgvJsonDiv.innerHTML = prismMode ? Prism.highlight(cgvString, Prism.languages.json, 'json') : cgvString;
     }
-    window.json.cgv = cgvJSON; // For debugging
+    window.parse.cgvBuilder = builder; // For debugging
+    window.parse.cgvJSON = cgvJSON; // For debugging
   }
 
   // MESSAGES

@@ -33,7 +33,7 @@ CGParse.js is a lightweight JavaScript library for parsing biological sequence a
 
 ## Installation
 
-CGParse has no dependencies. Install it from npm or load it directly via jsDelivr.
+CGParse.js has no dependencies. Install it from npm or load it directly via jsDelivr.
 
 ### Installing from npm
 ```bash
