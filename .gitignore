@@ -4,5 +4,6 @@ node_modules/
 OLD/
 docs/inputs/feature_files/arabidopsis_thaliana/
 docs/inputs/feature_files/All/
-# dist/
+dist/
+docs/scripts/CGParse.min.js
 
