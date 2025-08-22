@@ -2,12 +2,12 @@
 // Settings
 ///////////////////////////////////////////////////////////////////////////////
 
-// Initial input file to load: '', 'file', or input from input.js (e.g. 'mito')
+// Initial input file to load: '', 'file', or input from sequence.input.js (e.g. 'mito')
 // const defaultMap = '';     // Empty
 // const defaultMap = 'file'; // File Choose
 // const defaultMap = 'mito_fa';
-// const defaultMap = 'mito_gb';
-const defaultMap = 'ecoli';
+const defaultMap = 'mito_gb';
+// const defaultMap = 'ecoli';
 // const defaultMap = 'pa2';
 // const defaultMap = 'contigs';
 
@@ -66,40 +66,40 @@ loadInputFromID(defaultMap);
 ///////////////////////////////////////////////////////////////////////////////
 // Config JSON passed to parser
 ///////////////////////////////////////////////////////////////////////////////
-const jsonConfig = {
-  annotation: {
-    font: 'sans-serif, plain, 8'
-  },
-  ruler: {
-    font: 'sans-serif, plain, 6'
-  },
-  captions: [
-    {
-      name: 'DEFINITION',
-      textAlignment: "center",
-      font: "sans-serif,plain,7",
-      fontColor: "darkblue",
-      position: "bottom-center",
-    },
-    {
-      name: 'ID',
-      textAlignment: "right",
-      font: "sans-serif,bold,10",
-      fontColor: "darkgreen",
-      position: "top-right",
-    },
-  ],
-  legend: {
-    position: 'top-left',
-    alignment: 'left',
-    backgroundColor: 'rgba(255,255,255,0.75)',
-    defaultFont: 'sans-serif, plain, 6',
-    defaultFontColor: 'black',
-    items: [
-      {name: 'CDS', swatchColor: 'rgba(0,0,153,0.5)', decoration: 'arrow'},
-    ]
-  }
-};
+// const jsonConfig = {
+//   annotation: {
+//     font: 'sans-serif, plain, 8'
+//   },
+//   ruler: {
+//     font: 'sans-serif, plain, 6'
+//   },
+//   captions: [
+//     {
+//       name: 'DEFINITION',
+//       textAlignment: "center",
+//       font: "sans-serif,plain,7",
+//       fontColor: "darkblue",
+//       position: "bottom-center",
+//     },
+//     {
+//       name: 'ID',
+//       textAlignment: "right",
+//       font: "sans-serif,bold,10",
+//       fontColor: "darkgreen",
+//       position: "top-right",
+//     },
+//   ],
+//   legend: {
+//     position: 'top-left',
+//     alignment: 'left',
+//     backgroundColor: 'rgba(255,255,255,0.75)',
+//     defaultFont: 'sans-serif, plain, 6',
+//     defaultFontColor: 'black',
+//     items: [
+//       {name: 'CDS', swatchColor: 'rgba(0,0,153,0.5)', decoration: 'arrow'},
+//     ]
+//   }
+// };
 const jsonSpan = document.querySelector('#json-config');
 jsonSpan.innerHTML = JSON.stringify(jsonConfig, null, 2);
 ///////////////////////////////////////////////////////////////////////////////
@@ -172,7 +172,8 @@ fileInput.addEventListener('change', (event) => {
     const inputTextDiv = document.getElementById('input-text');
     var contents = e.target.result;
     inputTextDiv.innerHTML = contents;
-    runParse();
+    // runParse();
+    runParseWrapped();
   };
 
   reader.onerror = function(e) {
@@ -200,7 +201,8 @@ function loadInputFromID(id) {
     const inputText = request.responseText;
     console.log("Loaded Map", inputText)
     inputTextDiv.innerHTML = inputText;
-    runParse();
+    // runParse();
+    runParseWrapped();
   };
   request.send();
 }
@@ -208,6 +210,17 @@ function loadInputFromID(id) {
 ///////////////////////////////////////////////////////////////////////////////
 // Parse
 ///////////////////////////////////////////////////////////////////////////////
+
+// Runs parse within a timeout, allowing for UI updates
+function runParseWrapped() {
+  const outputSeqJsonDiv = document.getElementById('output-seq-json');
+  const outputCgvJsonDiv = document.getElementById('output-cgv-json');
+  // Clear outputs
+  outputSeqJsonDiv.innerHTML = "Loading...";
+  outputCgvJsonDiv.innerHTML = "Loading...";
+  setTimeout(() => { runParse(); }, 10);
+}
+
 // Speed of steps:
 // - Fastest is going right to map (no innerHTML)
 // - When using innerHTML, it is faster when the sequence is replaced
@@ -330,7 +343,8 @@ function filterJSONText(text) {
 const reparseBtn = document.getElementById('reparse-btn');
 reparseBtn.addEventListener('click', (e) => {
   console.log("Reparse...")
-  runParse();
+  // runParse();
+  runParseWrapped();
 });
 
 showInputCheckbox.addEventListener('click', (e) => {

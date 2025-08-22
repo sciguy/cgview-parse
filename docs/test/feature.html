@@ -6,12 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Icon -->
-    <link rel="shortcut icon" type="image/png" href="../images/logo-tab.png">
+    <link rel="icon" type="image/png" href="../images/logo-tab.png">
 
     <!-- Bootstrap CSS -->
     <link href="../styles/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../styles/prism.css" />
-    <!-- <link rel="stylesheet" href="styles/tables.css" /> -->
     <link rel="stylesheet" href="../styles/general.css" />
     <script src='../scripts/general.js'></script>
 
@@ -24,7 +23,6 @@
 
     <link rel="stylesheet" href="../styles/cgview.css" />
     <link rel="stylesheet" href="../styles/controls.css" />
-    <!-- CGView Data -->
 
     <!-- Dev Page -->
     <link rel="stylesheet" href="../styles/test.css" />
@@ -147,11 +145,29 @@
               </table>
             </div>
           </div>
-          </div>
-
         </div>
         <hr />
-        <div class='sidebar-log'>
+        <div class='sidebar-help-logs'>
+          <!-- Navigation links -->
+          <div class="sidebar-nav-btns">
+            <a href="#" id="show-log" class="btn-selected">Log</a>
+            <span class='btn-separator muted'>•</span>
+            <a href="#" id="show-help">Help</a>
+          </div>
+          <!-- Log section -->
+          <div class="sidebar-log">
+            <div id="log-text">No messages yet...</div>
+          </div>
+          <!-- Help section -->
+          <div class="sidebar-help" style="display: none;">
+            <ul>
+              <li>Large files may have a long delay. This is due to inserting the text into the webpage.</li>
+              <li>The actual parsing/processing times are displayed in orange.
+              <li>Options with (r), require clicking the <strong>Reparse</strong> button before taking effect.</li>
+            </ul>
+          </div>
+        </div>
+        <!-- <div class='sidebar-log'>
           <div class='section-heading'>Log</div>
           <div id="log-text">No messages yet...</div>
         </div>
@@ -160,7 +176,7 @@
           <div class='section-heading muted'>Notes</div>
           <div class="note-text">- Large file long load times: due to dom insertion</div>
           <div class="note-text">- Times in orange: actual processing time.</div>
-        </div>
+        </div> -->
 			</div>
 
     </main>

@@ -4,19 +4,20 @@ body {
 
 main {
   margin-left: 0;
-  padding: 15px;
+  padding: 5px;
   display: flex;
   justify-content: space-between;
   column-gap: 10px;
   position: relative;
 }
 
+/* Landing Page */
 main.landing {
+  padding: 15px;
   align-items: center;
   height: 100vh;
 }
 
-/* Landing Page */
 .title-box {
   font-size: 15px;
   display: flex;
@@ -140,7 +141,7 @@ main.landing {
 }
 
 .sidebar-log {
-  overflow: scroll;
+  overflow: auto;
 }
 
 #log-text {
@@ -278,10 +279,10 @@ pre[class*="language-"] {
 
 /* Sidebar Help/Logs */
 .sidebar-help-logs {
-  overflow: scroll;
+  overflow: auto;
 }
 .sidebar-help {
-  overflow: scroll;
+  overflow: auto;
 }
 .sidebar-nav-btns {
   display: flex;

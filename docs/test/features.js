@@ -2,25 +2,24 @@
 // Settings
 ///////////////////////////////////////////////////////////////////////////////
 
-// import CSVFeatureFile from "../../src/Features/FeatureFileFormats/CSVFeatureFile";
-
 // Initial input file to load: '', 'file', or input from input.js (e.g. 'mito')
 // const defaultMap = '';     // Empty
 // const defaultMap = 'file'; // File Choose
-// const defaultMap = 'sample_gff3';
+const defaultMap = 'sample_gff3';
 // const defaultMap = 'sample_gtf';
-const defaultMap = 'sample_csv';
+// const defaultMap = 'sample_csv';
 // const defaultMap = 'sample_csv_40_columns';
 // const defaultMap = 'sample_tsv';
 // const defualtMap = 'arabidopsis_gtf';
 // const defaultMap = 'bed12';
 // const defaultMap = 'mito';
 
-// const defaultFormat = 'auto';
+// Default Feature Format
+const defaultFormat = 'auto';
 // const defaultFormat = 'bed';
 // const defaultFormat = 'gff3';
 // const defaultFormat = 'gtf';
-const defaultFormat = 'csv';
+// const defaultFormat = 'csv';
 // const defaultFormat = 'tsv';
 
 
@@ -66,6 +65,8 @@ showCgvJsonCheckbox.checked = showCgvJson;
 // Show/Hide Map
 const showMapCheckbox = document.querySelector('#option-show-map');
 showMapCheckbox.checked = showMap;
+// This removes the 'Show Map' option until we decide to use the map for feature tests
+showMapCheckbox.parentElement.style.display = 'none';
 // Show All Text (or only the first 1000 lines)
 const showAllTextCheckbox = document.querySelector('#option-show-all-text');
 showAllTextCheckbox.checked = showAllText;
@@ -321,6 +322,7 @@ function getCSVColumnMap() {
 ///////////////////////////////////////////////////////////////////////////////
 // Parse
 ///////////////////////////////////////////////////////////////////////////////
+
 // Speed of steps:
 // - Fastest is going right to map (no innerHTML)
 // - When using innerHTML, it is faster when the sequence is replaced
@@ -554,3 +556,27 @@ openInProkseeBtn.addEventListener('click', (e) => {
 });
 
 
+///////////////////////////////////////////////////////////////////////////////
+// Sidebar Logs/Help 
+///////////////////////////////////////////////////////////////////////////////
+
+const logLink = document.getElementById('show-log');
+const helpLink = document.getElementById('show-help');
+const logSection = document.querySelector('.sidebar-log');
+const helpSection = document.querySelector('.sidebar-help');
+
+logLink.addEventListener('click', (e) => {
+  e.preventDefault();
+  logSection.style.display = 'block';
+  helpSection.style.display = 'none';
+  logLink.classList.add('btn-selected');
+  helpLink.classList.remove('btn-selected');
+});
+
+helpLink.addEventListener('click', (e) => {
+  e.preventDefault();
+  logSection.style.display = 'none';
+  helpSection.style.display = 'block';
+  helpLink.classList.add('btn-selected');
+  logLink.classList.remove('btn-selected');
+});

@@ -54,4 +54,9 @@ inputs = {
     type: 'genbank',
     url: '../inputs/sequence_files/GCF_000335355.gbk',
   },
+  af177870: {
+    name: 'Caenorhabditis sp. CB5161 putative PP2C protein phosphatase [3,123 bp]',
+    type: 'genbank',
+    url: '../inputs/sequence_files/AF177870.gbk',
+  },
 }
