@@ -80,6 +80,8 @@ const cgviewJSON = cgvBuilder.toJSON();
 cgv.io.loadJSON(cgviewJSON);
 ```
 
+[Details on the  CGView JSON format](https://js.cgview.ca/json)
+
 ### Create CGView Features from a feature file (e.g. CSV, GFF3, GTF, BED)
 
 ```js
@@ -466,8 +468,41 @@ chr1	.	gene	1000	2000	.	+	.	ID=gene1;Name=myGene`;
 
 const featureFile = new CGParse.FeatureFile(gff3Text);
 
-// TODO: EXAMPLE
+// Summary
+featureFile.summary;
+// {
+//   inputFormat: "gff3",
+//   featureCount: 1,
+//   status: "success"
+// }
 
+// Array of parsed features as JSON
+featureFile.records;
+```
+Records Output
+```json
+[
+  {
+    "contig": "chr1",
+    "source": ".",
+    "type": "gene",
+    "start": 1000,
+    "stop": 2000,
+    "score": ".",
+    "strand": "+",
+    "phase": ".",
+    "attributes": {
+      "ID": "gene1",
+      "Name": "myGene"
+    },
+    "qualifiers": {},
+    "valid": true,
+    "name": "myGene"
+  }
+]
+```
+
+```js
 // The feature file can be directly converted to CGView features array
 const cgvFeatures = featureFile.toCGViewFeaturesJSON()
 // Or passed to the builder

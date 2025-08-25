@@ -475,12 +475,13 @@ export default class CGViewBuilder extends Status {
   }
 
 
-  // Onlys adds a Features track if there are features
+  // Only adds a Features track if there are features
   // Other tracks may come from the config (in which case they are already added to the JSON)
+  // The new track is added to the beginning of the tracks array (i.e. before config tracks)
   _buildTracks(json, inputType) {
     const tracks = json.tracks || [];
     if (json.features && json.features.length > 0) {
-      tracks.push({
+      tracks.unshift({
         name: 'Features',
         separateFeaturesBy: 'strand',
         position: 'both',
