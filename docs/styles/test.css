@@ -14,7 +14,7 @@ main {
 /* Landing Page */
 main.landing {
   padding: 15px;
-  align-items: center;
+  /* align-items: center; */
   height: 100vh;
 }
 
@@ -29,6 +29,7 @@ main.landing {
   max-width: 800px;
   color: black;
   margin: auto;
+  margin-top: 72px;
   /* top: 10%; */
   position: relative;
   border-radius: 10px;
