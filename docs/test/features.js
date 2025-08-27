@@ -79,21 +79,6 @@ updatePageLayout();
 // Load default map
 loadInputFromID(defaultMap);
 
-///////////////////////////////////////////////////////////////////////////////
-// Config JSON passed to parser
-///////////////////////////////////////////////////////////////////////////////
-const jsonConfig = {
-  legend: {
-    position: 'top-right',
-    alignment: 'left',
-    backgroundColor: 'rgba(255,255,255,0.75)',
-    defaultFont: 'sans-serif, plain, 14',
-    defaultFontColor: 'black',
-    items: [
-      {name: 'CDS', swatchColor: 'rgba(0,0,153,0.5)', decoration: 'arrow'},
-    ]
-  }
-};
 
 ///////////////////////////////////////////////////////////////////////////////
 // Map Creation and Selection
@@ -377,9 +362,6 @@ function runParse(columnMap) {
   let builder;
   if (showCgvJsonCheckbox.checked) {
     const cgvJsonStartTime = new Date().getTime();
-    // cgvJSON = CGParse.seqJSONToCgvJSON(seqJSON, {config: jsonConfig});
-    // builder = new CGParse.CGViewBuilder(seqFile, {logger: seqFile.logger, config: jsonConfig, includeQualifiers: true, maxLogCount: 2});
-    //   // cgvJSON = seqFile.toCGViewJSON({config: jsonConfig, includeQualifiers: true, maxLogCount: 2});
     builder = new CGParse.FeatureBuilder(featureFile, {logger: featureFile.logger, includeQualifiers: true, maxLogCount: 2});
     cgvJSON = builder.toJSON();
 
