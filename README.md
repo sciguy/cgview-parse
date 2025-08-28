@@ -44,7 +44,7 @@ yarn add cgparse
 
 ### Installing as a script from jsDelivr
 ```html
-<script src="https://cdn.jsdelivr.net/npm/cgparse/dist/CGParse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/cgparse/dist/cgparse.min.js"></script>
 <!-- CGParse will be available as a global variable -->
 ```
 
@@ -102,7 +102,7 @@ cgv.addFeatures(features);
 ### CGViewBuilder Options
 
 ```js
-const builder = new CGViewBuilder(seqString, {
+const builder = new CGParse.CGViewBuilder(seqString, {
   // CGView configuration (see below for example)
   config: configJSON, 
   // The order of preference for the naming of a feature [Default shown]
@@ -124,26 +124,26 @@ When building from a GenBank or EMBL file, you can choose which features types (
 
 ```js
 // Include all features and their qualifiers [Default]
-const builder = new CGViewBuilder(seqString, {
+const builder = new CGParse.CGViewBuilder(seqString, {
   includeFeatures: true,    // [Default]
   includeQualifiers: true   // [Default]
 })
 
 // Include no features
-const builder = new CGViewBuilder(seqString, {
+const builder = new CGParse.CGViewBuilder(seqString, {
   includeFeatures: false,
   includeQualifiers: false  // [Not required, since there will not be any features]
 })
 
 // Include only specific features and their qualifiers
-const builder = new CGViewBuilder(seqString, {
+const builder = new CGParse.CGViewBuilder(seqString, {
   includeFeatures: ['CDS', 'rRNA'],
   includeQualifiers: ['product', 'note', 'locus_tag']
 })
 
 // Exclude a subset of features and their qualifiers
 // Recommended settings for bacterial genomes
-const builder = new CGViewBuilder(seqString, {
+const builder = new CGParse.CGViewBuilder(seqString, {
   excludeFeatures: ['source', 'gene', 'exon'],
   excludeQualifiers: ['translation']
 })
@@ -159,8 +159,9 @@ For list of qualifiers and feature types see the following resources:
 
 #### CGViewBuilder Config
 
-A config object can be provided to CGViewBuilder. The config is a JSON object with options that are added to the CGView JSON.
-They can be any setting available for the following components:
+A config object can be provided to CGViewBuilder.
+The config is a JSON object with options that are added to the [CGView JSON](https://js.cgview.ca/json.html).
+They can be any settings available for the following components:
 [settings](https://js.cgview.ca/docs.html#s.Settings),
 [backbone](https://js.cgview.ca/docs.html#s.Backbone),
 [ruler](https://js.cgview.ca/docs.html#s.Ruler),

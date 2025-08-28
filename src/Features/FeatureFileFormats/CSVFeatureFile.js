@@ -1,4 +1,4 @@
-/*!
+/**
  * CGParse.js – Sequence & Feature Parser for CGView.js
  * Copyright © 2024–2025 Jason R. Grant
  *

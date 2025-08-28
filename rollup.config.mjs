@@ -2,41 +2,57 @@ import json from '@rollup/plugin-json';
 import terser from '@rollup/plugin-terser';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 
+const banner_license = `/*!
+ * CGParse.js – Sequence & Feature Parser for CGView.js
+ * Copyright © 2024–2025 Jason R. Grant
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */`;
+
 export default {
   input: 'src/index.js',
   watch: true,
-  // external: ['d3', 'svgcanvas'],
   output: [
+    // IIFE (unminified)
     {
-      file: 'dist/CGParse.js',
+      file: 'docs/dist/cgparse.js',
       format: 'iife',
       name: 'CGParse',
-      // globals: {d3: 'd3', svgcanvas: 'svgcanvas'},
+      sourcemap: true,
     },
+    // IIFE (minified) for CDN <script> usage
     {
-      file: 'docs/scripts/CGParse.min.js',
+      file: 'docs/dist/cgparse.min.js',
       format: 'iife',
       name: 'CGParse',
-      // globals: {d3: 'd3', svgcanvas: 'svgcanvas'},
       plugins: [terser()],
+      sourcemap: true,
+      banner: banner_license,
     },
-    // {
-    //   file: 'docs/dist/cgview.esm.min.js',
-    //   format: 'es',
-    //   globals: {d3: 'd3', svgcanvas: 'svgcanvas'},
-    //   plugins: [terser()],
-    // },
+    // ESM (unminified) for npm consumers
     {
-      file: 'dist/CGParse.esm.js',
-      // globals: {d3: 'd3', svgcanvas: 'svgcanvas'},
+      file: 'docs/dist/cgparse.esm.js',
       format: 'es',
+      sourcemap: true,
     },
-    // {
-    //   file: 'dist/cgview.umd.min.js',
-    //   format: 'umd',
-    //   name: 'CGV',
-    //   plugins: [terser()]
-    // }
+    // ESM (minified) for CDN <script type="module"> usage
+    {
+      file: 'docs/dist/cgparse.esm.min.js',
+      format: 'es',
+      plugins: [terser()],
+      sourcemap: true,
+      banner: banner_license,
+    }
   ],
   plugins: [ nodeResolve(), json() ]
 };

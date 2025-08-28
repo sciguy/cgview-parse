@@ -1,7 +1,7 @@
 {
   "name": "cgview-parse",
   "version": "1.0.5",
-  "description": "Parsers to and from CGView JSON",
+  "description": "Converts sequence files (GenBank, EMBL, FASTA) and feature files (GFF3, GTF, BED, CSV) to JSON and CGView JSON",
   "main": "index.js",
   "author": "Jason Grant",
   "license": "MIT",
