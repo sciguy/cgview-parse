@@ -81,6 +81,7 @@ cgv.io.loadJSON(cgviewJSON);
 ```
 
 [Details on the  CGView JSON format](https://js.cgview.ca/json)
+[Tutorial on using CGParse.js with CGView.js](https://js.cgview.ca/tutorials/tutorial-cgparse.html)
 
 ### Create CGView Features from a feature file (e.g. CSV, GFF3, GTF, BED)
 

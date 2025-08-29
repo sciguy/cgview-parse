@@ -215,9 +215,9 @@ ul#gumshoe-list {
 }
 
 
-.sidebar-toggle {
+/* .sidebar-toggle {
   border: 1px solid rgba(255,255,255,.1);
-}
+} */
 .sidebar-toggle svg {
   fill: rgba(255, 255, 255, 0.55);
 }
