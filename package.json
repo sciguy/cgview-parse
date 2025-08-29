@@ -5,6 +5,17 @@
   "main": "index.js",
   "author": "Jason Grant",
   "license": "Apache-2.0",
+  "files": [
+    "dist/**",
+    "CHANGELOG.md"
+  ],
+  "keywords": [
+    "CGView",
+    "GenBank",
+    "EMBL",
+    "parser",
+    "bioinformatics"
+  ],
   "scripts": {
     "dev": "echo \"Error: no dev specified\" && exit 1",
     "build": "rollup --config --watch",
