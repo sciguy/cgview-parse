@@ -5,6 +5,9 @@
 ## Unreleased
 - N/A
 
+## v1.1.2 - 2025-09-02
+- Update index.js
+
 ## v1.1.1 - 2025-09-02
 - Update package.json
 
