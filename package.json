@@ -1,10 +1,18 @@
 {
   "name": "cgparse",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Converts sequence files (GenBank, EMBL, FASTA) and feature files (GFF3, GTF, BED, CSV) to JSON and CGView JSON",
-  "main": "index.js",
+  "homepage": "https://parse.cgview.ca",
+  "main": "dist/cgparse.esm.js",
+  "module": "dist/cgparse.esm.js",
+  "type": "module",
   "author": "Jason Grant",
   "license": "Apache-2.0",
+  "bugs": "https://github.com/sciguy/cgview-parse/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sciguy/cgview-parse.git"
+  },
   "files": [
     "dist/**",
     "CHANGELOG.md"

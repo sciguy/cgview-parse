@@ -5,6 +5,9 @@
 ## Unreleased
 - N/A
 
+## v1.1.1 - 2025-09-02
+- Update package.json
+
 ## v1.1.0 - 2025-08-29
 - Public release
 
