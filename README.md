@@ -1,9 +1,10 @@
-# CGParse.js
+# [CGParse.js](http://parse.cgview.ca)
 
 [![Pages Status](https://github.com/sciguy/cgview-parse/actions/workflows/pages.yml/badge.svg)](https://github.com/sciguy/cgview-parse/actions/workflows/pages.yml)
 [![Tests Status](https://github.com/sciguy/cgview-parse/actions/workflows/tests.yml/badge.svg)](https://github.com/sciguy/cgview-parse/actions/workflows/tests.yml)
 ![Last Commit](https://img.shields.io/github/last-commit/sciguy/CGView-Parse.svg)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+
 [![npm version](https://img.shields.io/npm/v/cgparse)](https://www.npmjs.com/package/cgparse)
 ![bundle size](https://img.shields.io/bundlephobia/min/cgparse)
 [![jsDelivr hits](https://data.jsdelivr.com/v1/package/npm/cgparse/badge)](https://www.jsdelivr.com/package/npm/cgparse)
