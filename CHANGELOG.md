@@ -2,8 +2,8 @@
 # CGParse.js Changelog
 --------------------------------------------------------------------------------
 
-## Unreleased
-- N/A
+## Unreleased - v1.2.0
+- Add 'name' option for CGViewBuilder
 
 ## v1.1.2 - 2025-09-02
 - Update index.js

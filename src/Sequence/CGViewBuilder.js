@@ -50,6 +50,7 @@ export default class CGViewBuilder extends Status {
    * @param {string|SequenceFile} input - A string containing a sequence file (GenBank, EMBL, FASTA, Raw) or a {@link SequenceFile} instance.
    * @param {Object} [options] - Builder options.
    * @param {Object} [options.config] - CGView configuration JSON to merge into the output.
+   * @param {string} [options.name]   - Name of the map. If not provided, derived from the sequence record.
    * @param {boolean|string[]} [options.includeFeatures=true] - If `true`, include all feature types. If an array of strings, include only those types. If `false`, include no features.
    * @param {string[]} [options.excludeFeatures=['gene','source','exon']] - Feature types to exclude. Ignored unless `includeFeatures` is `true`.
    * @param {boolean|string[]} [options.includeQualifiers=false] - If `true`, include all qualifiers. If an array of strings, include only those qualifiers. If `false`, include no qualifiers.
@@ -136,7 +137,7 @@ export default class CGViewBuilder extends Status {
       this.logger.info('- Complex Features Found: ', { padded: this._complexFeatures.length });
     }
     // json.name = json.sequence?.contigs[0]?.name || "Untitled";
-    json.name = seqRecords[0]?.definition || seqRecords[0]?.name || seqRecords[0]?.seqID || "Untitled";
+    json.name = this.options.name || seqRecords[0]?.definition || seqRecords[0]?.name || seqRecords[0]?.seqID || "Untitled";
     json = this._removeUnusedLegends(json);
     // Add track for features (if there are any)
     json.tracks = this._buildTracks(json, this.inputType);
