@@ -4,7 +4,7 @@ import { nodeResolve } from '@rollup/plugin-node-resolve';
 
 const banner_license = `/*!
  * CGParse.js – Sequence & Feature Parser for CGView.js
- * Copyright © 2024–2025 Jason R. Grant
+ * Copyright © 2024–2026 Jason R. Grant
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
