@@ -8,6 +8,7 @@
 [![npm version](https://img.shields.io/npm/v/cgparse)](https://www.npmjs.com/package/cgparse)
 ![bundle size](https://img.shields.io/bundlephobia/min/cgparse)
 [![jsDelivr hits](https://data.jsdelivr.com/v1/package/npm/cgparse/badge)](https://www.jsdelivr.com/package/npm/cgparse)
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.09930/status.svg)](https://doi.org/10.21105/joss.09930)
 
 CGParse.js is a lightweight JavaScript library for parsing biological sequence and feature files (GenBank, EMBL, FASTA, GFF3, BED, etc.). It converts these files into CGView-compatible JSON, making them ready for visualization with [CGView.js](https://js.cgview.ca).
 
