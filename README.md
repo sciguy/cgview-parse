@@ -13,6 +13,13 @@ CGParse.js is a lightweight JavaScript library for parsing biological sequence a
 
 🔗 **[Live Demo & Test Page](https://parse.cgview.ca)**
 
+## Citing CGParse.js
+
+Grant JR and Stothard P  
+CGView.js: a JavaScript package for visualizing small genomes.  
+Journal of Open Source Software, 2026, 11(122), 9930.  
+[https://doi.org/10.21105/joss.09930](https://doi.org/10.21105/joss.09930)
+
 
 ## Table of Contents
 - [Installation](#installation)
