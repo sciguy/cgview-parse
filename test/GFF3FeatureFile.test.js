@@ -73,6 +73,16 @@ describe('GFF3 sequence sections', () => {
     });
   });
 
+  test('stops at ##FASTA before the first FASTA header', () => {
+    const ignoredAnnotation = 'ctg2\tProkka\tgene\t30\t40\t.\t+\t.\tID=ignored;Name=ignored';
+    const file = parse([...annotationLines, '##FASTA', ignoredAnnotation, ...sequenceLines]);
+
+    expect(file.status).toBe('success');
+    expect(file.records).toEqual(parse(annotationLines).records);
+    expect(file.lineCount).toBe(3);
+    expect(file.validationIssues).toEqual({});
+  });
+
   test('does not treat ordinary metadata or comments mentioning FASTA as boundaries', () => {
     const file = parse([
       ...annotationLines.slice(0, 3),
