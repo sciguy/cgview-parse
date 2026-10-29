@@ -91,7 +91,10 @@ class GFF3FeatureFile {
     const lines = fileText.split('\n');
     let line;
     for (line of lines) {
-      if (line.startsWith('##')) {
+      if (/^##(?:FASTA)?\s*$/.test(line) || line.startsWith('>')) {
+        // Sequence data starts at ##FASTA, a bare ## separator, or an implicit FASTA header.
+        break;
+      } else if (line.startsWith('##')) {
         // This is a meta line
         // Do nothing
       } else if (line.startsWith('#')) {
