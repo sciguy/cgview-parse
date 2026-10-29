@@ -5,6 +5,9 @@
 ## Unreleased - v1.2.0
 - Add 'name' option for CGViewBuilder
 
+## v1.1.3 - 2026-10-29
+- Stop GFF3 feature parsing at `##FASTA`, a bare `##` separator, or an implicit FASTA header so appended sequences do not cause validation errors.
+
 ## v1.1.2 - 2025-09-02
 - Update index.js
 
